@@ -76,6 +76,9 @@ namespace Bear_Browser
             services.AddSingleton<ICrashReportingService, CrashReportingService>();
             services.AddSingleton<IAdBlockService, AdBlockService>();
             services.AddSingleton<IMemoryOptimizerService, MemoryOptimizerService>();
+            services.AddSingleton<IExtensionInstallerService, ExtensionInstallerService>();
+            services.AddSingleton<IAutofillService, AutofillService>();
+            services.AddSingleton<IDownloadHandlerService, DownloadHandlerService>();
 
             // ViewModels
             services.AddTransient<SettingsViewModel>();
