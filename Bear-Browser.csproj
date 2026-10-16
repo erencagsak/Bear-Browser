@@ -45,16 +45,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Remove="scratch\**" />
-		<None Remove="Controls\DownloadsView.xaml" />
-		<None Remove="Controls\FavoritesBar.xaml" />
-		<None Remove="Controls\FavoritesView.xaml" />
-		<None Remove="Controls\HistoryView.xaml" />
-		<None Remove="Controls\ProfileEditDialog.xaml" />
-		<None Remove="Controls\SettingsView.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
 		<Content Include="Assets\LockScreenLogo.scale-200.png" />
 		<Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -78,30 +68,6 @@
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
 		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.13" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Page Update="Controls\SettingsView.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Controls\DownloadsView.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Controls\HistoryView.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Controls\FavoritesBar.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Controls\FavoritesView.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Controls\ProfileEditDialog.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Controls\ExtensionsView.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
