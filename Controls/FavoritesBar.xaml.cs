@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using Bear_Browser.Models;
-using Bear_Browser.Services;
+using Bear_Browser.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -14,10 +15,13 @@ namespace Bear_Browser.Controls
         public event EventHandler<string>? NavigateRequested;
         public event EventHandler<string>? NewTabRequested;
 
+        private readonly IBookmarkService _bookmarkService;
+
         public FavoritesBar()
         {
             InitializeComponent();
-            ProfileService.Instance.BookmarksUpdated += (s, e) =>
+            _bookmarkService = App.Services.GetRequiredService<IBookmarkService>();
+            _bookmarkService.BookmarksUpdated += (s, e) =>
             {
                 DispatcherQueue?.TryEnqueue(RefreshBar);
             };
@@ -29,13 +33,13 @@ namespace Bear_Browser.Controls
             BarItemsPanel.Children.Clear();
 
             // 1. Kullanıcının oluşturduğu alt klasörleri açılır menü butonu olarak ekle
-            var userFolders = ProfileService.Instance.Folders
+            var userFolders = _bookmarkService.Folders
                 .Where(f => !f.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var folder in userFolders)
             {
-                var folderBookmarks = ProfileService.Instance.Bookmarks
+                var folderBookmarks = _bookmarkService.Bookmarks
                     .Where(b => b.Folder.Equals(folder, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
@@ -95,7 +99,7 @@ namespace Bear_Browser.Controls
             }
 
             // 2. Doğrudan bu çubuğa eklenen siteler
-            var directBookmarks = ProfileService.Instance.Bookmarks
+            var directBookmarks = _bookmarkService.Bookmarks
                 .Where(b => b.Folder.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 

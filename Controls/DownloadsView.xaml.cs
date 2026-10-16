@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using Bear_Browser.Services;
+using Bear_Browser.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -10,28 +10,19 @@ namespace Bear_Browser.Controls
 {
     public sealed partial class DownloadsView : UserControl
     {
+        public DownloadsViewModel ViewModel { get; }
+
         public DownloadsView()
         {
             InitializeComponent();
-            RefreshList();
-            ProfileService.Instance.DownloadsUpdated += (s, e) =>
-            {
-                DispatcherQueue?.TryEnqueue(RefreshList);
-            };
+            ViewModel = App.Services.GetRequiredService<DownloadsViewModel>();
+            DownloadsListView.ItemsSource = ViewModel.DisplayedDownloads;
         }
 
-        private void RefreshList()
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string query = SearchBox.Text?.Trim() ?? "";
-            var items = ProfileService.Instance.Downloads.AsEnumerable();
-            if (!string.IsNullOrEmpty(query))
-            {
-                items = items.Where(d => d.FileName.Contains(query, StringComparison.OrdinalIgnoreCase));
-            }
-            DownloadsListView.ItemsSource = items.ToList();
+            ViewModel.SearchQuery = SearchBox.Text?.Trim() ?? "";
         }
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => RefreshList();
 
         private void OpenFolderBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -79,15 +70,13 @@ namespace Bear_Browser.Controls
         {
             if (sender is Button btn && btn.Tag is Guid id)
             {
-                await ProfileService.Instance.RemoveDownloadAsync(id);
-                RefreshList();
+                await ViewModel.RemoveDownloadAsync(id);
             }
         }
 
         private async void ClearAllDownloads_Click(object sender, RoutedEventArgs e)
         {
-            await ProfileService.Instance.ClearDownloadsAsync();
-            RefreshList();
+            await ViewModel.ClearDownloadsAsync();
         }
     }
 }

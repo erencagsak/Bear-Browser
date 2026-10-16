@@ -1,7 +1,8 @@
-using System;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Bear_Browser.Models;
-using Bear_Browser.Services;
+using Bear_Browser.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
@@ -10,36 +11,25 @@ namespace Bear_Browser.Controls
 {
     public sealed partial class PasswordsView : UserControl
     {
+        public PasswordsViewModel ViewModel { get; }
+
         public PasswordsView()
         {
             InitializeComponent();
-            RefreshList();
-            ProfileService.Instance.PasswordsUpdated += (s, e) =>
-            {
-                DispatcherQueue?.TryEnqueue(RefreshList);
-            };
+            ViewModel = App.Services.GetRequiredService<PasswordsViewModel>();
+            PasswordsListView.ItemsSource = ViewModel.DisplayedPasswords;
         }
 
-        private void RefreshList()
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string query = SearchBox.Text?.Trim() ?? "";
-            var items = ProfileService.Instance.Passwords.AsEnumerable();
-            if (!string.IsNullOrEmpty(query))
-            {
-                items = items.Where(p =>
-                    p.Domain.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    p.UserName.Contains(query, StringComparison.OrdinalIgnoreCase));
-            }
-            PasswordsListView.ItemsSource = items.ToList();
+            ViewModel.SearchQuery = SearchBox.Text?.Trim() ?? "";
         }
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => RefreshList();
 
         private void TogglePasswordVisibility_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is PasswordItem item)
             {
-                item.IsPasswordVisible = !item.IsPasswordVisible;
+                ViewModel.TogglePasswordVisibility(item);
             }
         }
 
@@ -57,15 +47,13 @@ namespace Bear_Browser.Controls
         {
             if (sender is Button btn && btn.Tag is Guid id)
             {
-                await ProfileService.Instance.RemovePasswordAsync(id);
-                RefreshList();
+                await ViewModel.RemovePasswordAsync(id);
             }
         }
 
         private async void ClearAllPasswords_Click(object sender, RoutedEventArgs e)
         {
-            await ProfileService.Instance.ClearPasswordsAsync();
-            RefreshList();
+            await ViewModel.ClearPasswordsAsync();
         }
 
         private async void ImportPasswordsBtn_Click(object sender, RoutedEventArgs e)
@@ -79,7 +67,7 @@ namespace Bear_Browser.Controls
                 var file = await picker.PickSingleFileAsync();
                 if (file != null)
                 {
-                    int count = await ProfileService.Instance.ImportPasswordsCsvAsync(file.Path);
+                    int count = await ViewModel.ImportPasswordsCsvAsync(file.Path);
                     var dialog = new ContentDialog
                     {
                         Title = "Parolalar İçe Aktarıldı",
@@ -112,12 +100,12 @@ namespace Bear_Browser.Controls
                 var picker = new Windows.Storage.Pickers.FileSavePicker();
                 WinRT.Interop.InitializeWithWindow.Initialize(picker, MainWindow.WindowHandle);
                 picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-                picker.FileTypeChoices.Add("CSV Dosyası (*.csv)", new System.Collections.Generic.List<string> { ".csv" });
+                picker.FileTypeChoices.Add("CSV Dosyası (*.csv)", new List<string> { ".csv" });
                 picker.SuggestedFileName = $"bear_passwords_{DateTime.Now:yyyyMMdd}";
                 var file = await picker.PickSaveFileAsync();
                 if (file != null)
                 {
-                    await ProfileService.Instance.ExportPasswordsCsvAsync(file.Path);
+                    await ViewModel.ExportPasswordsCsvAsync(file.Path);
                     var dialog = new ContentDialog
                     {
                         Title = "Parolalar Dışa Aktarıldı",

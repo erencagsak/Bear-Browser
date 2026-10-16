@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Bear_Browser.Models;
-using Bear_Browser.Services;
+using Bear_Browser.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -44,98 +44,41 @@ namespace Bear_Browser.Controls
         public event EventHandler<string>? NewTabRequested;
         public event EventHandler? ToggleFavoritesBarRequested;
 
-        private string _currentFolder = "Sık kullanılanlar çubuğu";
+        public FavoritesViewModel ViewModel { get; }
 
         public FavoritesView()
         {
             InitializeComponent();
-            LoadData();
+            ViewModel = App.Services.GetRequiredService<FavoritesViewModel>();
 
-            ProfileService.Instance.BookmarksUpdated += (s, e) =>
+            FoldersListView.ItemsSource = ViewModel.Folders;
+            FoldersListView.SelectedItem = ViewModel.CurrentFolder;
+            ItemsListView.ItemsSource = ViewModel.DisplayedItems;
+
+            UpdateNavigationUI();
+            ViewModel.PropertyChanged += (s, e) =>
             {
-                DispatcherQueue?.TryEnqueue(() =>
+                if (e.PropertyName == nameof(ViewModel.CurrentFolder) ||
+                    e.PropertyName == nameof(ViewModel.IsRootFolder) ||
+                    e.PropertyName == nameof(ViewModel.BreadcrumbText))
                 {
-                    FoldersListView.ItemsSource = null;
-                    FoldersListView.ItemsSource = ProfileService.Instance.Folders;
-                    RefreshCurrentList();
-                });
+                    UpdateNavigationUI();
+                }
             };
         }
 
-        private void LoadData()
+        private void UpdateNavigationUI()
         {
-            FoldersListView.ItemsSource = ProfileService.Instance.Folders;
-            FoldersListView.SelectedItem = _currentFolder;
-            RefreshCurrentList();
+            BackButton.Visibility = ViewModel.IsRootFolder ? Visibility.Collapsed : Visibility.Visible;
+            BreadcrumbText.Text = ViewModel.BreadcrumbText;
         }
 
         private void FoldersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (FoldersListView.SelectedItem is string folder)
             {
-                _currentFolder = folder;
-                RefreshCurrentList();
+                ViewModel.CurrentFolder = folder;
             }
-        }
-
-        private void RefreshCurrentList()
-        {
-            bool isRoot = _currentFolder == "Sık kullanılanlar çubuğu";
-            BackButton.Visibility = isRoot ? Visibility.Collapsed : Visibility.Visible;
-            BreadcrumbText.Text = isRoot ? "Sık Kullanılanlar" : $"Sık Kullanılanlar > {_currentFolder}";
-
-            string query = SearchBox.Text?.Trim() ?? "";
-            var displayList = new List<FavoriteDisplayItem>();
-
-            // 1. Eğer Ana Kök Dizinindeysek, kullanıcının oluşturduğu özel KLASÖRLERİ de en üstte göster
-            if (isRoot && string.IsNullOrEmpty(query))
-            {
-                var customFolders = ProfileService.Instance.Folders
-                    .Where(f => !f.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                foreach (var folder in customFolders)
-                {
-                    int count = ProfileService.Instance.Bookmarks.Count(b => b.Folder.Equals(folder, StringComparison.OrdinalIgnoreCase));
-                    displayList.Add(new FavoriteDisplayItem
-                    {
-                        IsFolder = true,
-                        Title = folder,
-                        Subtitle = $"{count} bağlantı (Klasör)",
-                        Glyph = "\uED25",
-                        Tag = folder
-                    });
-                }
-            }
-
-            // 2. Bu klasöre ait web sitelerini listele
-            var bookmarks = ProfileService.Instance.Bookmarks
-                .Where(b => b.Folder.Equals(_currentFolder, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (!string.IsNullOrEmpty(query))
-            {
-                bookmarks = ProfileService.Instance.Bookmarks
-                    .Where(b => b.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                                b.Url.Contains(query, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-
-            foreach (var b in bookmarks)
-            {
-                displayList.Add(new FavoriteDisplayItem
-                {
-                    IsFolder = false,
-                    Title = b.Title,
-                    Subtitle = b.Url,
-                    Glyph = "\uE774",
-                    Url = b.Url,
-                    Tag = b.Id,
-                    FaviconUrl = b.FaviconUrl
-                });
-            }
-
-            ItemsListView.ItemsSource = displayList;
         }
 
         private void ItemsListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -144,14 +87,11 @@ namespace Bear_Browser.Controls
             {
                 if (item.IsFolder)
                 {
-                    // Klasörün içine gir
-                    _currentFolder = item.Title;
+                    ViewModel.OpenFolder(item.Title);
                     FoldersListView.SelectedItem = item.Title;
-                    RefreshCurrentList();
                 }
                 else
                 {
-                    // Sayfaya git
                     NavigateRequested?.Invoke(this, item.Url);
                 }
             }
@@ -159,9 +99,8 @@ namespace Bear_Browser.Controls
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            _currentFolder = "Sık kullanılanlar çubuğu";
-            FoldersListView.SelectedItem = _currentFolder;
-            RefreshCurrentList();
+            ViewModel.NavigateToRoot();
+            FoldersListView.SelectedItem = ViewModel.CurrentFolder;
         }
 
         private async void DeleteItem_Click(object sender, RoutedEventArgs e)
@@ -170,19 +109,18 @@ namespace Bear_Browser.Controls
             {
                 if (btn.Tag is Guid id)
                 {
-                    await ProfileService.Instance.RemoveBookmarkAsync(id);
+                    await ViewModel.RemoveBookmarkAsync(id);
                 }
                 else if (btn.Tag is string folderName)
                 {
-                    await ProfileService.Instance.RemoveFolderAsync(folderName);
+                    await ViewModel.RemoveFolderAsync(folderName);
                 }
-                RefreshCurrentList();
             }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            RefreshCurrentList();
+            ViewModel.SearchQuery = SearchBox.Text?.Trim() ?? "";
         }
 
         private void ToggleBarBtn_Click(object sender, RoutedEventArgs e)
@@ -204,8 +142,7 @@ namespace Bear_Browser.Controls
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(textBox.Text))
             {
-                await ProfileService.Instance.AddFolderAsync(textBox.Text.Trim());
-                RefreshCurrentList();
+                await ViewModel.AddFolderAsync(textBox.Text.Trim());
             }
         }
 
@@ -230,8 +167,7 @@ namespace Bear_Browser.Controls
             if (await dialog.ShowAsync() == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(urlBox.Text))
             {
                 string t = string.IsNullOrWhiteSpace(titleBox.Text) ? urlBox.Text : titleBox.Text;
-                await ProfileService.Instance.AddOrUpdateBookmarkAsync(urlBox.Text.Trim(), t, _currentFolder);
-                RefreshCurrentList();
+                await ViewModel.AddOrUpdateBookmarkAsync(urlBox.Text.Trim(), t, ViewModel.CurrentFolder);
             }
         }
 
@@ -260,7 +196,7 @@ namespace Bear_Browser.Controls
                 var file = await picker.PickSingleFileAsync();
                 if (file != null)
                 {
-                    int count = await ProfileService.Instance.ImportBookmarksHtmlAsync(file.Path);
+                    int count = await ViewModel.ImportBookmarksHtmlAsync(file.Path);
                     var dialog = new ContentDialog
                     {
                         Title = "Sık Kullanılanlar İçe Aktarıldı",
@@ -298,7 +234,7 @@ namespace Bear_Browser.Controls
                 var file = await picker.PickSaveFileAsync();
                 if (file != null)
                 {
-                    await ProfileService.Instance.ExportBookmarksHtmlAsync(file.Path);
+                    await ViewModel.ExportBookmarksHtmlAsync(file.Path);
                     var dialog = new ContentDialog
                     {
                         Title = "Sık Kullanılanlar Dışa Aktarıldı",

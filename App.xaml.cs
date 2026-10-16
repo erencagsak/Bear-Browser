@@ -80,6 +80,11 @@ namespace Bear_Browser
             // ViewModels
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<NavigationBarViewModel>();
+            services.AddTransient<DownloadsViewModel>();
+            services.AddTransient<HistoryViewModel>();
+            services.AddTransient<PasswordsViewModel>();
+            services.AddTransient<FavoritesViewModel>();
+            services.AddTransient<ExtensionsViewModel>();
 
             return services.BuildServiceProvider();
         }
