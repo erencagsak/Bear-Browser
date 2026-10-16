@@ -9,9 +9,6 @@ namespace Bear_Browser.Services
 {
     public class MemoryOptimizerService : Bear_Browser.Services.Interfaces.IMemoryOptimizerService
     {
-        [DllImport("psapi.dll", SetLastError = true)]
-        private static extern bool EmptyWorkingSet(IntPtr hProcess);
-
         private DispatcherQueueTimer? _trimTimer;
         private bool _isStarted = false;
 
@@ -20,9 +17,9 @@ namespace Bear_Browser.Services
             if (_isStarted) return;
             _isStarted = true;
 
-            // Her 40 saniyede bir arka planda RAM optimizasyonu yapar
+            // Her 2 dakikada bir arka planda nazik RAM toparlaması yapar (GPU veya akıcılığı dondurmaz)
             _trimTimer = dispatcherQueue.CreateTimer();
-            _trimTimer.Interval = TimeSpan.FromSeconds(40);
+            _trimTimer.Interval = TimeSpan.FromMinutes(2);
             _trimTimer.Tick += (s, e) =>
             {
                 OptimizeMemoryAsync();
@@ -36,33 +33,8 @@ namespace Bear_Browser.Services
             {
                 try
                 {
-                    // 1. .NET Garbage Collector temizliği
-                    GC.Collect(2, GCCollectionMode.Forced, false, true);
-                    GC.WaitForPendingFinalizers();
-
-                    // 2. Bear-Browser ana işleminin bellek temizliği
-                    using (var currentProcess = Process.GetCurrentProcess())
-                    {
-                        try { EmptyWorkingSet(currentProcess.Handle); } catch { }
-                    }
-
-                    // 3. msedgewebview2 alt işlemlerinin (GPU, Renderer vb.) fiziksel bellek temizliği
-                    var processes = Process.GetProcessesByName("msedgewebview2");
-                    foreach (var proc in processes)
-                    {
-                        try
-                        {
-                            if (!proc.HasExited)
-                            {
-                                EmptyWorkingSet(proc.Handle);
-                            }
-                        }
-                        catch { }
-                        finally
-                        {
-                            proc.Dispose();
-                        }
-                    }
+                    // .NET Managed GC toparlaması (non-blocking, arayüz veya frame çizimini kilitlemez)
+                    GC.Collect(1, GCCollectionMode.Optimized, false);
                 }
                 catch { }
             });

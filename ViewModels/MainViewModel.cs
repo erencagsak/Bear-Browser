@@ -682,15 +682,6 @@ namespace Bear_Browser.ViewModels
                         _messenger.Send(new AdBlockedCountChangedMessage(tab.BlockedAdsCount));
                     }
                 });
-
-                // Sayfa yüklenmesi bittikten 2 saniye sonra gereksiz yükleme önbelleklerini temizle
-                _ = Task.Delay(2000).ContinueWith(_ =>
-                {
-                    tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
-                    {
-                        _memoryOptimizerService.OptimizeMemoryAsync();
-                    });
-                });
             };
         }
 

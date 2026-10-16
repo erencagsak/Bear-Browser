@@ -364,9 +364,6 @@ namespace Bear_Browser
             }
 
             UpdateNavigationButtons(currentTab);
-
-            // Sekme değişiminde boşta kalan belleği işletim sistemine geri ver
-            _memoryOptimizerService.OptimizeMemoryAsync();
         }
 
         private void RenderCurrentTabContent(BrowserTab? currentTab)

@@ -41,20 +41,18 @@ namespace Bear_Browser.Services
                 AreBrowserExtensionsEnabled = true,
                 AdditionalBrowserArguments =
                     "--disable-blink-features=AutomationControlled " +
-                    "--enable-quic " +
-                    "--enable-async-dns " +
-                    "--enable-tcp-fast-open " +
+                    "--enable-smooth-scrolling " +
                     "--enable-gpu-rasterization " +
                     "--enable-zero-copy " +
                     "--use-angle=d3d11 " +
                     "--enable-accelerated-2d-canvas " +
+                    "--enable-accelerated-video-decode " +
+                    "--enable-quic " +
+                    "--enable-async-dns " +
+                    "--enable-tcp-fast-open " +
                     "--process-per-site " +
-                    "--renderer-process-limit=4 " +
-                    "--disable-features=IsolateOrigins,site-per-process,Translate,OptimizationHints,MediaRouter " +
-                    "--enable-features=TurnOffStreamingMediaWithHiddenWindow,BackForwardCache,AutomaticTabDiscarding,WebContentsDiscard,CalculateNativeWinOcclusion,UseEcoQoSForBackgroundProcess,UseEcoQoSForRenderers " +
-                    "--disk-cache-size=104857600 " +
-                    "--media-cache-size=52428800 " +
-                    "--js-flags=\"--max_old_space_size=256 --optimize_for_size --expose-gc\" " +
+                    "--disable-features=Translate,OptimizationHints,MediaRouter " +
+                    "--enable-features=SmoothScrolling,CanvasOopRasterization,VaapiVideoDecoder,BackForwardCache,AutomaticTabDiscarding,WebContentsDiscard,CalculateNativeWinOcclusion,TurnOffStreamingMediaWithHiddenWindow " +
                     "--high-dpi-support=1"
             };
 
@@ -79,11 +77,16 @@ namespace Bear_Browser.Services
                     AreBrowserExtensionsEnabled = true,
                     AdditionalBrowserArguments =
                         "--disable-blink-features=AutomationControlled " +
-                        "--enable-gpu-rasterization --enable-zero-copy --use-angle=d3d11 " +
-                        "--process-per-site --renderer-process-limit=3 " +
-                        "--disable-features=IsolateOrigins,site-per-process " +
-                        "--enable-features=TurnOffStreamingMediaWithHiddenWindow,CalculateNativeWinOcclusion,UseEcoQoSForBackgroundProcess,UseEcoQoSForRenderers " +
-                        "--js-flags=\"--max_old_space_size=256 --optimize_for_size\""
+                        "--enable-smooth-scrolling " +
+                        "--enable-gpu-rasterization " +
+                        "--enable-zero-copy " +
+                        "--use-angle=d3d11 " +
+                        "--enable-accelerated-2d-canvas " +
+                        "--enable-accelerated-video-decode " +
+                        "--process-per-site " +
+                        "--disable-features=Translate,OptimizationHints,MediaRouter " +
+                        "--enable-features=SmoothScrolling,CanvasOopRasterization,VaapiVideoDecoder,CalculateNativeWinOcclusion,TurnOffStreamingMediaWithHiddenWindow " +
+                        "--high-dpi-support=1"
                 };
                 env = await CoreWebView2Environment.CreateWithOptionsAsync(null, tempFolder, options);
             }
