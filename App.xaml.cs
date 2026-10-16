@@ -8,6 +8,8 @@ using Bear_Browser.Data.Interfaces;
 using Bear_Browser.Data.Implementations;
 using Bear_Browser.Platform.Interfaces;
 using Bear_Browser.Platform.WinUI;
+using Bear_Browser.Services;
+using Bear_Browser.Services.Interfaces;
 
 namespace Bear_Browser
 {
@@ -59,6 +61,13 @@ namespace Bear_Browser
             services.AddSingleton<IDefaultBrowserService, WindowsDefaultBrowserService>();
             services.AddSingleton<IPlatformWindowService, WindowsPlatformWindowService>();
             services.AddSingleton<IPlatformProcessService, WindowsPlatformProcessService>();
+
+            // Domain Services
+            services.AddSingleton<IBookmarkService, BookmarkService>();
+            services.AddSingleton<IHistoryService, HistoryService>();
+            services.AddSingleton<IDownloadService, DownloadService>();
+            services.AddSingleton<IPasswordService, PasswordService>();
+            services.AddSingleton<IProfileService, ProfileService>();
 
             return services.BuildServiceProvider();
         }
