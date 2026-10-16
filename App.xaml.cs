@@ -10,6 +10,7 @@ using Bear_Browser.Platform.Interfaces;
 using Bear_Browser.Platform.WinUI;
 using Bear_Browser.Services;
 using Bear_Browser.Services.Interfaces;
+using Bear_Browser.ViewModels;
 
 namespace Bear_Browser
 {
@@ -75,6 +76,10 @@ namespace Bear_Browser
             services.AddSingleton<ICrashReportingService, CrashReportingService>();
             services.AddSingleton<IAdBlockService, AdBlockService>();
             services.AddSingleton<IMemoryOptimizerService, MemoryOptimizerService>();
+
+            // ViewModels
+            services.AddTransient<SettingsViewModel>();
+            services.AddTransient<NavigationBarViewModel>();
 
             return services.BuildServiceProvider();
         }

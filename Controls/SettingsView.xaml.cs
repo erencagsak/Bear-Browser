@@ -30,9 +30,11 @@ namespace Bear_Browser.Controls
         private double _currentGlowOpacity = 0.3;
         private bool _glowIncreasing = true;
         private bool _isInitializing = true;
+        public Bear_Browser.ViewModels.SettingsViewModel? ViewModel { get; }
 
         public SettingsView()
         {
+            ViewModel = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<Bear_Browser.ViewModels.SettingsViewModel>(App.Services);
             this.InitializeComponent();
             LoadVersionInfo();
             LoadSettingsData();

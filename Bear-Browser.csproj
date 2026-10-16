@@ -12,6 +12,7 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<Nullable>enable</Nullable>
 		<ApplicationIcon>Assets\Bear-Browser-Logo.ico</ApplicationIcon>
+		<NoWarn>$(NoWarn);MVVMTK0045</NoWarn>
 	</PropertyGroup>
 
 	<!-- Logo ve İkon Dosyaları (Çıktı klasörüne her zaman kopyalanır) -->

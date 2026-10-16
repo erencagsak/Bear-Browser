@@ -33,9 +33,11 @@ namespace Bear_Browser.Controls
 
         public bool IsAddressBarFocused => AddressBar.FocusState != FocusState.Unfocused;
         public bool IsMoreMenuOpen => MoreMenuFlyout.IsOpen;
+        public Bear_Browser.ViewModels.NavigationBarViewModel? ViewModel { get; }
 
         public NavigationBar()
         {
+            ViewModel = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<Bear_Browser.ViewModels.NavigationBarViewModel>(App.Services);
             InitializeComponent();
 
             ProfileService.Instance.BookmarksUpdated += (s, e) =>
