@@ -4,6 +4,8 @@ using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Bear_Browser.Data.Interfaces;
+using Bear_Browser.Data.Implementations;
 using Bear_Browser.Platform.Interfaces;
 using Bear_Browser.Platform.WinUI;
 
@@ -48,6 +50,9 @@ namespace Bear_Browser
 
             // MVVM Messaging
             services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+
+            // Data & Storage Services
+            services.AddSingleton<IJsonStorageService, JsonStorageService>();
 
             // Platform Services (WinUI)
             services.AddSingleton<IDataProtectionService, WindowsDataProtectionService>();

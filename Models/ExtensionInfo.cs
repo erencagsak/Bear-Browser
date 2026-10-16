@@ -2,8 +2,6 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-using Microsoft.UI.Xaml;
-
 namespace Bear_Browser.Models
 {
     public class ExtensionInfo : INotifyPropertyChanged
@@ -26,15 +24,11 @@ namespace Bear_Browser.Models
                     _iconPath = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(HasIcon));
-                    OnPropertyChanged(nameof(IconVisibility));
-                    OnPropertyChanged(nameof(DefaultIconVisibility));
                 }
             }
         }
 
         public bool HasIcon => !string.IsNullOrEmpty(_iconPath) && System.IO.File.Exists(_iconPath);
-        public Visibility IconVisibility => HasIcon ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility DefaultIconVisibility => HasIcon ? Visibility.Collapsed : Visibility.Visible;
 
         public string FolderPath { get; set; } = string.Empty;
         public string Source { get; set; } = "Chrome Web Store";
