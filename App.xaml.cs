@@ -68,6 +68,7 @@ namespace Bear_Browser
             services.AddSingleton<IDownloadService, DownloadService>();
             services.AddSingleton<IPasswordService, PasswordService>();
             services.AddSingleton<IProfileService, ProfileService>();
+            services.AddSingleton<IWebViewService, WebViewService>();
 
             return services.BuildServiceProvider();
         }

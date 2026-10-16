@@ -40,6 +40,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Scripts\**\*.js" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Remove="scratch\**" />
 		<None Remove="Controls\DownloadsView.xaml" />
 		<None Remove="Controls\FavoritesBar.xaml" />
