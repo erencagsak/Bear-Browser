@@ -1,0 +1,91 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Köşe Yuvarlama Ölçüleri (Corner Radii) -->
+    <CornerRadius x:Key="ArcPillCornerRadius">20</CornerRadius>
+    <CornerRadius x:Key="ArcLargeCornerRadius">16</CornerRadius>
+    <CornerRadius x:Key="ArcCanvasCornerRadius">12</CornerRadius>
+    <CornerRadius x:Key="ArcCardCornerRadius">10</CornerRadius>
+    <CornerRadius x:Key="ArcButtonCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="ArcSmallCornerRadius">6</CornerRadius>
+
+    <!-- Geçiş Süreleri & Animasyon Değerleri -->
+    <x:Double x:Key="ArcHoverScale">1.04</x:Double>
+    <Duration x:Key="ArcAnimationDuration">0:0:0.18</Duration>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <!-- KOYU TEMA (Dark) -->
+        <ResourceDictionary x:Key="Dark">
+            <!-- Yüzen Web Sayfası Adası (Floating Canvas) -->
+            <SolidColorBrush x:Key="ArcCanvasBackgroundBrush" Color="#18181B" />
+            <SolidColorBrush x:Key="ArcCanvasBorderBrush" Color="#2AFFFFFF" />
+            
+            <!-- Cam / Yarı Saydam Yüzeyler (Acrylic Surfaces) -->
+            <SolidColorBrush x:Key="ArcSurfaceSubtleBrush" Color="#0DFFFFFF" />
+            <SolidColorBrush x:Key="ArcSurfaceDefaultBrush" Color="#17FFFFFF" />
+            <SolidColorBrush x:Key="ArcSurfaceHoverBrush" Color="#24FFFFFF" />
+            <SolidColorBrush x:Key="ArcSurfacePressedBrush" Color="#30FFFFFF" />
+            <SolidColorBrush x:Key="ArcSurfaceCardBrush" Color="#1C1D21" />
+
+            <!-- Çizgi ve Kenarlık Fırçaları (Borders) -->
+            <SolidColorBrush x:Key="ArcBorderSubtleBrush" Color="#1FFFFFFF" />
+            <SolidColorBrush x:Key="ArcBorderDefaultBrush" Color="#33FFFFFF" />
+            <SolidColorBrush x:Key="ArcBorderGlowBrush" Color="#55FFFFFF" />
+
+            <!-- Metin Fırçaları (Typography) -->
+            <SolidColorBrush x:Key="ArcTextPrimaryBrush" Color="#F4F4F5" />
+            <SolidColorBrush x:Key="ArcTextSecondaryBrush" Color="#A1A1AA" />
+            <SolidColorBrush x:Key="ArcTextTertiaryBrush" Color="#71717A" />
+
+            <!-- Vurgu / Accent (Bear Amber / Terracotta Arc Vurgusu) -->
+            <SolidColorBrush x:Key="ArcAccentBrush" Color="#F59E0B" />
+            <SolidColorBrush x:Key="ArcAccentHoverBrush" Color="#D97706" />
+            <SolidColorBrush x:Key="ArcAccentSubtleBrush" Color="#33F59E0B" />
+
+            <!-- Arama & Adres Çubuğu -->
+            <SolidColorBrush x:Key="ArcAddressBarBackgroundBrush" Color="#1E2024" />
+            <SolidColorBrush x:Key="ArcAddressBarHoverBackgroundBrush" Color="#282A30" />
+            <SolidColorBrush x:Key="ArcAddressBarFocusBackgroundBrush" Color="#22242A" />
+            <SolidColorBrush x:Key="ArcAddressBarBorderBrush" Color="#26FFFFFF" />
+            <SolidColorBrush x:Key="ArcAddressBarFocusBorderBrush" Color="#F59E0B" />
+        </ResourceDictionary>
+
+        <!-- AÇIK TEMA (Light) -->
+        <ResourceDictionary x:Key="Light">
+            <!-- Yüzen Web Sayfası Adası (Floating Canvas) -->
+            <SolidColorBrush x:Key="ArcCanvasBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ArcCanvasBorderBrush" Color="#1A000000" />
+
+            <!-- Cam / Yarı Saydam Yüzeyler (Acrylic Surfaces) -->
+            <SolidColorBrush x:Key="ArcSurfaceSubtleBrush" Color="#0A000000" />
+            <SolidColorBrush x:Key="ArcSurfaceDefaultBrush" Color="#12000000" />
+            <SolidColorBrush x:Key="ArcSurfaceHoverBrush" Color="#1C000000" />
+            <SolidColorBrush x:Key="ArcSurfacePressedBrush" Color="#28000000" />
+            <SolidColorBrush x:Key="ArcSurfaceCardBrush" Color="#FAFAFA" />
+
+            <!-- Çizgi ve Kenarlık Fırçaları (Borders) -->
+            <SolidColorBrush x:Key="ArcBorderSubtleBrush" Color="#12000000" />
+            <SolidColorBrush x:Key="ArcBorderDefaultBrush" Color="#20000000" />
+            <SolidColorBrush x:Key="ArcBorderGlowBrush" Color="#35000000" />
+
+            <!-- Metin Fırçaları (Typography) -->
+            <SolidColorBrush x:Key="ArcTextPrimaryBrush" Color="#18181B" />
+            <SolidColorBrush x:Key="ArcTextSecondaryBrush" Color="#52525B" />
+            <SolidColorBrush x:Key="ArcTextTertiaryBrush" Color="#71717A" />
+
+            <!-- Vurgu / Accent (Bear Amber / Terracotta Arc Vurgusu) -->
+            <SolidColorBrush x:Key="ArcAccentBrush" Color="#D97706" />
+            <SolidColorBrush x:Key="ArcAccentHoverBrush" Color="#B45309" />
+            <SolidColorBrush x:Key="ArcAccentSubtleBrush" Color="#22D97706" />
+
+            <!-- Arama & Adres Çubuğu -->
+            <SolidColorBrush x:Key="ArcAddressBarBackgroundBrush" Color="#F4F4F5" />
+            <SolidColorBrush x:Key="ArcAddressBarHoverBackgroundBrush" Color="#E4E4E7" />
+            <SolidColorBrush x:Key="ArcAddressBarFocusBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ArcAddressBarBorderBrush" Color="#1F000000" />
+            <SolidColorBrush x:Key="ArcAddressBarFocusBorderBrush" Color="#D97706" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

@@ -7,11 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ArcCanvasBackgroundBrush}">
         <!-- Arka Plan Hafif Radyal Işık Efekti -->
         <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0"
-                Width="600" Height="300" Opacity="0.07"
-                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                Width="600" Height="300" Opacity="0.08"
+                Background="{ThemeResource ArcAccentBrush}"
                 CornerRadius="300" />
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -20,9 +20,9 @@
 
                 <!-- 1. AYI LOGOSU & KARŞILAMA -->
                 <StackPanel HorizontalAlignment="Center" Spacing="16">
-                    <Border Width="88" Height="88" CornerRadius="44"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="2"
+                    <Border Width="84" Height="84" CornerRadius="42"
+                            BorderBrush="{ThemeResource ArcBorderDefaultBrush}"
+                            BorderThickness="1.5"
                             HorizontalAlignment="Center">
                         <Border.Background>
                             <ImageBrush ImageSource="ms-appx:///Assets/Bear-Browser-Logo.jpg" Stretch="UniformToFill" />
@@ -31,20 +31,21 @@
 
                     <StackPanel Spacing="6" HorizontalAlignment="Center">
                         <TextBlock Text="Bear Browser"
-                                   FontSize="30" FontWeight="Bold"
+                                   FontSize="28" FontWeight="Bold"
+                                   Foreground="{ThemeResource ArcTextPrimaryBrush}"
                                    HorizontalAlignment="Center" />
                         <TextBlock x:Name="TaglineText" Text="Hızlı, Güvenli ve Özgür Web Deneyimi"
-                                   FontSize="14" Opacity="0.65"
+                                   FontSize="13.5" Foreground="{ThemeResource ArcTextSecondaryBrush}"
                                    HorizontalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
 
                 <!-- 2. MERKEZİ ARAMA KUTUSU -->
-                <Grid Width="640" HorizontalAlignment="Center">
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="26"
-                            Padding="6,4">
+                <Grid Width="600" HorizontalAlignment="Center">
+                    <Border Background="{ThemeResource ArcAddressBarBackgroundBrush}"
+                            BorderBrush="{ThemeResource ArcAddressBarBorderBrush}"
+                            BorderThickness="1.5" CornerRadius="24"
+                            Padding="6,3">
                         <Grid VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -52,23 +53,24 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <FontIcon Grid.Column="0" Glyph="&#xE721;" FontSize="16"
-                                      Opacity="0.6" Margin="14,0,8,0" VerticalAlignment="Center" />
+                            <FontIcon Grid.Column="0" Glyph="&#xE721;" FontSize="15"
+                                      Foreground="{ThemeResource ArcTextSecondaryBrush}" Margin="14,0,8,0" VerticalAlignment="Center" />
 
                             <TextBox x:Name="SearchBox" Grid.Column="1"
                                      PlaceholderText="Web'de arayın veya bir URL yazın..."
-                                     FontSize="15" Height="44"
+                                     FontSize="14.5" Height="42"
                                      Background="Transparent" BorderThickness="0"
+                                     Foreground="{ThemeResource ArcTextPrimaryBrush}"
                                      VerticalContentAlignment="Center"
                                      KeyDown="SearchBox_KeyDown" />
 
                             <Button x:Name="SearchSubmitBtn" Grid.Column="2"
-                                    Width="38" Height="38" CornerRadius="19"
-                                    Style="{ThemeResource AccentButtonStyle}"
-                                    Padding="0" Margin="0,0,3,0"
+                                    Width="36" Height="36" CornerRadius="18"
+                                    Style="{StaticResource ArcAccentButtonStyle}"
+                                    Padding="0" Margin="0,0,2,0"
                                     ToolTipService.ToolTip="Ara"
                                     Click="SearchSubmitBtn_Click">
-                                <FontIcon Glyph="&#xE751;" FontSize="13" />
+                                <FontIcon Glyph="&#xE751;" FontSize="12" Foreground="White" />
                             </Button>
                         </Grid>
                     </Border>
@@ -87,8 +89,8 @@
                         <Button Tag="https://www.youtube.com" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#FF0000">
@@ -104,8 +106,8 @@
                         <Button Tag="https://www.google.com" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#4285F4">
@@ -121,8 +123,8 @@
                         <Button Tag="https://www.github.com" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#24292e">
@@ -138,8 +140,8 @@
                         <Button Tag="https://x.com" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#000000">
@@ -155,8 +157,8 @@
                         <Button Tag="https://www.wikipedia.org" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#636466">
@@ -172,8 +174,8 @@
                         <Button Tag="https://www.reddit.com" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#FF4500">
@@ -189,8 +191,8 @@
                         <Button Tag="https://chromewebstore.google.com" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource AccentFillColorDefaultBrush}">
@@ -206,8 +208,8 @@
                         <Button Tag="bear://settings" Click="Shortcut_Click"
                                 PointerPressed="Shortcut_PointerPressed"
                                 Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
                                 BorderThickness="1" Padding="12">
                             <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Border Width="40" Height="40" CornerRadius="20" Background="#71717A">

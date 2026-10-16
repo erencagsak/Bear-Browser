@@ -140,6 +140,7 @@ namespace Bear_Browser
 
             // Ayarları ve temayı uygula
             ApplyTheme(_settingsService.Settings.Theme);
+            ApplyTabPosition(_settingsService.Settings.TabPosition);
             FavBar.Visibility = _settingsService.Settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
             _adBlockService.IsEnabled = _settingsService.Settings.AdBlockEnabled;
 
@@ -148,6 +149,7 @@ namespace Bear_Browser
                 DispatcherQueue?.TryEnqueue(() =>
                 {
                     ApplyTheme(settings.Theme);
+                    ApplyTabPosition(settings.TabPosition);
                     FavBar.Visibility = settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
                     _adBlockService.IsEnabled = settings.AdBlockEnabled;
                 });
@@ -705,9 +707,13 @@ namespace Bear_Browser
             _hideTimer?.Stop();
 
             TopRowDefinition.Height = new GridLength(0);
-            Grid.SetRow(WebContentGrid, 0);
-            Grid.SetRowSpan(WebContentGrid, 2);
+            Grid.SetRow(MainContentHostGrid, 0);
+            Grid.SetRowSpan(MainContentHostGrid, 2);
             Grid.SetRowSpan(TopBarArea, 2);
+            LeftSidebarPanel.Visibility = Visibility.Collapsed;
+            WebCanvasContainer.Margin = new Thickness(0);
+            WebCanvasContainer.CornerRadius = new CornerRadius(0);
+            WebCanvasContainer.BorderThickness = new Thickness(0);
 
             FullScreenBanner.Visibility = Visibility.Collapsed;
             TopHoverTrigger.Visibility = Visibility.Collapsed;
@@ -730,9 +736,13 @@ namespace Bear_Browser
         private void EnterFullScreenUi()
         {
             TopRowDefinition.Height = new GridLength(0);
-            Grid.SetRow(WebContentGrid, 0);
-            Grid.SetRowSpan(WebContentGrid, 2);
+            Grid.SetRow(MainContentHostGrid, 0);
+            Grid.SetRowSpan(MainContentHostGrid, 2);
             Grid.SetRowSpan(TopBarArea, 2);
+            LeftSidebarPanel.Visibility = Visibility.Collapsed;
+            WebCanvasContainer.Margin = new Thickness(0);
+            WebCanvasContainer.CornerRadius = new CornerRadius(0);
+            WebCanvasContainer.BorderThickness = new Thickness(0);
 
             TopBarArea.Background = Application.Current.RequestedTheme == ApplicationTheme.Dark
                 ? new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(245, 32, 32, 32))
@@ -768,9 +778,12 @@ namespace Bear_Browser
             TopHoverTrigger.Visibility = Visibility.Collapsed;
 
             TopRowDefinition.Height = GridLength.Auto;
-            Grid.SetRow(WebContentGrid, 1);
-            Grid.SetRowSpan(WebContentGrid, 1);
+            Grid.SetRow(MainContentHostGrid, 1);
+            Grid.SetRowSpan(MainContentHostGrid, 1);
             Grid.SetRowSpan(TopBarArea, 1);
+            WebCanvasContainer.CornerRadius = new CornerRadius(12);
+            WebCanvasContainer.BorderThickness = new Thickness(1);
+            ApplyTabPosition(_settingsService.Settings.TabPosition);
         }
 
         private void ShowTopBar()
@@ -1439,6 +1452,59 @@ namespace Bear_Browser
                     ExtensionInstallBar.Visibility = Visibility.Collapsed;
                 });
             });
+        }
+
+        private void ApplyTabPosition(string? position)
+        {
+            bool isLeft = string.Equals(position, "Left", StringComparison.OrdinalIgnoreCase);
+            if (isLeft)
+            {
+                TabsControl.Visibility = Visibility.Collapsed;
+                LeftSidebarPanel.Visibility = _isFullScreen ? Visibility.Collapsed : Visibility.Visible;
+                WebCanvasContainer.Margin = _isFullScreen ? new Thickness(0) : new Thickness(4, 2, 8, 8);
+            }
+            else
+            {
+                TabsControl.Visibility = _isFullScreen ? Visibility.Collapsed : Visibility.Visible;
+                LeftSidebarPanel.Visibility = Visibility.Collapsed;
+                WebCanvasContainer.Margin = _isFullScreen ? new Thickness(0) : new Thickness(8, 2, 8, 8);
+            }
+        }
+
+        private void LeftNewTabButton_Click(object sender, RoutedEventArgs e)
+        {
+            CreateNewTab();
+        }
+
+        private void LeftTabClose_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is BrowserTab tab)
+            {
+                ViewModel.CloseTab(tab);
+            }
+        }
+
+        private void LeftVerticalTabsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LeftVerticalTabsList.SelectedItem is BrowserTab tab && tab != ViewModel.CurrentTab)
+            {
+                ViewModel.CurrentTab = tab;
+            }
+        }
+
+        private void LeftHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToUrl("bear://history");
+        }
+
+        private void LeftDownloadsButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToUrl("bear://downloads");
+        }
+
+        private void LeftSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToUrl("bear://settings");
         }
     }
 }

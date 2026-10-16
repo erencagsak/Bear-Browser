@@ -21,6 +21,7 @@ namespace Bear_Browser.Services
         public string HomePageUrl { get; set; } = "bear://newtab";
         public bool EcoModeEnabled { get; set; } = true;
         public string Language { get; set; } = "system"; // "system", "tr", "en", "de", "es", "fr"
+        public string TabPosition { get; set; } = "Top"; // "Top", "Left"
     }
 
     public class SettingsService : ISettingsService

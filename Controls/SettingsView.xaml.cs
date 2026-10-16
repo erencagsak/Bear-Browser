@@ -214,6 +214,7 @@ namespace Bear_Browser.Controls
 
             // Görünüm
             SelectComboByTag(ThemeCombo, s.Theme);
+            SelectComboByTag(TabPositionCombo, s.TabPosition);
             ShowFavBarToggle.IsOn = s.ShowFavoritesBar;
             SelectComboByTag(ZoomCombo, s.DefaultZoom.ToString("0.0#", System.Globalization.CultureInfo.InvariantCulture));
             HomePageBox.Text = s.HomePageUrl;
@@ -482,6 +483,16 @@ namespace Bear_Browser.Controls
             if (ThemeCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string theme)
             {
                 _settingsService.Settings.Theme = theme;
+                _ = _settingsService.SaveAsync();
+            }
+        }
+
+        private void TabPositionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            if (TabPositionCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string pos)
+            {
+                _settingsService.Settings.TabPosition = pos;
                 _ = _settingsService.SaveAsync();
             }
         }

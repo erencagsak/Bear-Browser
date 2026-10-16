@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Bear_Browser.Models;
 using Bear_Browser.Services.Interfaces;
@@ -46,8 +46,8 @@ namespace Bear_Browser.Controls
                 var dropBtn = new DropDownButton
                 {
                     Height = 28,
-                    Padding = new Thickness(6, 2, 6, 2),
-                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(8, 2, 8, 2),
+                    CornerRadius = new CornerRadius(14),
                     Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
                     BorderThickness = new Thickness(0)
                 };
@@ -108,8 +108,8 @@ namespace Bear_Browser.Controls
                 var btn = new Button
                 {
                     Height = 28,
-                    Padding = new Thickness(6, 2, 6, 2),
-                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(8, 2, 8, 2),
+                    CornerRadius = new CornerRadius(14),
                     Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
                     BorderThickness = new Thickness(0),
                     Tag = item.Url

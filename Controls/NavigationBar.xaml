@@ -34,26 +34,26 @@
         </Grid.ColumnDefinitions>
 
         <!-- 1. Geri Butonu -->
-        <Button x:Name="BackButton" Grid.Column="0" Width="36" Height="36" Padding="0" 
+        <Button x:Name="BackButton" Grid.Column="0" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Geri" Click="BackButton_Click">
             <FontIcon Glyph="&#xE72B;" FontSize="14" />
         </Button>
 
         <!-- 2. İleri Butonu -->
-        <Button x:Name="ForwardButton" Grid.Column="1" Width="36" Height="36" Padding="0" 
+        <Button x:Name="ForwardButton" Grid.Column="1" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="İleri" Click="ForwardButton_Click">
             <FontIcon Glyph="&#xE72A;" FontSize="14" />
         </Button>
 
         <!-- 3. Yenile Butonu -->
-        <Button x:Name="RefreshButton" Grid.Column="2" Width="36" Height="36" Padding="0" 
+        <Button x:Name="RefreshButton" Grid.Column="2" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Yenile" Click="RefreshButton_Click">
             <FontIcon x:Name="RefreshIcon" Glyph="&#xE72C;" FontSize="14" />
         </Button>
 
         <!-- 4. Adres Çubuğu -->
         <Grid Grid.Column="3">
-            <TextBox x:Name="AddressBar" Height="36" 
+            <TextBox x:Name="AddressBar" Style="{StaticResource ArcAddressBarTextBoxStyle}" 
                  VerticalContentAlignment="Center"
                  PlaceholderText="Bir adres girin veya arama yapın..."
                  KeyDown="AddressBar_KeyDown" />
@@ -68,13 +68,13 @@
         </Grid>
 
         <!-- 5. Git Butonu -->
-        <Button x:Name="GoButton" Grid.Column="4" Width="36" Height="36" Padding="0" 
+        <Button x:Name="GoButton" Grid.Column="4" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Git" Click="GoButton_Click">
             <FontIcon Glyph="&#xE751;" FontSize="14" />
         </Button>
 
         <!-- 6. Sık Kullanılan Eklendi / Düzenle Butonu (1. ve 2. Resimdeki Birebir Menü) -->
-        <Button x:Name="BookmarkButton" Grid.Column="5" Width="36" Height="36" Padding="0" 
+        <Button x:Name="BookmarkButton" Grid.Column="5" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Bu sayfayı sık kullanılanlara ekle" Click="BookmarkButton_Click">
             <FontIcon x:Name="BookmarkIcon" Glyph="&#xE734;" FontSize="14" />
             <Button.Flyout>
@@ -132,7 +132,7 @@
             </Button.Flyout>
         </Button>
 
-        <Button x:Name="DownloadButton" Grid.Column="6" Width="36" Height="36" Padding="0"
+        <Button x:Name="DownloadButton" Grid.Column="6" Style="{StaticResource ArcIconButtonStyle}"
                 ToolTipService.ToolTip="İndirilenler" Click="DownloadButton_Click">
             <Grid Width="36" Height="36">
                 <!-- Ana İndirme İkonu -->
@@ -231,7 +231,7 @@
         </Button>
 
         <!-- 7. Uzantılar / Eklentiler Butonu (Edge Stili Puzzle İkonu) -->
-        <Button x:Name="ExtensionsButton" Grid.Column="7" Width="36" Height="36" Padding="0"
+        <Button x:Name="ExtensionsButton" Grid.Column="7" Style="{StaticResource ArcIconButtonStyle}"
                 ToolTipService.ToolTip="Uzantılar" Click="ExtensionsButton_Click">
             <FontIcon Glyph="&#xE74C;" FontSize="14" />
             <Button.Flyout>
@@ -332,7 +332,7 @@
         </Button>
 
         <!-- 8. Profil Butonu -->
-        <Button x:Name="ProfileButton" Grid.Column="8" Width="36" Height="36" Padding="0" 
+        <Button x:Name="ProfileButton" Grid.Column="8" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Profil">
             <PersonPicture x:Name="NavProfilePic" Width="26" Height="26" />
             <Button.Flyout>
@@ -353,7 +353,7 @@
         </Button>
 
         <!-- 8. Edge Stili Üç Nokta (...) Menüsü -->
-        <Button x:Name="MoreMenuButton" Grid.Column="9" Width="36" Height="36" Padding="0" 
+        <Button x:Name="MoreMenuButton" Grid.Column="9" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Ayarlar ve daha fazlası">
             <FontIcon Glyph="&#xE712;" FontSize="14" />
             <Button.Flyout>

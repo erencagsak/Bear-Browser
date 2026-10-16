@@ -433,6 +433,32 @@
                         </Grid>
                     </Border>
 
+                    <!-- Sekme Düzeni (Üst veya Sol Dikey Sekmeler) -->
+                    <TextBlock Text="Sekme Düzeni" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                                <FontIcon Glyph="&#xE737;" FontSize="16" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Sekme Konumu" FontSize="14" FontWeight="Medium" />
+                                <TextBlock Text="Sekmelerin yatay üst çubukta mı yoksa Zen/Arc stili sol dikey kenar çubuğunda mı duracağını seçin." FontSize="12" Opacity="0.7" />
+                            </StackPanel>
+                            <ComboBox x:Name="TabPositionCombo" Grid.Column="2" Width="210" Height="36" VerticalAlignment="Center"
+                                      SelectionChanged="TabPositionCombo_SelectionChanged">
+                                <ComboBoxItem Content="Üstte (Varsayılan)" Tag="Top" />
+                                <ComboBoxItem Content="Sol Kenar Çubuğu (Zen / Arc)" Tag="Left" />
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+
                     <!-- Sık Kullanılanlar Çubuğu -->
                     <TextBlock Text="Araç Çubukları" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

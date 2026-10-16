@@ -9,7 +9,10 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+                <ResourceDictionary Source="ms-appx:///Theme/DesignTokens.xaml" />
+                <ResourceDictionary Source="ms-appx:///Theme/Buttons.xaml" />
+                <ResourceDictionary Source="ms-appx:///Theme/Inputs.xaml" />
+                <ResourceDictionary Source="ms-appx:///Theme/Cards.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Global Value Converters -->
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />

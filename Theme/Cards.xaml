@@ -1,0 +1,22 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Arc / Zen Yüzen Sayfa Konteyneri Stili (Floating Island Container) -->
+    <Style x:Key="ArcFloatingCanvasStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource ArcCanvasCornerRadius}" />
+        <Setter Property="Background" Value="{ThemeResource ArcCanvasBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ArcCanvasBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Arc / Zen Yarı Saydam Panel Kartı (Settings, Downloads, Popups) -->
+    <Style x:Key="ArcCardStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource ArcCardCornerRadius}" />
+        <Setter Property="Background" Value="{ThemeResource ArcSurfaceCardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ArcBorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+</ResourceDictionary>
