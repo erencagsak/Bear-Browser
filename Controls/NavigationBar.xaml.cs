@@ -1,14 +1,16 @@
+using System;
+using System.IO;
+using System.Linq;
 using Bear_Browser.Models;
-using Bear_Browser.Services;
+using Bear_Browser.Services.Interfaces;
+using Bear_Browser.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace Bear_Browser.Controls
 {
@@ -26,6 +28,11 @@ namespace Bear_Browser.Controls
         public event EventHandler? ZoomOutRequested;
         public event EventHandler? FullScreenRequested;
 
+        private readonly IBookmarkService _bookmarkService;
+        private readonly IDownloadService _downloadService;
+        private readonly ILocalizationService _localizationService;
+        private readonly IExtensionService _extensionService;
+
         private bool _keepMenuOpen;
         private bool _isLoading;
         private TextBlock? _cachedZoomLabel;
@@ -33,31 +40,30 @@ namespace Bear_Browser.Controls
 
         public bool IsAddressBarFocused => AddressBar.FocusState != FocusState.Unfocused;
         public bool IsMoreMenuOpen => MoreMenuFlyout.IsOpen;
-        public Bear_Browser.ViewModels.NavigationBarViewModel? ViewModel { get; }
+        public NavigationBarViewModel? ViewModel { get; }
 
         public NavigationBar()
         {
-            ViewModel = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<Bear_Browser.ViewModels.NavigationBarViewModel>(App.Services);
+            ViewModel = App.Services.GetService<NavigationBarViewModel>();
+            _bookmarkService = App.Services.GetRequiredService<IBookmarkService>();
+            _downloadService = App.Services.GetRequiredService<IDownloadService>();
+            _localizationService = App.Services.GetRequiredService<ILocalizationService>();
+            _extensionService = App.Services.GetRequiredService<IExtensionService>();
+
             InitializeComponent();
 
-            ProfileService.Instance.BookmarksUpdated += (s, e) =>
+            _bookmarkService.BookmarksUpdated += (s, e) =>
             {
-                DispatcherQueue?.TryEnqueue(() =>
-                {
-                    UpdateBookmarkState();
-                });
+                DispatcherQueue?.TryEnqueue(UpdateBookmarkState);
             };
 
-            ProfileService.Instance.DownloadsUpdated += (s, e) =>
+            _downloadService.DownloadsUpdated += (s, e) =>
             {
-                DispatcherQueue?.TryEnqueue(() =>
-                {
-                    RefreshDownloadsFlyoutList();
-                });
+                DispatcherQueue?.TryEnqueue(RefreshDownloadsFlyoutList);
             };
 
             ApplyLocalization();
-            LocalizationService.Instance.LanguageChanged += (s, e) =>
+            _localizationService.LanguageChanged += (s, e) =>
             {
                 DispatcherQueue?.TryEnqueue(ApplyLocalization);
             };
@@ -123,19 +129,19 @@ namespace Bear_Browser.Controls
                 if (isLoading)
                 {
                     RefreshIcon.Glyph = "\uE711"; // Durdur / Çarpı simgesi
-                    ToolTipService.SetToolTip(RefreshButton, LocalizationService.Instance["Nav_Stop"]);
+                    ToolTipService.SetToolTip(RefreshButton, _localizationService["Nav_Stop"]);
                 }
                 else
                 {
                     RefreshIcon.Glyph = "\uE72C"; // Yenile simgesi
-                    ToolTipService.SetToolTip(RefreshButton, LocalizationService.Instance["Nav_Refresh"]);
+                    ToolTipService.SetToolTip(RefreshButton, _localizationService["Nav_Refresh"]);
                 }
             }
         }
 
         public void ApplyLocalization()
         {
-            var loc = LocalizationService.Instance;
+            var loc = _localizationService;
 
             // Navigasyon butonları ipuçları
             if (BackButton != null) ToolTipService.SetToolTip(BackButton, loc["Nav_Back"]);
@@ -190,7 +196,7 @@ namespace Bear_Browser.Controls
         private void UpdateBookmarkState()
         {
             string url = AddressBar.Text.Trim();
-            bool isBookmarked = !string.IsNullOrEmpty(url) && ProfileService.Instance.IsBookmarked(url);
+            bool isBookmarked = !string.IsNullOrEmpty(url) && _bookmarkService.IsBookmarked(url);
 
             BookmarkIcon.Glyph = isBookmarked ? "\uE735" : "\uE734";
             BookmarkIcon.Foreground = isBookmarked
@@ -206,9 +212,9 @@ namespace Bear_Browser.Controls
             string title = !string.IsNullOrWhiteSpace(_currentPageTitle) ? _currentPageTitle : url;
 
             // Eğer sayfada ilk kez basılıyorsa otomatik olarak ekle ve yıldızı yak
-            if (!ProfileService.Instance.IsBookmarked(url))
+            if (!_bookmarkService.IsBookmarked(url))
             {
-                await ProfileService.Instance.AddOrUpdateBookmarkAsync(url, title, "Sık kullanılanlar çubuğu");
+                await _bookmarkService.AddOrUpdateBookmarkAsync(url, title, "Sık kullanılanlar çubuğu");
                 UpdateBookmarkState();
             }
 
@@ -218,10 +224,10 @@ namespace Bear_Browser.Controls
         private void BookmarkEditFlyout_Opening(object? sender, object e)
         {
             string url = AddressBar.Text.Trim();
-            var bookmark = ProfileService.Instance.GetBookmark(url);
+            var bookmark = _bookmarkService.GetBookmark(url);
 
             BookmarkNameTextBox.Text = bookmark != null ? bookmark.Title : _currentPageTitle;
-            BookmarkFolderComboBox.ItemsSource = ProfileService.Instance.Folders;
+            BookmarkFolderComboBox.ItemsSource = _bookmarkService.Folders;
             BookmarkFolderComboBox.SelectedItem = bookmark != null ? bookmark.Folder : "Sık kullanılanlar çubuğu";
         }
 
@@ -233,7 +239,7 @@ namespace Bear_Browser.Controls
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                await ProfileService.Instance.AddOrUpdateBookmarkAsync(url, string.IsNullOrWhiteSpace(name) ? url : name, folder);
+                await _bookmarkService.AddOrUpdateBookmarkAsync(url, string.IsNullOrWhiteSpace(name) ? url : name, folder);
                 UpdateBookmarkState();
             }
 
@@ -245,7 +251,7 @@ namespace Bear_Browser.Controls
             string url = AddressBar.Text.Trim();
             if (!string.IsNullOrWhiteSpace(url))
             {
-                await ProfileService.Instance.RemoveBookmarkByUrlAsync(url);
+                await _bookmarkService.RemoveBookmarkByUrlAsync(url);
                 UpdateBookmarkState();
             }
 
@@ -256,8 +262,6 @@ namespace Bear_Browser.Controls
         {
             BookmarkEditFlyout.Hide();
         }
-
-        // --- DİĞER BUTONLAR VE İŞLEMLER ---
 
         private void MoreMenuFlyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
         {
@@ -304,6 +308,8 @@ namespace Bear_Browser.Controls
             }
         }
 
+        // --- İNDİRİLENLER FLYOUT YÖNETİMİ ---
+
         public void SetDownloadStatus(bool isDownloading, bool isCompleted)
         {
             if (isDownloading)
@@ -339,7 +345,7 @@ namespace Bear_Browser.Controls
 
         private void RefreshDownloadsFlyoutList()
         {
-            var list = ProfileService.Instance.Downloads.Take(6).ToList();
+            var list = _downloadService.Downloads.Take(6).ToList();
             RecentDownloadsList.ItemsSource = list;
             EmptyDownloadsText.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -353,7 +359,7 @@ namespace Bear_Browser.Controls
         {
             if (sender is Button btn && btn.Tag is Guid id)
             {
-                await ProfileService.Instance.RemoveDownloadAsync(id);
+                await _downloadService.RemoveDownloadAsync(id);
             }
         }
 
@@ -361,7 +367,7 @@ namespace Bear_Browser.Controls
         {
             try
             {
-                string downloadsDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                string downloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
                 System.Diagnostics.Process.Start("explorer.exe", downloadsDir);
             }
             catch { }
@@ -371,7 +377,7 @@ namespace Bear_Browser.Controls
         {
             try
             {
-                if (sender is Button btn && btn.Tag is string path && System.IO.File.Exists(path))
+                if (sender is Button btn && btn.Tag is string path && File.Exists(path))
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
                 }
@@ -387,7 +393,7 @@ namespace Bear_Browser.Controls
         {
             try
             {
-                if (sender is Button btn && btn.Tag is string path && System.IO.File.Exists(path))
+                if (sender is Button btn && btn.Tag is string path && File.Exists(path))
                 {
                     System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
                 }
@@ -417,7 +423,7 @@ namespace Bear_Browser.Controls
 
         private void RefreshExtensionsFlyoutList()
         {
-            var list = ExtensionService.Instance.InstalledExtensions;
+            var list = _extensionService.InstalledExtensions;
             ExtensionsFlyoutListView.ItemsSource = list;
             EmptyExtensionsText.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -431,7 +437,7 @@ namespace Bear_Browser.Controls
         {
             if (sender is ToggleSwitch toggle && toggle.Tag is string extId)
             {
-                await ExtensionService.Instance.SetExtensionEnabledAsync(extId, toggle.IsOn, null);
+                await _extensionService.SetExtensionEnabledAsync(extId, toggle.IsOn, null);
             }
         }
 

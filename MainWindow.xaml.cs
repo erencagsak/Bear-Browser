@@ -1,8 +1,12 @@
 using Bear_Browser.Controls;
+using Bear_Browser.Messages;
 using Bear_Browser.Models;
+using Bear_Browser.Platform.Interfaces;
 using Bear_Browser.Platform.WinUI;
-using Bear_Browser.Services;
+using Bear_Browser.Services.Interfaces;
 using Bear_Browser.ViewModels;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,18 +25,20 @@ namespace Bear_Browser
         public MainViewModel ViewModel { get; }
         public bool IsInPrivate { get; }
 
+        private readonly ILocalizationService _localizationService;
+        private readonly ISettingsService _settingsService;
+        private readonly IProfileService _profileService;
+        private readonly IPasswordService _passwordService;
+        private readonly IExtensionService _extensionService;
+        private readonly IMemoryOptimizerService _memoryOptimizerService;
+        private readonly IAdBlockService _adBlockService;
+        private readonly ICrashReportingService _crashReportingService;
+        private readonly IPlatformWindowService _platformWindowService;
+        private readonly IMessenger _messenger;
+
         private bool _isFullScreen = false;
         private DispatcherTimer? _hideTimer;
         private DispatcherTimer? _initialBannerTimer;
-
-        [System.Runtime.InteropServices.DllImport("shell32.dll", SetLastError = true)]
-        private static extern void SetCurrentProcessExplicitAppUserModelID([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string AppID);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        private static extern IntPtr LoadImage(IntPtr hinst, string lpszName, uint uType, int cxDesired, int cyDesired, uint fuLoad);
 
         public MainWindow() : this(isInPrivate: false)
         {
@@ -40,9 +46,20 @@ namespace Bear_Browser
 
         public MainWindow(bool isInPrivate = false)
         {
+            _platformWindowService = App.Services.GetRequiredService<IPlatformWindowService>();
+            _localizationService = App.Services.GetRequiredService<ILocalizationService>();
+            _settingsService = App.Services.GetRequiredService<ISettingsService>();
+            _profileService = App.Services.GetRequiredService<IProfileService>();
+            _passwordService = App.Services.GetRequiredService<IPasswordService>();
+            _extensionService = App.Services.GetRequiredService<IExtensionService>();
+            _memoryOptimizerService = App.Services.GetRequiredService<IMemoryOptimizerService>();
+            _adBlockService = App.Services.GetRequiredService<IAdBlockService>();
+            _crashReportingService = App.Services.GetRequiredService<ICrashReportingService>();
+            _messenger = App.Services.GetRequiredService<IMessenger>();
+
             try
             {
-                SetCurrentProcessExplicitAppUserModelID("BearBrowser.App.1.0");
+                _platformWindowService.SetAppUserModelId("BearBrowser.App.1.0");
             }
             catch { }
 
@@ -67,42 +84,39 @@ namespace Bear_Browser
                 AppWindow.SetIcon(iconPath);
                 try
                 {
-                    IntPtr hIconBig = LoadImage(IntPtr.Zero, iconPath, 1, 32, 32, 0x0010);
-                    IntPtr hIconSmall = LoadImage(IntPtr.Zero, iconPath, 1, 16, 16, 0x0010);
-                    if (hIconBig != IntPtr.Zero) SendMessage(WindowHandle, 0x0080, (IntPtr)1, hIconBig);
-                    if (hIconSmall != IntPtr.Zero) SendMessage(WindowHandle, 0x0080, (IntPtr)0, hIconSmall);
+                    _platformWindowService.SetWindowIcon(WindowHandle, iconPath);
                 }
                 catch { }
             }
 
             if (IsInPrivate)
             {
-                Title = $"Bear Browser ({LocalizationService.Instance["Tab_InPrivate"]})";
+                Title = $"Bear Browser ({_localizationService["Tab_InPrivate"]})";
             }
 
-            LocalizationService.Instance.LanguageChanged += (s, e) =>
+            _localizationService.LanguageChanged += (s, e) =>
             {
                 DispatcherQueue?.TryEnqueue(() =>
                 {
                     if (IsInPrivate)
                     {
-                        Title = $"Bear Browser ({LocalizationService.Instance["Tab_InPrivate"]})";
+                        Title = $"Bear Browser ({_localizationService["Tab_InPrivate"]})";
                     }
 
                     foreach (var tab in ViewModel.Tabs)
                     {
                         if (tab.Url.StartsWith("bear://newtab", StringComparison.OrdinalIgnoreCase))
-                            tab.Title = LocalizationService.Instance["Tab_NewTab"];
+                            tab.Title = _localizationService["Tab_NewTab"];
                         else if (tab.Url.StartsWith("bear://favorites", StringComparison.OrdinalIgnoreCase))
-                            tab.Title = LocalizationService.Instance["Tab_Favorites"];
+                            tab.Title = _localizationService["Tab_Favorites"];
                         else if (tab.Url.StartsWith("bear://history", StringComparison.OrdinalIgnoreCase))
-                            tab.Title = LocalizationService.Instance["Tab_History"];
+                            tab.Title = _localizationService["Tab_History"];
                         else if (tab.Url.StartsWith("bear://downloads", StringComparison.OrdinalIgnoreCase))
-                            tab.Title = LocalizationService.Instance["Tab_Downloads"];
+                            tab.Title = _localizationService["Tab_Downloads"];
                         else if (tab.Url.StartsWith("bear://passwords", StringComparison.OrdinalIgnoreCase))
-                            tab.Title = LocalizationService.Instance["Tab_Passwords"];
+                            tab.Title = _localizationService["Tab_Passwords"];
                         else if (tab.Url.StartsWith("bear://settings", StringComparison.OrdinalIgnoreCase))
-                            tab.Title = LocalizationService.Instance["Tab_Settings"];
+                            tab.Title = _localizationService["Tab_Settings"];
                     }
 
                     if (ViewModel.CurrentTab != null && ViewModel.CurrentTab.Url.StartsWith("bear://", StringComparison.OrdinalIgnoreCase))
@@ -120,20 +134,20 @@ namespace Bear_Browser
             };
 
             // Arka plan bellek optimizasyon servisini başlat
-            MemoryOptimizerService.Instance.Start(this.DispatcherQueue);
+            _memoryOptimizerService.Start(this.DispatcherQueue);
 
             // Ayarları ve temayı uygula
-            ApplyTheme(SettingsService.Instance.Settings.Theme);
-            FavBar.Visibility = SettingsService.Instance.Settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
-            AdBlockService.Instance.IsEnabled = SettingsService.Instance.Settings.AdBlockEnabled;
+            ApplyTheme(_settingsService.Settings.Theme);
+            FavBar.Visibility = _settingsService.Settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
+            _adBlockService.IsEnabled = _settingsService.Settings.AdBlockEnabled;
 
-            SettingsService.Instance.SettingsChanged += (s, settings) =>
+            _settingsService.SettingsChanged += (s, settings) =>
             {
                 DispatcherQueue?.TryEnqueue(() =>
                 {
                     ApplyTheme(settings.Theme);
                     FavBar.Visibility = settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
-                    AdBlockService.Instance.IsEnabled = settings.AdBlockEnabled;
+                    _adBlockService.IsEnabled = settings.AdBlockEnabled;
                 });
             };
 
@@ -147,6 +161,25 @@ namespace Bear_Browser
                     HideTopBar();
                 }
             };
+
+            // Messenger kayıtları
+            _messenger.Register<FindInPageMessage>(this, (r, m) =>
+            {
+                DispatcherQueue?.TryEnqueue(ToggleFindBar);
+            });
+
+            _messenger.Register<ToggleFullScreenMessage>(this, (r, m) =>
+            {
+                DispatcherQueue?.TryEnqueue(ToggleFullScreen);
+            });
+
+            _messenger.Register<ExitFullScreenMessage>(this, (r, m) =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
+                {
+                    if (_isFullScreen) ToggleFullScreen();
+                });
+            });
 
             // Sayfa içinden gelen kısayolları bağla
             ViewModel.ShortcutActionTriggered += (s, action) => HandleGlobalAction(action);
@@ -164,7 +197,7 @@ namespace Bear_Browser
                 }
             };
 
-            // Sık Kullanılanlar Çubuğundaki bağlantılara tıklanması
+            // Sık Kullanılanlar çubuğundaki bağlantılara tıklanması
             FavBar.NavigateRequested += (s, url) =>
             {
                 NavigateToUrl(url);
@@ -196,8 +229,8 @@ namespace Bear_Browser
             NavBar.FullScreenRequested += (s, e) => ToggleFullScreen();
 
             // Profil güncellemeleri
-            ProfileService.Instance.ProfileUpdated += (s, profile) => NavBar.UpdateProfile(profile);
-            NavBar.UpdateProfile(ProfileService.Instance.CurrentProfile);
+            _profileService.ProfileUpdated += (s, profile) => NavBar.UpdateProfile(profile);
+            NavBar.UpdateProfile(_profileService.CurrentProfile);
 
             ViewModel.CurrentTabChanged += ViewModel_CurrentTabChanged;
             ViewModel.TabLoadingChanged += (s, args) =>
@@ -303,7 +336,7 @@ namespace Bear_Browser
 
             RenderCurrentTabContent(currentTab);
 
-            if (currentTab != null && ExtensionService.Instance.IsStoreExtensionUrl(currentTab.Url, out string st, out string eId))
+            if (currentTab != null && _extensionService.IsStoreExtensionUrl(currentTab.Url, out string st, out string eId))
             {
                 ShowExtensionInstallPrompt(st, eId, currentTab.Title);
             }
@@ -315,7 +348,7 @@ namespace Bear_Browser
             UpdateNavigationButtons(currentTab);
 
             // Sekme değişiminde boşta kalan belleği işletim sistemine geri ver
-            MemoryOptimizerService.Instance.OptimizeMemoryAsync();
+            _memoryOptimizerService.OptimizeMemoryAsync();
         }
 
         private void RenderCurrentTabContent(BrowserTab? currentTab)
@@ -331,7 +364,7 @@ namespace Bear_Browser
 
                 if (currentTab.Url.StartsWith("bear://favorites", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTab.Title = LocalizationService.Instance["Tab_Favorites"];
+                    currentTab.Title = _localizationService["Tab_Favorites"];
                     currentTab.FaviconUri = new Uri("ms-appx:///Assets/favorites.png");
                     var favView = new FavoritesView();
                     favView.NavigateRequested += (s, url) => NavigateToUrl(url);
@@ -345,7 +378,7 @@ namespace Bear_Browser
                 }
                 else if (currentTab.Url.StartsWith("bear://history", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTab.Title = LocalizationService.Instance["Tab_History"];
+                    currentTab.Title = _localizationService["Tab_History"];
                     currentTab.FaviconUri = new Uri("ms-appx:///Assets/history.png");
                     var historyView = new HistoryView();
                     historyView.NavigateRequested += (s, url) => NavigateToUrl(url);
@@ -354,7 +387,7 @@ namespace Bear_Browser
                 }
                 else if (currentTab.Url.StartsWith("bear://downloads", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTab.Title = LocalizationService.Instance["Tab_Downloads"];
+                    currentTab.Title = _localizationService["Tab_Downloads"];
                     currentTab.FaviconUri = new Uri("ms-appx:///Assets/downloads.png");
                     var downloadsView = new DownloadsView();
                     WebContentGrid.Children.Add(downloadsView);
@@ -362,7 +395,7 @@ namespace Bear_Browser
                 }
                 else if (currentTab.Url.StartsWith("bear://passwords", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTab.Title = LocalizationService.Instance["Tab_Passwords"];
+                    currentTab.Title = _localizationService["Tab_Passwords"];
                     currentTab.FaviconUri = new Uri("ms-appx:///Assets/passwords.png");
                     var passwordsView = new PasswordsView();
                     WebContentGrid.Children.Add(passwordsView);
@@ -376,7 +409,7 @@ namespace Bear_Browser
                 }
                 else if (currentTab.Url.StartsWith("bear://settings", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTab.Title = LocalizationService.Instance["Tab_Settings"];
+                    currentTab.Title = _localizationService["Tab_Settings"];
                     var settingsView = new SettingsView();
                     if (currentTab.GetWebView().CoreWebView2 != null)
                     {
@@ -388,7 +421,7 @@ namespace Bear_Browser
                     settingsView.SectionNavigated += (s, section) =>
                     {
                         currentTab.Url = $"bear://settings/{section}";
-                        NavBar.UpdateUrl(currentTab.Url, LocalizationService.Instance["Tab_Settings"]);
+                        NavBar.UpdateUrl(currentTab.Url, _localizationService["Tab_Settings"]);
                     };
 
                     if (currentTab.Url.Contains("/profiles"))
@@ -430,17 +463,17 @@ namespace Bear_Browser
                     }
 
                     WebContentGrid.Children.Add(settingsView);
-                    NavBar.UpdateUrl(currentTab.Url, LocalizationService.Instance["Tab_Settings"]);
+                    NavBar.UpdateUrl(currentTab.Url, _localizationService["Tab_Settings"]);
                 }
                 else if (currentTab.Url.StartsWith("bear://newtab", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTab.Title = LocalizationService.Instance["Tab_NewTab"];
+                    currentTab.Title = _localizationService["Tab_NewTab"];
                     currentTab.FaviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
                     var newTabView = new NewTabView();
                     newTabView.NavigateRequested += (s, targetUrl) => NavigateToUrl(targetUrl);
                     newTabView.NewTabRequested += (s, targetUrl) => CreateNewTab(targetUrl);
                     WebContentGrid.Children.Add(newTabView);
-                    NavBar.UpdateUrl("", LocalizationService.Instance["Tab_NewTab"]);
+                    NavBar.UpdateUrl("", _localizationService["Tab_NewTab"]);
                     newTabView.FocusSearchBox();
                 }
                 else
@@ -481,7 +514,7 @@ namespace Bear_Browser
 
             if (url.StartsWith("bear://crash", StringComparison.OrdinalIgnoreCase))
             {
-                CrashReportingService.Instance.TriggerTestCrash();
+                _crashReportingService.TriggerTestCrash();
                 return;
             }
 
@@ -560,7 +593,7 @@ namespace Bear_Browser
             }
             catch
             {
-                ViewModel.CurrentTab.GetWebView().Source = new Uri(SettingsService.Instance.GetSearchUrl(url));
+                ViewModel.CurrentTab.GetWebView().Source = new Uri(_settingsService.GetSearchUrl(url));
             }
 
             RenderCurrentTabContent(ViewModel.CurrentTab);
@@ -584,7 +617,7 @@ namespace Bear_Browser
                 if (targetUrl.Contains(".") && !targetUrl.Contains(" "))
                     targetUrl = "https://" + targetUrl;
                 else
-                    targetUrl = SettingsService.Instance.GetSearchUrl(targetUrl);
+                    targetUrl = _settingsService.GetSearchUrl(targetUrl);
             }
 
             NavigateToUrl(targetUrl);
@@ -888,8 +921,8 @@ namespace Bear_Browser
 
         private async void CreateNewTab(string? url = null)
         {
-            string targetUrl = url ?? (!string.IsNullOrWhiteSpace(SettingsService.Instance.Settings.HomePageUrl) && SettingsService.Instance.Settings.HomePageUrl != "https://www.google.com"
-                ? SettingsService.Instance.Settings.HomePageUrl
+            string targetUrl = url ?? (!string.IsNullOrWhiteSpace(_settingsService.Settings.HomePageUrl) && _settingsService.Settings.HomePageUrl != "https://www.google.com"
+                ? _settingsService.Settings.HomePageUrl
                 : "bear://newtab");
             await ViewModel.CreateNewTabAsync(targetUrl);
             TabsControl.SelectedIndex = ViewModel.Tabs.Count - 1;
@@ -967,8 +1000,8 @@ namespace Bear_Browser
 
         private async Task InitializeStartupAsync()
         {
-            string startUrl = !string.IsNullOrWhiteSpace(SettingsService.Instance.Settings.HomePageUrl) && SettingsService.Instance.Settings.HomePageUrl != "https://www.google.com"
-                ? SettingsService.Instance.Settings.HomePageUrl
+            string startUrl = !string.IsNullOrWhiteSpace(_settingsService.Settings.HomePageUrl) && _settingsService.Settings.HomePageUrl != "https://www.google.com"
+                ? _settingsService.Settings.HomePageUrl
                 : "bear://newtab";
 
             var tab = await ViewModel.CreateNewTabAsync(startUrl);
@@ -1013,7 +1046,7 @@ namespace Bear_Browser
 
         private async void NavBar_ManageProfileRequested(object? sender, EventArgs e)
         {
-            var dialog = new ProfileEditDialog(ProfileService.Instance.CurrentProfile)
+            var dialog = new ProfileEditDialog(_profileService.CurrentProfile)
             {
                 XamlRoot = this.Content.XamlRoot
             };
@@ -1207,7 +1240,7 @@ namespace Bear_Browser
             if (_pendingPasswordData.HasValue)
             {
                 var data = _pendingPasswordData.Value;
-                await ProfileService.Instance.AddOrUpdatePasswordAsync(data.url, data.username, data.password);
+                await _passwordService.AddOrUpdatePasswordAsync(data.url, data.username, data.password);
             }
             PasswordPromptBar.Visibility = Visibility.Collapsed;
         }
@@ -1257,7 +1290,7 @@ namespace Bear_Browser
             try
             {
                 var profile = ViewModel.CurrentTab?.GetWebView().CoreWebView2?.Profile;
-                var info = await ExtensionService.Instance.DownloadAndInstallAsync(
+                var info = await _extensionService.DownloadAndInstallAsync(
                     _pendingExtensionStoreType,
                     _pendingExtensionId,
                     _pendingExtensionName,
