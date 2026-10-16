@@ -1,5 +1,6 @@
 using Bear_Browser.Helpers;
 using Bear_Browser.Models;
+using Bear_Browser.Platform.WinUI;
 using Bear_Browser.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -108,7 +109,7 @@ namespace Bear_Browser.ViewModels
                 }
 
                 await EnsureTabWebViewInitializedAsync(tab);
-                tab.WebView.Source = new Uri(initialUrl);
+                tab.GetWebView().Source = new Uri(initialUrl);
             }
             else
             {
@@ -120,12 +121,12 @@ namespace Bear_Browser.ViewModels
 
         public void HookCoreEvents(BrowserTab tab)
         {
-            if (tab.WebView.CoreWebView2 is not CoreWebView2 core) return;
+            if (tab.GetWebView().CoreWebView2 is not CoreWebView2 core) return;
 
             // Chromium kendi faviconunu bulduğunda anında sekmede güncelle
                     core.FaviconChanged += (s, e) =>
                     {
-                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             if (!string.IsNullOrEmpty(core.FaviconUri))
                             {
@@ -143,9 +144,9 @@ namespace Bear_Browser.ViewModels
                         if (IsDownloadUrl(targetUrl))
                         {
                             args.Handled = true;
-                            tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                            tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                             {
-                                tab.WebView.CoreWebView2?.Navigate(targetUrl);
+                                tab.GetWebView().CoreWebView2?.Navigate(targetUrl);
                             });
                             return;
                         }
@@ -157,10 +158,10 @@ namespace Bear_Browser.ViewModels
                         {
                             // Yeni bir sekme oluşturuyoruz (Chromium adrese bu sekmeyi kendisi yönlendirecek)
                             var newTab = await CreateNewTabAsync("about:blank");
-                            if (newTab.WebView.CoreWebView2 != null)
+                            if (newTab.GetWebView().CoreWebView2 != null)
                             {
                                 // Chromium'a bu pencereyi yeni sekmemizle ilişkilendirmesini söylüyoruz
-                                args.NewWindow = newTab.WebView.CoreWebView2;
+                                args.NewWindow = newTab.GetWebView().CoreWebView2;
                             }
                         }
                         catch { }
@@ -221,7 +222,7 @@ namespace Bear_Browser.ViewModels
                             string tempCrxPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"BearExt_{extId}_{Guid.NewGuid():N}.crx");
                             args.ResultFilePath = tempCrxPath;
 
-                            tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                            tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                             {
                                 if (tab.IsPopupTab)
                                 {
@@ -237,9 +238,9 @@ namespace Bear_Browser.ViewModels
                                 {
                                     try
                                     {
-                                        var profile = tab.WebView.CoreWebView2?.Profile;
+                                        var profile = tab.GetWebView().CoreWebView2?.Profile;
                                         var info = await ExtensionService.Instance.InstallFromCrxFileAsync(tempCrxPath, extId, storeType, tab.Title, profile);
-                                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                         {
                                             if (info != null)
                                             {
@@ -250,7 +251,7 @@ namespace Bear_Browser.ViewModels
                                     catch (Exception ex)
                                     {
                                         CrashReportingService.Instance.LogCustomError("Extension Auto-Install Failed", ex.Message);
-                                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                         {
                                             ExtensionInstallFailed?.Invoke(this, ex.Message);
                                         });
@@ -258,7 +259,7 @@ namespace Bear_Browser.ViewModels
                                 }
                                 else if (op.State == CoreWebView2DownloadState.Interrupted)
                                 {
-                                    tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                    tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                     {
                                         ExtensionInstallFailed?.Invoke(this, $"İndirme kesintiye uğradı: {op.InterruptReason}");
                                     });
@@ -285,7 +286,7 @@ namespace Bear_Browser.ViewModels
                         };
 
                         // İndirilenler listesine ekle ve sağ üstteki butonda mavi dönen halkayı başlat
-                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             ProfileService.Instance.AddActiveDownload(downloadItem);
                             DownloadStateChanged?.Invoke(this, (true, false));
@@ -294,7 +295,7 @@ namespace Bear_Browser.ViewModels
                         // İndirme ilerlemesini canlı güncelle
                         op.BytesReceivedChanged += (s, e) =>
                         {
-                            tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                            tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                             {
                                 downloadItem.ReceivedBytes = op.BytesReceived;
                                 if (op.TotalBytesToReceive > 0)
@@ -309,7 +310,7 @@ namespace Bear_Browser.ViewModels
                             if (op.State == CoreWebView2DownloadState.Completed)
                             {
                                 await ProfileService.Instance.CompleteDownloadAsync(downloadItem);
-                                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                 {
                                     DownloadStateChanged?.Invoke(this, (false, true)); // Yeşil onay rozeti yak
                                     if (tab.IsPopupTab)
@@ -322,7 +323,7 @@ namespace Bear_Browser.ViewModels
                             {
                                 downloadItem.State = "İptal edildi";
                                 CrashReportingService.Instance.LogCustomError("İndirme Kesintiye Uğradı", $"Dosya: {downloadItem.FileName}\nNeden: {op.InterruptReason}\nURL: {op.Uri}");
-                                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                 {
                                     DownloadStateChanged?.Invoke(this, (false, false));
                                     if (tab.IsPopupTab)
@@ -342,7 +343,7 @@ namespace Bear_Browser.ViewModels
                             tab.LoadTimer.Stop();
                             tab.LastLoadTimeMs = tab.LoadTimer.ElapsedMilliseconds;
 
-                            tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                            tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                             {
                                 if (CurrentTab == tab)
                                     PageLoadCompleted?.Invoke(this, tab.LastLoadTimeMs);
@@ -353,7 +354,7 @@ namespace Bear_Browser.ViewModels
                     // Sayfa başlığı parse edildiğinde (sayfa henüz tamamen bitmeden) sekmede güncelle
                     core.DocumentTitleChanged += (s, e) =>
                     {
-                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             if (!string.IsNullOrWhiteSpace(core.DocumentTitle))
                             {
@@ -369,7 +370,7 @@ namespace Bear_Browser.ViewModels
                     // Geri/İleri geçmişi değiştiğinde navigasyon buton durumlarını anında güncelle
                     core.HistoryChanged += (s, e) =>
                     {
-                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             if (CurrentTab == tab)
                             {
@@ -381,7 +382,7 @@ namespace Bear_Browser.ViewModels
                     // SPA veya yönlendirmelerde adres çubuğunu ve kayıtlı parola popup'ını güncelle
                     core.SourceChanged += (s, e) =>
                     {
-                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             if (!string.IsNullOrWhiteSpace(core.Source) && !core.Source.StartsWith("bear://") && !core.Source.StartsWith("about:blank"))
                             {
@@ -410,7 +411,7 @@ namespace Bear_Browser.ViewModels
                             if (!string.IsNullOrEmpty(msg) && msg.StartsWith("shortcut:"))
                             {
                                 string action = msg.Substring("shortcut:".Length);
-                                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                 {
                                     ShortcutActionTriggered?.Invoke(this, action);
                                 });
@@ -422,7 +423,7 @@ namespace Bear_Browser.ViewModels
                                 string extId = parts.Length > 0 ? parts[0] : "";
                                 string extName = parts.Length > 1 ? parts[1] : "";
                                 string store = tab.Url.Contains("microsoftedge.microsoft.com", StringComparison.OrdinalIgnoreCase) ? "Edge" : "Chrome";
-                                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                 {
                                     ExtensionInstallPromptRequested?.Invoke(this, (store, extId, extName));
                                 });
@@ -449,7 +450,7 @@ namespace Bear_Browser.ViewModels
 
                                     if (!alreadySaved)
                                     {
-                                        tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                                        tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                         {
                                             PasswordSavePromptRequested?.Invoke(this, (pUrl, pUser, pPass));
                                         });
@@ -476,14 +477,14 @@ namespace Bear_Browser.ViewModels
 
             try
             {
-                if (tab.WebView.CoreWebView2 != null)
+                if (tab.GetWebView().CoreWebView2 != null)
                 {
-                    tab.WebView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                    tab.GetWebView().CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
                 }
             }
             catch { }
 
-            tab.WebView.Close();
+            tab.GetWebView().Close();
             Tabs.Remove(tab);
 
             if (Tabs.Count == 0)
@@ -509,10 +510,10 @@ namespace Bear_Browser.ViewModels
             if (tab.IsWebViewInitialized) return;
             tab.IsWebViewInitialized = true;
 
-            await WebViewService.Instance.InitializeWebViewAsync(tab.WebView, IsInPrivate);
-            AdBlockService.Instance.AttachToWebView(tab.WebView, () =>
+            await WebViewService.Instance.InitializeWebViewAsync(tab.GetWebView(), IsInPrivate);
+            AdBlockService.Instance.AttachToWebView(tab.GetWebView(), () =>
             {
-                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                 {
                     tab.BlockedAdsCount++;
                     if (CurrentTab == tab)
@@ -529,11 +530,11 @@ namespace Bear_Browser.ViewModels
                     ? CoreWebView2PreferredColorScheme.Dark
                     : (SettingsService.Instance.Settings.Theme == "Light" ? CoreWebView2PreferredColorScheme.Light : CoreWebView2PreferredColorScheme.Auto);
 
-                if (tab.WebView.CoreWebView2 != null)
+                if (tab.GetWebView().CoreWebView2 != null)
                 {
-                    tab.WebView.CoreWebView2.Profile.PreferredColorScheme = scheme;
+                    tab.GetWebView().CoreWebView2.Profile.PreferredColorScheme = scheme;
 
-                    await tab.WebView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(@"
+                    await tab.GetWebView().CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(@"
                     (() => {
                         try {
                             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -558,7 +559,7 @@ namespace Bear_Browser.ViewModels
 
         public void HookTabEvents(BrowserTab tab)
         {
-            tab.WebView.NavigationStarting += (s, e) =>
+            tab.GetWebView().NavigationStarting += (s, e) =>
             {
                 tab.IsLoading = true;
                 tab.LoadTimer.Restart();
@@ -567,7 +568,7 @@ namespace Bear_Browser.ViewModels
                     tab.Url = e.Uri;
                 }
 
-                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                 {
                     TabLoadingChanged?.Invoke(this, (tab, true));
                     if (CurrentTab == tab && !tab.Url.StartsWith("bear://"))
@@ -577,7 +578,7 @@ namespace Bear_Browser.ViewModels
                 });
             };
 
-            tab.WebView.NavigationCompleted += (s, e) =>
+            tab.GetWebView().NavigationCompleted += (s, e) =>
             {
                 tab.IsLoading = false;
                 if (tab.LoadTimer.IsRunning)
@@ -586,12 +587,12 @@ namespace Bear_Browser.ViewModels
                     tab.LastLoadTimeMs = tab.LoadTimer.ElapsedMilliseconds;
                 }
 
-                if (tab.WebView.Source != null)
+                if (tab.GetWebView().Source != null)
                 {
-                    tab.Url = tab.WebView.Source.ToString();
+                    tab.Url = tab.GetWebView().Source.ToString();
                 }
 
-                string? docTitle = tab.WebView.CoreWebView2?.DocumentTitle;
+                string? docTitle = tab.GetWebView().CoreWebView2?.DocumentTitle;
                 if (!string.IsNullOrWhiteSpace(docTitle))
                 {
                     tab.Title = docTitle;
@@ -646,7 +647,7 @@ namespace Bear_Browser.ViewModels
                     InjectAutofillPopup(tab);
                 }
 
-                tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                 {
                     TabLoadingChanged?.Invoke(this, (tab, false));
                     if (CurrentTab == tab)
@@ -660,7 +661,7 @@ namespace Bear_Browser.ViewModels
                 // Sayfa yüklenmesi bittikten 2 saniye sonra gereksiz yükleme önbelleklerini temizle
                 _ = Task.Delay(2000).ContinueWith(_ =>
                 {
-                    tab.WebView.DispatcherQueue?.TryEnqueue(() =>
+                    tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                     {
                         MemoryOptimizerService.Instance.OptimizeMemoryAsync();
                     });
@@ -680,12 +681,12 @@ namespace Bear_Browser.ViewModels
 
         private void InjectAutofillPopup(BrowserTab tab, string? targetUrl = null)
         {
-            if (tab.WebView.CoreWebView2 == null || IsInPrivate)
+            if (tab.GetWebView().CoreWebView2 == null || IsInPrivate)
                 return;
 
             try
             {
-                string currentUrl = targetUrl ?? tab.WebView.CoreWebView2.Source;
+                string currentUrl = targetUrl ?? tab.GetWebView().CoreWebView2.Source;
                 if (string.IsNullOrWhiteSpace(currentUrl)) currentUrl = tab.Url;
                 if (string.IsNullOrWhiteSpace(currentUrl) || currentUrl.StartsWith("bear://"))
                     return;
@@ -700,7 +701,7 @@ namespace Bear_Browser.ViewModels
                     .ToList();
 
                 string json = System.Text.Json.JsonSerializer.Serialize(matchingPasswords);
-                _ = tab.WebView.CoreWebView2.ExecuteScriptAsync($"window.__bearSetAutofillAccounts && window.__bearSetAutofillAccounts({json});");
+                _ = tab.GetWebView().CoreWebView2.ExecuteScriptAsync($"window.__bearSetAutofillAccounts && window.__bearSetAutofillAccounts({json});");
             }
             catch { }
         }

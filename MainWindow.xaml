@@ -69,9 +69,9 @@
                                         <Grid Width="16" Height="16" VerticalAlignment="Center">
                                             <ProgressRing Width="14" Height="14"
                                                           IsActive="{x:Bind IsLoading, Mode=OneWay}"
-                                                          Visibility="{x:Bind LoadingVisibility, Mode=OneWay}" />
+                                                          Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <Image Width="16" Height="16" Stretch="Uniform"
-                                                   Visibility="{x:Bind FaviconVisibility, Mode=OneWay}">
+                                                   Visibility="{Binding IsLoading, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
                                                 <Image.Source>
                                                     <BitmapImage UriSource="{x:Bind FaviconUri, Mode=OneWay}" />
                                                 </Image.Source>

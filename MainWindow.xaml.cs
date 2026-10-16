@@ -1,5 +1,6 @@
 using Bear_Browser.Controls;
 using Bear_Browser.Models;
+using Bear_Browser.Platform.WinUI;
 using Bear_Browser.Services;
 using Bear_Browser.ViewModels;
 using Microsoft.UI.Windowing;
@@ -180,9 +181,9 @@ namespace Bear_Browser
             NavBar.RefreshRequested += NavBar_RefreshRequested;
             NavBar.StopRequested += (s, e) =>
             {
-                if (ViewModel.CurrentTab?.WebView.CoreWebView2 != null)
+                if (ViewModel.CurrentTab?.GetWebView().CoreWebView2 != null)
                 {
-                    try { ViewModel.CurrentTab.WebView.CoreWebView2.Stop(); } catch { }
+                    try { ViewModel.CurrentTab.GetWebView().CoreWebView2.Stop(); } catch { }
                 }
             };
             NavBar.ManageProfileRequested += NavBar_ManageProfileRequested;
@@ -269,22 +270,22 @@ namespace Bear_Browser
             // Arka plandaki diğer sekmelerin bellek ve kaynak kullanımını minimuma indir
             foreach (var tab in ViewModel.Tabs)
             {
-                if (tab != currentTab && tab.WebView.CoreWebView2 != null)
+                if (tab != currentTab && tab.GetWebView().CoreWebView2 != null)
                 {
                     try
                     {
-                        tab.WebView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                        tab.GetWebView().CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
                     }
                     catch { }
                 }
             }
 
             // Aktif sekmeyi normal performans moduna al
-            if (currentTab != null && currentTab.WebView.CoreWebView2 != null)
+            if (currentTab != null && currentTab.GetWebView().CoreWebView2 != null)
             {
                 try
                 {
-                    currentTab.WebView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
+                    currentTab.GetWebView().CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
                 }
                 catch { }
             }
@@ -377,9 +378,9 @@ namespace Bear_Browser
                 {
                     currentTab.Title = LocalizationService.Instance["Tab_Settings"];
                     var settingsView = new SettingsView();
-                    if (currentTab.WebView.CoreWebView2 != null)
+                    if (currentTab.GetWebView().CoreWebView2 != null)
                     {
-                        settingsView.SetProfile(currentTab.WebView.CoreWebView2.Profile);
+                        settingsView.SetProfile(currentTab.GetWebView().CoreWebView2.Profile);
                     }
                     settingsView.NavigateRequested += (s, targetUrl) => NavigateToUrl(targetUrl);
 
@@ -444,7 +445,7 @@ namespace Bear_Browser
                 }
                 else
                 {
-                    WebContentGrid.Children.Add(currentTab.WebView);
+                    WebContentGrid.Children.Add(currentTab.GetWebView());
                     NavBar.UpdateUrl(currentTab.Url, currentTab.Title);
                     NavBar.UpdateZoomDisplay(currentTab.ZoomFactor);
                 }
@@ -545,7 +546,7 @@ namespace Bear_Browser
             }
 
             // Eğer dahili sayfadayken bir web bağlantısına tıklanırsa WebView motorunu hazırla
-            if (ViewModel.CurrentTab.WebView.CoreWebView2 == null || !ViewModel.CurrentTab.IsWebViewInitialized)
+            if (ViewModel.CurrentTab.GetWebView().CoreWebView2 == null || !ViewModel.CurrentTab.IsWebViewInitialized)
             {
                 await ViewModel.EnsureTabWebViewInitializedAsync(ViewModel.CurrentTab);
             }
@@ -555,11 +556,11 @@ namespace Bear_Browser
             NavBar.SetLoading(true);
             try
             {
-                ViewModel.CurrentTab.WebView.Source = new Uri(url);
+                ViewModel.CurrentTab.GetWebView().Source = new Uri(url);
             }
             catch
             {
-                ViewModel.CurrentTab.WebView.Source = new Uri(SettingsService.Instance.GetSearchUrl(url));
+                ViewModel.CurrentTab.GetWebView().Source = new Uri(SettingsService.Instance.GetSearchUrl(url));
             }
 
             RenderCurrentTabContent(ViewModel.CurrentTab);
@@ -739,12 +740,12 @@ namespace Bear_Browser
 
                 foreach (var tab in ViewModel.Tabs)
                 {
-                    if (tab.WebView.CoreWebView2 != null)
+                    if (tab.GetWebView().CoreWebView2 != null)
                     {
                         try
                         {
-                            tab.WebView.CoreWebView2.Profile.PreferredColorScheme = scheme;
-                            ApplyWebPageDarkScript(tab.WebView, isDark);
+                            tab.GetWebView().CoreWebView2.Profile.PreferredColorScheme = scheme;
+                            ApplyWebPageDarkScript(tab.GetWebView(), isDark);
                         }
                         catch { }
                     }
@@ -797,10 +798,10 @@ namespace Bear_Browser
                 double next = Math.Clamp(Math.Round(current + delta, 1), 0.25, 5.0);
                 ViewModel.CurrentTab.ZoomFactor = next;
                 NavBar.UpdateZoomDisplay(next);
-                if (ViewModel.CurrentTab.WebView.CoreWebView2 != null)
+                if (ViewModel.CurrentTab.GetWebView().CoreWebView2 != null)
                 {
                     string zoomStr = next.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    await ViewModel.CurrentTab.WebView.CoreWebView2.ExecuteScriptAsync(
+                    await ViewModel.CurrentTab.GetWebView().CoreWebView2.ExecuteScriptAsync(
                         $"document.documentElement.style.zoom = '{zoomStr}';"
                     );
                 }
@@ -837,7 +838,7 @@ namespace Bear_Browser
                     {
                         foreach (var tab in ViewModel.Tabs)
                         {
-                            tab.WebView?.Close();
+                            tab.GetWebView()?.Close();
                         }
                     }
                     catch { }
@@ -866,7 +867,7 @@ namespace Bear_Browser
                     CreateNewTab("bear://settings/about");
                     break;
                 case "DevTools":
-                    ViewModel.CurrentTab?.WebView.CoreWebView2?.OpenDevToolsWindow();
+                    ViewModel.CurrentTab?.GetWebView().CoreWebView2?.OpenDevToolsWindow();
                     break;
                 case "Passwords":
                     CreateNewTab("bear://passwords");
@@ -946,7 +947,7 @@ namespace Bear_Browser
 
             if (ViewModel.CurrentTab?.IsLoading == true)
             {
-                try { ViewModel.CurrentTab.WebView.CoreWebView2?.Stop(); } catch { }
+                try { ViewModel.CurrentTab.GetWebView().CoreWebView2?.Stop(); } catch { }
                 args.Handled = true;
                 return;
             }
@@ -984,7 +985,7 @@ namespace Bear_Browser
                 }
 
                 // Sayfa ilk yüklendiğinde loading ekranını kaldır
-                tab.WebView.NavigationCompleted += (s, e) => DismissLoading();
+                tab.GetWebView().NavigationCompleted += (s, e) => DismissLoading();
 
                 // Güvenlik zaman aşımı: Ağ veya site gecikse bile en geç 1 saniye içinde kaldır
                 await Task.Delay(1000);
@@ -1026,9 +1027,9 @@ namespace Bear_Browser
 
             bool isInternalPage = tab.Url.StartsWith("bear://", StringComparison.OrdinalIgnoreCase);
 
-            if (!isInternalPage && tab.WebView.CoreWebView2 != null && tab.WebView.CoreWebView2.CanGoBack)
+            if (!isInternalPage && tab.GetWebView().CoreWebView2 != null && tab.GetWebView().CoreWebView2.CanGoBack)
             {
-                tab.WebView.CoreWebView2.GoBack();
+                tab.GetWebView().CoreWebView2.GoBack();
             }
             else if (tab.HistoryIndex > 0)
             {
@@ -1036,9 +1037,9 @@ namespace Bear_Browser
                 string prevUrl = tab.HistoryStack[tab.HistoryIndex];
                 NavigateToUrl(prevUrl, isHistoryNavigation: true);
             }
-            else if (tab.WebView.CanGoBack)
+            else if (tab.GetWebView().CanGoBack)
             {
-                tab.WebView.GoBack();
+                tab.GetWebView().GoBack();
             }
 
             UpdateNavigationButtons(tab);
@@ -1051,9 +1052,9 @@ namespace Bear_Browser
 
             bool isInternalPage = tab.Url.StartsWith("bear://", StringComparison.OrdinalIgnoreCase);
 
-            if (!isInternalPage && tab.WebView.CoreWebView2 != null && tab.WebView.CoreWebView2.CanGoForward)
+            if (!isInternalPage && tab.GetWebView().CoreWebView2 != null && tab.GetWebView().CoreWebView2.CanGoForward)
             {
-                tab.WebView.CoreWebView2.GoForward();
+                tab.GetWebView().CoreWebView2.GoForward();
             }
             else if (tab.HistoryIndex >= 0 && tab.HistoryIndex < tab.HistoryStack.Count - 1)
             {
@@ -1061,9 +1062,9 @@ namespace Bear_Browser
                 string nextUrl = tab.HistoryStack[tab.HistoryIndex];
                 NavigateToUrl(nextUrl, isHistoryNavigation: true);
             }
-            else if (tab.WebView.CanGoForward)
+            else if (tab.GetWebView().CanGoForward)
             {
-                tab.WebView.GoForward();
+                tab.GetWebView().GoForward();
             }
 
             UpdateNavigationButtons(tab);
@@ -1080,15 +1081,15 @@ namespace Bear_Browser
             bool webCanGoBack = false;
             bool webCanGoForward = false;
 
-            if (tab.WebView.CoreWebView2 != null)
+            if (tab.GetWebView().CoreWebView2 != null)
             {
-                webCanGoBack = tab.WebView.CoreWebView2.CanGoBack;
-                webCanGoForward = tab.WebView.CoreWebView2.CanGoForward;
+                webCanGoBack = tab.GetWebView().CoreWebView2.CanGoBack;
+                webCanGoForward = tab.GetWebView().CoreWebView2.CanGoForward;
             }
             else
             {
-                webCanGoBack = tab.WebView.CanGoBack;
-                webCanGoForward = tab.WebView.CanGoForward;
+                webCanGoBack = tab.GetWebView().CanGoBack;
+                webCanGoForward = tab.GetWebView().CanGoForward;
             }
 
             bool canGoBack = webCanGoBack || (tab.HistoryIndex > 0);
@@ -1107,9 +1108,9 @@ namespace Bear_Browser
                 RenderCurrentTabContent(ViewModel.CurrentTab);
             }
             // Normal bir web sitesindeysek ve WebView hazırsa sayfayı yenile
-            else if (ViewModel.CurrentTab.WebView.CoreWebView2 != null)
+            else if (ViewModel.CurrentTab.GetWebView().CoreWebView2 != null)
             {
-                ViewModel.CurrentTab.WebView.Reload();
+                ViewModel.CurrentTab.GetWebView().Reload();
             }
         }
 
@@ -1139,7 +1140,7 @@ namespace Bear_Browser
         private void Shortcut_DevTools_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             args.Handled = true;
-            ViewModel.CurrentTab?.WebView.CoreWebView2?.OpenDevToolsWindow();
+            ViewModel.CurrentTab?.GetWebView().CoreWebView2?.OpenDevToolsWindow();
         }
 
         private void Shortcut_FindInPage_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -1171,7 +1172,7 @@ namespace Bear_Browser
             if (string.IsNullOrWhiteSpace(query)) return;
             string escaped = query.Replace("'", "\\'");
             string script = $"window.find('{escaped}', false, {backwards.ToString().ToLower()}, true);";
-            _ = ViewModel.CurrentTab?.WebView.CoreWebView2?.ExecuteScriptAsync(script);
+            _ = ViewModel.CurrentTab?.GetWebView().CoreWebView2?.ExecuteScriptAsync(script);
         }
 
         private void FindTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -1255,7 +1256,7 @@ namespace Bear_Browser
 
             try
             {
-                var profile = ViewModel.CurrentTab?.WebView.CoreWebView2?.Profile;
+                var profile = ViewModel.CurrentTab?.GetWebView().CoreWebView2?.Profile;
                 var info = await ExtensionService.Instance.DownloadAndInstallAsync(
                     _pendingExtensionStoreType,
                     _pendingExtensionId,
@@ -1266,7 +1267,7 @@ namespace Bear_Browser
                 ConfirmInstallExtensionBtnText.Text = "✓ Eklendi!";
                 ExtensionInstallProgress.Visibility = Visibility.Collapsed;
                 ExtensionInstallProgress.IsActive = false;
-                _ = ViewModel.CurrentTab?.WebView.CoreWebView2?.ExecuteScriptAsync(@"
+                _ = ViewModel.CurrentTab?.GetWebView().CoreWebView2?.ExecuteScriptAsync(@"
                     (() => {
                         const btns = Array.from(document.querySelectorAll('button, [role=""button""]'));
                         const btn = btns.find(b => (b.innerText || '').includes('Ekleniyor') || (b.innerText || '').includes('Bear'));

@@ -1,19 +1,18 @@
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Bear_Browser.Models
 {
-    public class BrowserTab : INotifyPropertyChanged
+    public class BrowserTab : ObservableObject
     {
         private string _title = "Yeni Sekme";
         private string _url = "https://www.google.com";
         private bool _isLoading;
         private int _blockedAdsCount;
         private long _lastLoadTimeMs;
+        private Uri? _faviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
 
         public Guid Id { get; } = Guid.NewGuid();
 
@@ -38,18 +37,8 @@ namespace Bear_Browser.Models
         public bool IsLoading
         {
             get => _isLoading;
-            set
-            {
-                if (SetProperty(ref _isLoading, value))
-                {
-                    OnPropertyChanged(nameof(LoadingVisibility));
-                    OnPropertyChanged(nameof(FaviconVisibility));
-                }
-            }
+            set => SetProperty(ref _isLoading, value);
         }
-
-        public Visibility LoadingVisibility => _isLoading ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility FaviconVisibility => _isLoading ? Visibility.Collapsed : Visibility.Visible;
 
         public int BlockedAdsCount
         {
@@ -63,32 +52,15 @@ namespace Bear_Browser.Models
             set => SetProperty(ref _lastLoadTimeMs, value);
         }
 
-        private Uri? _faviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
         public Uri? FaviconUri
         {
             get => _faviconUri;
             set => SetProperty(ref _faviconUri, value);
         }
-        public WebView2 WebView { get; set; } = new WebView2();
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
-        {
-            if (Equals(storage, value)) return false;
-            storage = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            return true;
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         public double ZoomFactor { get; set; } = 1.0; // Varsayılan %100
 
-        public System.Collections.Generic.List<string> HistoryStack { get; } = new();
+        public List<string> HistoryStack { get; } = new();
         public int HistoryIndex { get; set; } = -1;
 
         public void PushHistory(string url)
