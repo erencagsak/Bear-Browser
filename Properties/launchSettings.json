@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Bear-Browser (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Bear-Browser (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

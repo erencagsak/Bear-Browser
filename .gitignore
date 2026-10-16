@@ -1,0 +1,21 @@
+# Build and Output directories
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+
+# Scratch & Golden test data
+scratch/
+scratch/golden/
+*.golden.json
+*.local.json
+
+# Crash dumps and logs
+*.log
+*.dmp
