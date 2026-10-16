@@ -39,8 +39,8 @@ namespace Bear_Browser
         {
             Services = ConfigureServices();
 
-            Bear_Browser.Services.CrashReportingService.Instance.Initialize(this);
-            Bear_Browser.Services.LocalizationService.Instance.Initialize();
+            Services.GetRequiredService<ICrashReportingService>().Initialize(this);
+            Services.GetRequiredService<ILocalizationService>().Initialize();
             InitializeComponent();
         }
 
@@ -104,7 +104,7 @@ namespace Bear_Browser
             string[] cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs.Any(a => a.Equals("--test-crash", StringComparison.OrdinalIgnoreCase)))
             {
-                Bear_Browser.Services.CrashReportingService.Instance.TriggerTestCrash();
+                Services.GetRequiredService<ICrashReportingService>().TriggerTestCrash();
             }
         }
     }

@@ -20,9 +20,11 @@ namespace Bear_Browser.Controls
         private bool _hasNewImage = false;
         private Point _lastPointerPosition;
         private bool _isDragging = false;
+        private readonly Bear_Browser.Services.Interfaces.IProfileService _profileService;
 
         public ProfileEditDialog(UserProfile currentProfile)
         {
+            _profileService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Bear_Browser.Services.Interfaces.IProfileService>(App.Services);
             InitializeComponent();
 
             ProfileNameBox.Text = currentProfile.Name;
@@ -142,7 +144,7 @@ namespace Bear_Browser.Controls
                     var pixelBuffer = await rtb.GetPixelsAsync();
                     byte[] pixels = pixelBuffer.ToArray();
 
-                    string profileFolder = ProfileService.Instance.CurrentProfile.ProfileFolderPath;
+                    string profileFolder = _profileService.CurrentProfile.ProfileFolderPath;
                     string avatarFileName = $"avatar_{DateTime.UtcNow.Ticks}.png";
                     string destPath = Path.Combine(profileFolder, avatarFileName);
 
@@ -168,16 +170,16 @@ namespace Bear_Browser.Controls
                         await encoder.FlushAsync();
                     }
 
-                    await ProfileService.Instance.UpdateProfileAvatarPathAsync(newName, destPath);
+                    await _profileService.UpdateProfileAvatarPathAsync(newName, destPath);
                 }
                 catch
                 {
-                    await ProfileService.Instance.UpdateProfileNameAsync(newName);
+                    await _profileService.UpdateProfileNameAsync(newName);
                 }
             }
             else
             {
-                await ProfileService.Instance.UpdateProfileNameAsync(newName);
+                await _profileService.UpdateProfileNameAsync(newName);
             }
         }
     }

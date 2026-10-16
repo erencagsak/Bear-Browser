@@ -11,17 +11,6 @@ namespace Bear_Browser.Services
 {
     public class CrashReportingService : Bear_Browser.Services.Interfaces.ICrashReportingService
     {
-        private static CrashReportingService? _instance;
-        public static CrashReportingService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.ICrashReportingService)) is CrashReportingService s)
-                    return s;
-                return _instance ??= new CrashReportingService();
-            }
-        }
-
         public string LogsDirectory { get; }
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

@@ -12,17 +12,6 @@ namespace Bear_Browser.Services
 {
     public class ProfileService : IProfileService
     {
-        private static ProfileService? _instance;
-        public static ProfileService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService<IProfileService>() is ProfileService ps)
-                    return ps;
-                return _instance ??= new ProfileService();
-            }
-        }
-
         private readonly IJsonStorageService _storageService;
         private readonly IBookmarkService _bookmarkService;
         private readonly IHistoryService _historyService;

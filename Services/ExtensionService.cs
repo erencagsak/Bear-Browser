@@ -16,17 +16,6 @@ namespace Bear_Browser.Services
 {
     public class ExtensionService : IExtensionService
     {
-        private static ExtensionService? _instance;
-        public static ExtensionService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.IExtensionService)) is ExtensionService s)
-                    return s;
-                return _instance ??= new ExtensionService();
-            }
-        }
-
         public string ExtensionsDirectory { get; }
         public ObservableCollection<ExtensionInfo> InstalledExtensions { get; } = new();
 
@@ -35,9 +24,11 @@ namespace Bear_Browser.Services
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private CoreWebView2Profile? _lastProfile;
+        private readonly ICrashReportingService? _crashReportingService;
 
-        public ExtensionService()
+        public ExtensionService(ICrashReportingService? crashReportingService = null)
         {
+            _crashReportingService = crashReportingService;
             ExtensionsDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "BearBrowser",
@@ -204,7 +195,8 @@ namespace Bear_Browser.Services
                     }
                     catch (Exception pEx)
                     {
-                        CrashReportingService.Instance.LogCustomError("Extension Profile Registration Warning", $"Eklenti: {extensionId}\nUyarı: {pEx.Message}");
+                        var crashService = _crashReportingService ?? (App.Services?.GetService(typeof(ICrashReportingService)) as ICrashReportingService);
+                        crashService?.LogCustomError("Extension Profile Registration Warning", $"Eklenti: {extensionId}\nUyarı: {pEx.Message}");
                     }
                 }
 
@@ -221,7 +213,8 @@ namespace Bear_Browser.Services
             }
             catch (Exception ex)
             {
-                CrashReportingService.Instance.LogCustomError("Extension Installation Failed", $"Eklenti: {extensionId}\nTür: {storeType}\nHata: {ex.Message}\nStack:\n{ex.StackTrace}");
+                var crashService = _crashReportingService ?? (App.Services?.GetService(typeof(ICrashReportingService)) as ICrashReportingService);
+                crashService?.LogCustomError("Extension Installation Failed", $"Eklenti: {extensionId}\nTür: {storeType}\nHata: {ex.Message}\nStack:\n{ex.StackTrace}");
                 throw;
             }
         }

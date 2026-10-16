@@ -25,17 +25,6 @@ namespace Bear_Browser.Services
 
     public class SettingsService : ISettingsService
     {
-        private static SettingsService? _instance;
-        public static SettingsService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService<ISettingsService>() is SettingsService s)
-                    return s;
-                return _instance ??= new SettingsService();
-            }
-        }
-
         private readonly IJsonStorageService _storageService;
         private readonly string _settingsFilePath;
         public BrowserSettings Settings { get; private set; } = new();

@@ -1,5 +1,6 @@
 using System;
-using Bear_Browser.Services;
+using Bear_Browser.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -12,17 +13,23 @@ namespace Bear_Browser.Controls
         public event EventHandler<string>? NavigateRequested;
         public event EventHandler<string>? NewTabRequested;
 
+        private readonly ILocalizationService _localizationService;
+        private readonly ISettingsService _settingsService;
+
         public NewTabView()
         {
+            _localizationService = App.Services.GetRequiredService<ILocalizationService>();
+            _settingsService = App.Services.GetRequiredService<ISettingsService>();
+
             InitializeComponent();
             ApplyLocalization();
-            LocalizationService.Instance.LanguageChanged += (s, e) => DispatcherQueue?.TryEnqueue(ApplyLocalization);
+            _localizationService.LanguageChanged += (s, e) => DispatcherQueue?.TryEnqueue(ApplyLocalization);
             this.Loaded += NewTabView_Loaded;
         }
 
         public void ApplyLocalization()
         {
-            var loc = LocalizationService.Instance;
+            var loc = _localizationService;
             if (TaglineText != null) TaglineText.Text = loc["NewTab_Tagline"];
             if (SearchBox != null) SearchBox.PlaceholderText = loc["NewTab_SearchPlaceholder"];
             if (SearchSubmitBtn != null) ToolTipService.SetToolTip(SearchSubmitBtn, loc["NewTab_SearchTooltip"]);
@@ -76,7 +83,7 @@ namespace Bear_Browser.Controls
             }
             else
             {
-                targetUrl = SettingsService.Instance.GetSearchUrl(query);
+                targetUrl = _settingsService.GetSearchUrl(query);
             }
 
             NavigateRequested?.Invoke(this, targetUrl);

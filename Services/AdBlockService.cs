@@ -7,17 +7,6 @@ namespace Bear_Browser.Services
 {
     public class AdBlockService : Bear_Browser.Services.Interfaces.IAdBlockService
     {
-        private static AdBlockService? _instance;
-        public static AdBlockService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.IAdBlockService)) is AdBlockService s)
-                    return s;
-                return _instance ??= new AdBlockService();
-            }
-        }
-
         public bool IsEnabled { get; set; } = true;
 
         private static readonly string[] AdDomains = new[]

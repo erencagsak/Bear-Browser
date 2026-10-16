@@ -46,7 +46,7 @@ namespace Bear_Browser.Services
         public Visibility StatusBadgeVisibility => IsSelected ? Visibility.Visible : Visibility.Collapsed;
         public Visibility CheckmarkVisibility => IsSelected ? Visibility.Visible : Visibility.Collapsed;
         public Visibility SelectButtonVisibility => IsSelected ? Visibility.Collapsed : Visibility.Visible;
-        public string SelectButtonText => LocalizationService.Instance.GetString("Languages_ApplyButton", "Bu dili kullan");
+        public string SelectButtonText => (App.Services?.GetService<ILocalizationService>())?.GetString("Languages_ApplyButton", "Bu dili kullan") ?? "Bu dili kullan";
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? propName = null)
@@ -57,17 +57,6 @@ namespace Bear_Browser.Services
 
     public class LocalizationService : ILocalizationService, INotifyPropertyChanged
     {
-        private static LocalizationService? _instance;
-        public static LocalizationService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService<ILocalizationService>() is LocalizationService s)
-                    return s;
-                return _instance ??= new LocalizationService();
-            }
-        }
-
         private readonly ISettingsService? _settingsService;
         private Dictionary<string, string> _strings = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _fallbackStrings = new(StringComparer.OrdinalIgnoreCase)
@@ -200,7 +189,7 @@ namespace Bear_Browser.Services
 
         public void Initialize()
         {
-            var settings = _settingsService?.Settings ?? SettingsService.Instance.Settings;
+            var settings = (_settingsService ?? App.Services?.GetService<ISettingsService>())?.Settings;
             string saved = settings?.Language ?? "system";
             SetLanguageInternal(saved, notify: false);
         }
@@ -217,9 +206,12 @@ namespace Bear_Browser.Services
         public void SetLanguage(string code)
         {
             SetLanguageInternal(code, notify: true);
-            var settingsService = _settingsService ?? SettingsService.Instance;
-            settingsService.Settings.Language = code;
-            _ = settingsService.SaveAsync();
+            var settingsService = _settingsService ?? App.Services?.GetService<ISettingsService>();
+            if (settingsService != null)
+            {
+                settingsService.Settings.Language = code;
+                _ = settingsService.SaveAsync();
+            }
         }
 
         private void SetLanguageInternal(string code, bool notify)

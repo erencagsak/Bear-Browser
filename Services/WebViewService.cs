@@ -11,26 +11,19 @@ namespace Bear_Browser.Services
 {
     public class WebViewService : IWebViewService
     {
-        private static WebViewService? _instance;
-        public static WebViewService Instance
-        {
-            get
-            {
-                if (App.Services?.GetService<IWebViewService>() is WebViewService ws)
-                    return ws;
-                return _instance ??= new WebViewService();
-            }
-        }
-
         private static readonly Lazy<string> ShortcutsScript = new(() => LoadEmbeddedResource("Shortcuts.js"));
         private static readonly Lazy<string> AutofillScript = new(() => LoadEmbeddedResource("Autofill.js"));
         private static readonly Lazy<string> WebStoreHookScript = new(() => LoadEmbeddedResource("WebStoreHook.js"));
 
         private CoreWebView2Environment? _environment;
         private readonly string _userDataFolder;
+        private readonly IExtensionService? _extensionService;
+        private readonly ICrashReportingService? _crashReportingService;
 
-        public WebViewService()
+        public WebViewService(IExtensionService? extensionService = null, ICrashReportingService? crashReportingService = null)
         {
+            _extensionService = extensionService;
+            _crashReportingService = crashReportingService;
             _userDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "BearBrowser",
@@ -103,7 +96,11 @@ namespace Bear_Browser.Services
 
             if (webView.CoreWebView2 != null && !isInPrivate)
             {
-                _ = ExtensionService.Instance.SyncInstalledExtensionsAsync(webView.CoreWebView2.Profile);
+                var extService = _extensionService ?? App.Services?.GetService<IExtensionService>();
+                if (extService != null)
+                {
+                    _ = extService.SyncInstalledExtensionsAsync(webView.CoreWebView2.Profile);
+                }
             }
 
             if (webView.CoreWebView2 != null)
@@ -122,7 +119,8 @@ namespace Bear_Browser.Services
                 webView.CoreWebView2.ProcessFailed += (s, args) =>
                 {
                     string info = $"İşlem Türü: {args.ProcessFailedKind}\nNeden: {args.Reason}\nÇıkış Kodu: {args.ExitCode}\nAçıklama: {args.ProcessDescription}";
-                    CrashReportingService.Instance.LogCustomError("WebView2 İşlem Hatası (ProcessFailed)", info);
+                    var crashService = _crashReportingService ?? App.Services?.GetService<ICrashReportingService>();
+                    crashService?.LogCustomError("WebView2 İşlem Hatası (ProcessFailed)", info);
                 };
 
                 // Betikleri Embedded Resource üzerinden enjekte et

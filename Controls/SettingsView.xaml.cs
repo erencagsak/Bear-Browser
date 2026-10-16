@@ -1,5 +1,6 @@
 using Bear_Browser.Models;
 using Bear_Browser.Services;
+using Bear_Browser.Services.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -25,6 +26,18 @@ namespace Bear_Browser.Controls
         private ObservableCollection<ExtensionInfo> _displayedExtensions = new();
         private ObservableCollection<LanguageItem> _languagesList = new();
 
+        private readonly ISettingsService _settingsService;
+        private readonly IProfileService _profileService;
+        private readonly IBookmarkService _bookmarkService;
+        private readonly IHistoryService _historyService;
+        private readonly IDownloadService _downloadService;
+        private readonly IPasswordService _passwordService;
+        private readonly IExtensionService _extensionService;
+        private readonly ILocalizationService _localizationService;
+        private readonly IAdBlockService _adBlockService;
+        private readonly IMemoryOptimizerService _memoryOptimizerService;
+        private readonly ICrashReportingService _crashReportingService;
+
         private DispatcherTimer? _pulseTimer;
         private DispatcherTimer? _ramTimer;
         private double _currentGlowOpacity = 0.3;
@@ -35,29 +48,41 @@ namespace Bear_Browser.Controls
         public SettingsView()
         {
             ViewModel = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<Bear_Browser.ViewModels.SettingsViewModel>(App.Services);
+            _settingsService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<ISettingsService>(App.Services);
+            _profileService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IProfileService>(App.Services);
+            _bookmarkService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IBookmarkService>(App.Services);
+            _historyService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IHistoryService>(App.Services);
+            _downloadService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IDownloadService>(App.Services);
+            _passwordService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IPasswordService>(App.Services);
+            _extensionService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IExtensionService>(App.Services);
+            _localizationService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<ILocalizationService>(App.Services);
+            _adBlockService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IAdBlockService>(App.Services);
+            _memoryOptimizerService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IMemoryOptimizerService>(App.Services);
+            _crashReportingService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<ICrashReportingService>(App.Services);
+
             this.InitializeComponent();
             LoadVersionInfo();
             LoadSettingsData();
             LoadProfileData();
 
             SettingsExtensionsItemsControl.ItemsSource = _displayedExtensions;
-            ExtensionService.Instance.InstalledExtensions.CollectionChanged += (s, e) => DispatcherQueue?.TryEnqueue(RefreshExtensionsList);
+            _extensionService.InstalledExtensions.CollectionChanged += (s, e) => DispatcherQueue?.TryEnqueue(RefreshExtensionsList);
             RefreshExtensionsList();
 
             LanguagesItemsControl.ItemsSource = _languagesList;
             RefreshLanguagesList();
             ApplyLocalization();
-            LocalizationService.Instance.LanguageChanged += (s, e) => DispatcherQueue?.TryEnqueue(() =>
+            _localizationService.LanguageChanged += (s, e) => DispatcherQueue?.TryEnqueue(() =>
             {
                 RefreshLanguagesList();
                 ApplyLocalization();
             });
 
             // Sık Kullanılanlar, Parolalar ve Profil güncellemelerini canlı dinle
-            ProfileService.Instance.ProfileUpdated += (s, p) => DispatcherQueue?.TryEnqueue(LoadProfileData);
-            ProfileService.Instance.PasswordsUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
-            ProfileService.Instance.BookmarksUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
-            ProfileService.Instance.HistoryUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
+            _profileService.ProfileUpdated += (s, p) => DispatcherQueue?.TryEnqueue(LoadProfileData);
+            _passwordService.PasswordsUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
+            _bookmarkService.BookmarksUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
+            _historyService.HistoryUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
 
             _isInitializing = false;
             AboutNavList.SelectedItem = AboutNavItem;
@@ -67,7 +92,7 @@ namespace Bear_Browser.Controls
         public void SetProfile(CoreWebView2Profile profile)
         {
             _profile = profile;
-            _ = ExtensionService.Instance.SyncInstalledExtensionsAsync(_profile);
+            _ = _extensionService.SyncInstalledExtensionsAsync(_profile);
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -157,7 +182,7 @@ namespace Bear_Browser.Controls
 
         private void LoadProfileData()
         {
-            var p = ProfileService.Instance.CurrentProfile;
+            var p = _profileService.CurrentProfile;
             ProfileNameText.Text = p.Name;
             ProfileCreatedDateText.Text = $"Varsayılan Yerel Profil • {p.CreatedAt:dd.MM.yyyy}";
 
@@ -171,14 +196,14 @@ namespace Bear_Browser.Controls
                 ProfileAvatarPic.DisplayName = p.Name;
             }
 
-            PasswordsCountText.Text = $"{ProfileService.Instance.Passwords.Count} adet kayıtlı parola";
-            BookmarksCountText.Text = $"{ProfileService.Instance.Bookmarks.Count} adet yer imi";
-            HistoryCountText.Text = $"{ProfileService.Instance.History.Count} adet sayfa kaydı";
+            PasswordsCountText.Text = $"{_passwordService.Passwords.Count} adet kayıtlı parola";
+            BookmarksCountText.Text = $"{_bookmarkService.Bookmarks.Count} adet yer imi";
+            HistoryCountText.Text = $"{_historyService.History.Count} adet sayfa kaydı";
         }
 
         private void LoadSettingsData()
         {
-            var s = SettingsService.Instance.Settings;
+            var s = _settingsService.Settings;
 
             // Gizlilik
             AdBlockToggle.IsOn = s.AdBlockEnabled;
@@ -352,7 +377,7 @@ namespace Bear_Browser.Controls
 
         private async void EditProfileBtn_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new ProfileEditDialog(ProfileService.Instance.CurrentProfile)
+            var dialog = new ProfileEditDialog(_profileService.CurrentProfile)
             {
                 XamlRoot = this.XamlRoot
             };
@@ -379,7 +404,7 @@ namespace Bear_Browser.Controls
         {
             try
             {
-                string path = ProfileService.Instance.CurrentProfile.ProfileFolderPath;
+                string path = _profileService.CurrentProfile.ProfileFolderPath;
                 if (Directory.Exists(path))
                     Process.Start(new ProcessStartInfo("explorer.exe", path) { UseShellExecute = true });
             }
@@ -391,9 +416,9 @@ namespace Bear_Browser.Controls
         private void AdBlockToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
-            SettingsService.Instance.Settings.AdBlockEnabled = AdBlockToggle.IsOn;
-            AdBlockService.Instance.IsEnabled = AdBlockToggle.IsOn;
-            _ = SettingsService.Instance.SaveAsync();
+            _settingsService.Settings.AdBlockEnabled = AdBlockToggle.IsOn;
+            _adBlockService.IsEnabled = AdBlockToggle.IsOn;
+            _ = _settingsService.SaveAsync();
         }
 
         private void AdBlockLevelCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -401,8 +426,8 @@ namespace Bear_Browser.Controls
             if (_isInitializing) return;
             if (AdBlockLevelCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string tag)
             {
-                SettingsService.Instance.Settings.AdBlockLevel = tag;
-                _ = SettingsService.Instance.SaveAsync();
+                _settingsService.Settings.AdBlockLevel = tag;
+                _ = _settingsService.SaveAsync();
             }
         }
 
@@ -411,8 +436,8 @@ namespace Bear_Browser.Controls
             ClearDataBtn.IsEnabled = false;
             ClearDataStatusText.Text = "Temizleniyor...";
 
-            await ProfileService.Instance.ClearHistoryAsync();
-            await ProfileService.Instance.ClearDownloadsAsync();
+            await _historyService.ClearHistoryAsync();
+            await _downloadService.ClearDownloadsAsync();
 
             await Task.Delay(400);
 
@@ -426,27 +451,27 @@ namespace Bear_Browser.Controls
             if (_isInitializing) return;
             if (SearchEngineCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string engine)
             {
-                SettingsService.Instance.UpdateSearchEngine(engine);
+                _settingsService.UpdateSearchEngine(engine);
                 if (HomePageBox != null)
                 {
-                    HomePageBox.Text = SettingsService.Instance.Settings.HomePageUrl;
+                    HomePageBox.Text = _settingsService.Settings.HomePageUrl;
                 }
-                _ = SettingsService.Instance.SaveAsync();
+                _ = _settingsService.SaveAsync();
             }
         }
 
         private void DoNotTrackToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
-            SettingsService.Instance.Settings.DoNotTrack = DoNotTrackToggle.IsOn;
-            _ = SettingsService.Instance.SaveAsync();
+            _settingsService.Settings.DoNotTrack = DoNotTrackToggle.IsOn;
+            _ = _settingsService.SaveAsync();
         }
 
         private void AskPasswordToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
-            SettingsService.Instance.Settings.AskPasswordSave = AskPasswordToggle.IsOn;
-            _ = SettingsService.Instance.SaveAsync();
+            _settingsService.Settings.AskPasswordSave = AskPasswordToggle.IsOn;
+            _ = _settingsService.SaveAsync();
         }
 
         // --- GÖRÜNÜM PANELİ AKSİYONLARI ---
@@ -456,16 +481,16 @@ namespace Bear_Browser.Controls
             if (_isInitializing) return;
             if (ThemeCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string theme)
             {
-                SettingsService.Instance.Settings.Theme = theme;
-                _ = SettingsService.Instance.SaveAsync();
+                _settingsService.Settings.Theme = theme;
+                _ = _settingsService.SaveAsync();
             }
         }
 
         private void ShowFavBarToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
-            SettingsService.Instance.Settings.ShowFavoritesBar = ShowFavBarToggle.IsOn;
-            _ = SettingsService.Instance.SaveAsync();
+            _settingsService.Settings.ShowFavoritesBar = ShowFavBarToggle.IsOn;
+            _ = _settingsService.SaveAsync();
         }
 
         private void ZoomCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -474,8 +499,8 @@ namespace Bear_Browser.Controls
             if (ZoomCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string tag &&
                 double.TryParse(tag, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double zoom))
             {
-                SettingsService.Instance.Settings.DefaultZoom = zoom;
-                _ = SettingsService.Instance.SaveAsync();
+                _settingsService.Settings.DefaultZoom = zoom;
+                _ = _settingsService.SaveAsync();
             }
         }
 
@@ -491,8 +516,8 @@ namespace Bear_Browser.Controls
                     url = "https://" + url;
                 }
                 HomePageBox.Text = url;
-                SettingsService.Instance.Settings.HomePageUrl = url;
-                await SettingsService.Instance.SaveAsync();
+                _settingsService.Settings.HomePageUrl = url;
+                await _settingsService.SaveAsync();
                 SaveHomePageBtn.Content = "Kaydedildi!";
                 await Task.Delay(1500);
                 SaveHomePageBtn.Content = "Kaydet";
@@ -523,7 +548,7 @@ namespace Bear_Browser.Controls
             OptimizeMemoryBtn.IsEnabled = false;
             MemoryOptimizeStatusText.Text = "Bellek optimize ediliyor...";
 
-            MemoryOptimizerService.Instance.OptimizeMemoryAsync();
+            _memoryOptimizerService.OptimizeMemoryAsync();
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
@@ -538,18 +563,18 @@ namespace Bear_Browser.Controls
         private void EcoModeToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
-            SettingsService.Instance.Settings.EcoModeEnabled = EcoModeToggle.IsOn;
-            _ = SettingsService.Instance.SaveAsync();
+            _settingsService.Settings.EcoModeEnabled = EcoModeToggle.IsOn;
+            _ = _settingsService.SaveAsync();
         }
 
         private void OpenCrashLogsBtn_Click(object sender, RoutedEventArgs e)
         {
-            CrashReportingService.Instance.OpenLogsFolder();
+            _crashReportingService.OpenLogsFolder();
         }
 
         private void TestCrashBtn_Click(object sender, RoutedEventArgs e)
         {
-            CrashReportingService.Instance.TriggerTestCrash();
+            _crashReportingService.TriggerTestCrash();
         }
 
         // --- HAKKINDA PANELİ AKSİYONLARI ---
@@ -584,7 +609,7 @@ namespace Bear_Browser.Controls
             string query = SettingsExtensionSearchBox?.Text?.Trim().ToLowerInvariant() ?? "";
             _displayedExtensions.Clear();
 
-            var source = ExtensionService.Instance.InstalledExtensions;
+            var source = _extensionService.InstalledExtensions;
             var filtered = string.IsNullOrEmpty(query)
                 ? source
                 : source.Where(e => e.Name.ToLowerInvariant().Contains(query) ||
@@ -645,13 +670,13 @@ namespace Bear_Browser.Controls
                 var folder = await folderPicker.PickSingleFolderAsync();
                 if (folder != null)
                 {
-                    await ExtensionService.Instance.InstallFromFolderAsync(folder.Path, _profile);
+                    await _extensionService.InstallFromFolderAsync(folder.Path, _profile);
                     RefreshExtensionsList();
                 }
             }
             catch (Exception ex)
             {
-                CrashReportingService.Instance.LogCustomError("Settings Load Unpacked Extension Failed", ex.Message);
+                _crashReportingService.LogCustomError("Settings Load Unpacked Extension Failed", ex.Message);
             }
         }
 
@@ -659,7 +684,7 @@ namespace Bear_Browser.Controls
         {
             if (sender is ToggleSwitch toggle && toggle.Tag is string extId)
             {
-                await ExtensionService.Instance.SetExtensionEnabledAsync(extId, toggle.IsOn, _profile);
+                await _extensionService.SetExtensionEnabledAsync(extId, toggle.IsOn, _profile);
             }
         }
 
@@ -667,7 +692,7 @@ namespace Bear_Browser.Controls
         {
             if (sender is Button btn && btn.Tag is string extId)
             {
-                await ExtensionService.Instance.RemoveExtensionAsync(extId, _profile);
+                await _extensionService.RemoveExtensionAsync(extId, _profile);
                 RefreshExtensionsList();
             }
         }
@@ -677,7 +702,7 @@ namespace Bear_Browser.Controls
         private void RefreshLanguagesList()
         {
             _languagesList.Clear();
-            var items = LocalizationService.Instance.GetAvailableLanguages();
+            var items = _localizationService.GetAvailableLanguages();
             foreach (var item in items)
             {
                 _languagesList.Add(item);
@@ -688,7 +713,7 @@ namespace Bear_Browser.Controls
         {
             if (sender is Button btn && btn.Tag is string langCode)
             {
-                LocalizationService.Instance.SetLanguage(langCode);
+                _localizationService.SetLanguage(langCode);
                 RefreshLanguagesList();
                 ApplyLocalization();
             }
@@ -696,7 +721,7 @@ namespace Bear_Browser.Controls
 
         public void ApplyLocalization()
         {
-            var loc = LocalizationService.Instance;
+            var loc = _localizationService;
 
             // Navigasyon Menüsü
             if (NavTitleText != null) NavTitleText.Text = loc["Menu_Settings"];
