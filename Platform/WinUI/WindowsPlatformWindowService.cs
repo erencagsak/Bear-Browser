@@ -62,5 +62,31 @@ namespace Bear_Browser.Platform.WinUI
                 // İkon yükleme hatası durumunda sessizce devam edilir
             }
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        /// <inheritdoc />
+        public bool TryGetCursorPos(out int x, out int y)
+        {
+            if (GetCursorPos(out POINT pt))
+            {
+                x = pt.X;
+                y = pt.Y;
+                return true;
+            }
+
+            x = 0;
+            y = 0;
+            return false;
+        }
     }
 }

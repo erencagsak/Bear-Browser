@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Bear_Browser.Helpers;
+using Bear_Browser.Messages;
 using Bear_Browser.Models;
 using Bear_Browser.Platform.WinUI;
 using Bear_Browser.Services.Interfaces;
@@ -46,6 +47,10 @@ namespace Bear_Browser.ViewModels
                 if (SetProperty(ref _currentTab, value))
                 {
                     CurrentTabChanged?.Invoke(this, _currentTab);
+                    if (_currentTab != null)
+                    {
+                        _messenger.Send(new TabSelectedMessage(_currentTab));
+                    }
                 }
             }
         }
@@ -122,6 +127,60 @@ namespace Bear_Browser.ViewModels
             _autofillService = autofillService ?? throw new ArgumentNullException(nameof(autofillService));
             _downloadHandlerService = downloadHandlerService ?? throw new ArgumentNullException(nameof(downloadHandlerService));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+
+            // Messenger Subscriptions
+            _messenger.Register<NewTabRequestedMessage>(this, (r, m) =>
+            {
+                _ = CreateNewTabAsync(m.Url ?? "bear://newtab");
+            });
+
+            _messenger.Register<CloseCurrentTabRequestedMessage>(this, (r, m) =>
+            {
+                if (CurrentTab != null)
+                {
+                    CloseTab(CurrentTab);
+                }
+            });
+
+            _messenger.Register<NavigateRequestedMessage>(this, (r, m) =>
+            {
+                if (CurrentTab != null && !string.IsNullOrWhiteSpace(m.Url))
+                {
+                    CurrentTab.GetWebView().CoreWebView2?.Navigate(m.Url);
+                }
+            });
+
+            _messenger.Register<GoBackRequestedMessage>(this, (r, m) =>
+            {
+                if (CurrentTab != null && CurrentTab.GetWebView().CanGoBack)
+                {
+                    CurrentTab.GetWebView().GoBack();
+                }
+            });
+
+            _messenger.Register<GoForwardRequestedMessage>(this, (r, m) =>
+            {
+                if (CurrentTab != null && CurrentTab.GetWebView().CanGoForward)
+                {
+                    CurrentTab.GetWebView().GoForward();
+                }
+            });
+
+            _messenger.Register<RefreshRequestedMessage>(this, (r, m) =>
+            {
+                if (CurrentTab != null)
+                {
+                    CurrentTab.GetWebView().Reload();
+                }
+            });
+
+            _messenger.Register<StopRequestedMessage>(this, (r, m) =>
+            {
+                if (CurrentTab != null)
+                {
+                    CurrentTab.GetWebView().CoreWebView2?.Stop();
+                }
+            });
         }
 
         public async Task<BrowserTab> CreateNewTabAsync(string initialUrl = "bear://newtab", bool isPopup = false)
@@ -170,6 +229,7 @@ namespace Bear_Browser.ViewModels
             tab.PushHistory(initialUrl);
 
             Tabs.Add(tab);
+            _messenger.Send(new TabCreatedMessage(tab));
             CurrentTab = tab;
 
             if (!initialUrl.StartsWith("bear://", StringComparison.OrdinalIgnoreCase))
@@ -247,9 +307,21 @@ namespace Bear_Browser.ViewModels
                 if (_extensionInstallerService.TryHandleCrxDownload(
                     args,
                     tab,
-                    (storeType, extId, name) => ExtensionDownloadProgressStarted?.Invoke(this, (storeType, extId, name)),
-                    (name) => ExtensionInstalledSuccessfully?.Invoke(this, name),
-                    (err) => ExtensionInstallFailed?.Invoke(this, err),
+                    (storeType, extId, name) =>
+                    {
+                        ExtensionDownloadProgressStarted?.Invoke(this, (storeType, extId, name));
+                        _messenger.Send(new ExtensionDownloadProgressStartedMessage(storeType, extId, name));
+                    },
+                    (name) =>
+                    {
+                        ExtensionInstalledSuccessfully?.Invoke(this, name);
+                        _messenger.Send(new ExtensionInstalledSuccessfullyMessage(name));
+                    },
+                    (err) =>
+                    {
+                        ExtensionInstallFailed?.Invoke(this, err);
+                        _messenger.Send(new ExtensionInstallFailedMessage(err));
+                    },
                     () => CloseTab(tab)))
                 {
                     return;
@@ -259,7 +331,11 @@ namespace Bear_Browser.ViewModels
                 _downloadHandlerService.HandleDownload(
                     args,
                     tab,
-                    (isDownloading, isCompleted) => DownloadStateChanged?.Invoke(this, (isDownloading, isCompleted)),
+                    (isDownloading, isCompleted) =>
+                    {
+                        DownloadStateChanged?.Invoke(this, (isDownloading, isCompleted));
+                        _messenger.Send(new DownloadStateChangedMessage(isDownloading, isCompleted));
+                    },
                     () => CloseTab(tab));
             };
 
@@ -274,7 +350,10 @@ namespace Bear_Browser.ViewModels
                     tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                     {
                         if (CurrentTab == tab)
+                        {
                             PageLoadCompleted?.Invoke(this, tab.LastLoadTimeMs);
+                            _messenger.Send(new PageLoadCompletedMessage(tab.LastLoadTimeMs));
+                        }
                     });
                 }
             };
@@ -290,6 +369,7 @@ namespace Bear_Browser.ViewModels
                         if (CurrentTab == tab && !tab.Url.StartsWith("bear://"))
                         {
                             TabNavigated?.Invoke(this, tab);
+                            _messenger.Send(new TabNavigatedMessage(tab));
                         }
                     }
                 });
@@ -303,6 +383,7 @@ namespace Bear_Browser.ViewModels
                     if (CurrentTab == tab)
                     {
                         TabNavigated?.Invoke(this, tab);
+                        _messenger.Send(new TabNavigatedMessage(tab));
                     }
                 });
             };
@@ -318,12 +399,14 @@ namespace Bear_Browser.ViewModels
                         if (CurrentTab == tab)
                         {
                             TabNavigated?.Invoke(this, tab);
+                            _messenger.Send(new TabNavigatedMessage(tab));
                         }
 
                         if (_extensionService.IsStoreExtensionUrl(core.Source, out string st, out string eId))
                         {
                             string title = tab.Title ?? "Eklenti";
                             ExtensionInstallPromptRequested?.Invoke(this, (st, eId, title));
+                            _messenger.Send(new ExtensionInstallPromptRequestedMessage(st, eId, title));
                         }
                     }
                     _autofillService.InjectAutofillAccounts(tab, null, IsInPrivate);
@@ -342,6 +425,7 @@ namespace Bear_Browser.ViewModels
                         tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             ShortcutActionTriggered?.Invoke(this, action);
+                            _messenger.Send(new ShortcutActionTriggeredMessage(action));
                         });
                     }
                     else if (!string.IsNullOrEmpty(msg) && msg.StartsWith("install_extension:"))
@@ -354,6 +438,7 @@ namespace Bear_Browser.ViewModels
                         tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                         {
                             ExtensionInstallPromptRequested?.Invoke(this, (store, extId, extName));
+                            _messenger.Send(new ExtensionInstallPromptRequestedMessage(store, extId, extName));
                         });
                     }
                     else if (!string.IsNullOrEmpty(msg) && msg.StartsWith("password_submit:"))
@@ -374,6 +459,7 @@ namespace Bear_Browser.ViewModels
                                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                                 {
                                     PasswordSavePromptRequested?.Invoke(this, (pUrl, pUser, pPass));
+                                    _messenger.Send(new PasswordSavePromptRequestedMessage(pUrl, pUser, pPass));
                                 });
                             }
                         }
@@ -404,6 +490,7 @@ namespace Bear_Browser.ViewModels
 
             tab.GetWebView().Close();
             Tabs.Remove(tab);
+            _messenger.Send(new TabClosedMessage(tab.Id));
 
             if (Tabs.Count == 0)
             {
@@ -430,7 +517,10 @@ namespace Bear_Browser.ViewModels
                 {
                     tab.BlockedAdsCount++;
                     if (CurrentTab == tab)
+                    {
                         AdBlockedCountChanged?.Invoke(this, tab.BlockedAdsCount);
+                        _messenger.Send(new AdBlockedCountChangedMessage(tab.BlockedAdsCount));
+                    }
                 });
             });
 
@@ -484,9 +574,11 @@ namespace Bear_Browser.ViewModels
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                 {
                     TabLoadingChanged?.Invoke(this, (tab, true));
+                    _messenger.Send(new TabLoadingChangedMessage(tab, true));
                     if (CurrentTab == tab && !tab.Url.StartsWith("bear://"))
                     {
                         TabNavigated?.Invoke(this, tab);
+                        _messenger.Send(new TabNavigatedMessage(tab));
                     }
                 });
             };
@@ -561,11 +653,15 @@ namespace Bear_Browser.ViewModels
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
                 {
                     TabLoadingChanged?.Invoke(this, (tab, false));
+                    _messenger.Send(new TabLoadingChangedMessage(tab, false));
                     if (CurrentTab == tab)
                     {
                         TabNavigated?.Invoke(this, tab);
+                        _messenger.Send(new TabNavigatedMessage(tab));
                         PageLoadCompleted?.Invoke(this, tab.LastLoadTimeMs);
+                        _messenger.Send(new PageLoadCompletedMessage(tab.LastLoadTimeMs));
                         AdBlockedCountChanged?.Invoke(this, tab.BlockedAdsCount);
+                        _messenger.Send(new AdBlockedCountChangedMessage(tab.BlockedAdsCount));
                     }
                 });
 

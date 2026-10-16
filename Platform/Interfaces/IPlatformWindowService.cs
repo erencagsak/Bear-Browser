@@ -16,5 +16,10 @@ namespace Bear_Browser.Platform.Interfaces
         /// Yerel pencere handle'ı için başlık çubuğu ve görev çubuğu ikonlarını ayarlar.
         /// </summary>
         void SetWindowIcon(IntPtr windowHandle, string iconPath);
+
+        /// <summary>
+        /// Ekrandaki imleç konumunu (piksel cinsinden X ve Y) döndürür.
+        /// </summary>
+        bool TryGetCursorPos(out int x, out int y);
     }
 }
