@@ -5,10 +5,18 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Bear_Browser.Services
 {
-    public class AdBlockService
+    public class AdBlockService : Bear_Browser.Services.Interfaces.IAdBlockService
     {
         private static AdBlockService? _instance;
-        public static AdBlockService Instance => _instance ??= new AdBlockService();
+        public static AdBlockService Instance
+        {
+            get
+            {
+                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.IAdBlockService)) is AdBlockService s)
+                    return s;
+                return _instance ??= new AdBlockService();
+            }
+        }
 
         public bool IsEnabled { get; set; } = true;
 

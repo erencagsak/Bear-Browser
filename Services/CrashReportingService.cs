@@ -9,10 +9,18 @@ using Microsoft.UI.Xaml;
 
 namespace Bear_Browser.Services
 {
-    public class CrashReportingService
+    public class CrashReportingService : Bear_Browser.Services.Interfaces.ICrashReportingService
     {
         private static CrashReportingService? _instance;
-        public static CrashReportingService Instance => _instance ??= new CrashReportingService();
+        public static CrashReportingService Instance
+        {
+            get
+            {
+                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.ICrashReportingService)) is CrashReportingService s)
+                    return s;
+                return _instance ??= new CrashReportingService();
+            }
+        }
 
         public string LogsDirectory { get; }
 

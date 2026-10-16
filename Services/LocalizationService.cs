@@ -5,6 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Bear_Browser.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 
 namespace Bear_Browser.Services
@@ -53,11 +55,20 @@ namespace Bear_Browser.Services
         }
     }
 
-    public class LocalizationService : INotifyPropertyChanged
+    public class LocalizationService : ILocalizationService, INotifyPropertyChanged
     {
         private static LocalizationService? _instance;
-        public static LocalizationService Instance => _instance ??= new LocalizationService();
+        public static LocalizationService Instance
+        {
+            get
+            {
+                if (App.Services?.GetService<ILocalizationService>() is LocalizationService s)
+                    return s;
+                return _instance ??= new LocalizationService();
+            }
+        }
 
+        private readonly ISettingsService? _settingsService;
         private Dictionary<string, string> _strings = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _fallbackStrings = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -181,14 +192,16 @@ namespace Bear_Browser.Services
         public event EventHandler? LanguageChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public LocalizationService()
+        public LocalizationService(ISettingsService? settingsService = null)
         {
+            _settingsService = settingsService;
             Initialize();
         }
 
         public void Initialize()
         {
-            string saved = SettingsService.Instance.Settings.Language ?? "system";
+            var settings = _settingsService?.Settings ?? SettingsService.Instance.Settings;
+            string saved = settings?.Language ?? "system";
             SetLanguageInternal(saved, notify: false);
         }
 
@@ -204,8 +217,9 @@ namespace Bear_Browser.Services
         public void SetLanguage(string code)
         {
             SetLanguageInternal(code, notify: true);
-            SettingsService.Instance.Settings.Language = code;
-            _ = SettingsService.Instance.SaveAsync();
+            var settingsService = _settingsService ?? SettingsService.Instance;
+            settingsService.Settings.Language = code;
+            _ = settingsService.SaveAsync();
         }
 
         private void SetLanguageInternal(string code, bool notify)
@@ -224,7 +238,6 @@ namespace Bear_Browser.Services
                     }
                     else
                     {
-                        // Varsayılan olarak İngilizce
                         resolved = "en";
                     }
                 }

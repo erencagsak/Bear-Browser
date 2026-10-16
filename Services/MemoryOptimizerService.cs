@@ -7,10 +7,18 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Bear_Browser.Services
 {
-    public class MemoryOptimizerService
+    public class MemoryOptimizerService : Bear_Browser.Services.Interfaces.IMemoryOptimizerService
     {
         private static MemoryOptimizerService? _instance;
-        public static MemoryOptimizerService Instance => _instance ??= new MemoryOptimizerService();
+        public static MemoryOptimizerService Instance
+        {
+            get
+            {
+                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.IMemoryOptimizerService)) is MemoryOptimizerService s)
+                    return s;
+                return _instance ??= new MemoryOptimizerService();
+            }
+        }
 
         [DllImport("psapi.dll", SetLastError = true)]
         private static extern bool EmptyWorkingSet(IntPtr hProcess);

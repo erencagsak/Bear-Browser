@@ -9,14 +9,23 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bear_Browser.Models;
+using Bear_Browser.Services.Interfaces;
 using Microsoft.Web.WebView2.Core;
 
 namespace Bear_Browser.Services
 {
-    public class ExtensionService
+    public class ExtensionService : IExtensionService
     {
         private static ExtensionService? _instance;
-        public static ExtensionService Instance => _instance ??= new ExtensionService();
+        public static ExtensionService Instance
+        {
+            get
+            {
+                if (App.Services?.GetService(typeof(Bear_Browser.Services.Interfaces.IExtensionService)) is ExtensionService s)
+                    return s;
+                return _instance ??= new ExtensionService();
+            }
+        }
 
         public string ExtensionsDirectory { get; }
         public ObservableCollection<ExtensionInfo> InstalledExtensions { get; } = new();

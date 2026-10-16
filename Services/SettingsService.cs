@@ -1,7 +1,10 @@
 using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Bear_Browser.Data.Implementations;
+using Bear_Browser.Data.Interfaces;
+using Bear_Browser.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bear_Browser.Services
 {
@@ -20,18 +23,29 @@ namespace Bear_Browser.Services
         public string Language { get; set; } = "system"; // "system", "tr", "en", "de", "es", "fr"
     }
 
-    public class SettingsService
+    public class SettingsService : ISettingsService
     {
         private static SettingsService? _instance;
-        public static SettingsService Instance => _instance ??= new SettingsService();
+        public static SettingsService Instance
+        {
+            get
+            {
+                if (App.Services?.GetService<ISettingsService>() is SettingsService s)
+                    return s;
+                return _instance ??= new SettingsService();
+            }
+        }
 
+        private readonly IJsonStorageService _storageService;
         private readonly string _settingsFilePath;
         public BrowserSettings Settings { get; private set; } = new();
 
         public event EventHandler<BrowserSettings>? SettingsChanged;
 
-        public SettingsService()
+        public SettingsService(IJsonStorageService? storageService = null)
         {
+            _storageService = storageService ?? new JsonStorageService();
+
             string folder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "BearBrowser"
@@ -47,8 +61,7 @@ namespace Bear_Browser.Services
             {
                 if (File.Exists(_settingsFilePath))
                 {
-                    string json = File.ReadAllText(_settingsFilePath);
-                    var loaded = JsonSerializer.Deserialize<BrowserSettings>(json);
+                    var loaded = _storageService.Load<BrowserSettings>(_settingsFilePath);
                     if (loaded != null)
                     {
                         Settings = loaded;
@@ -62,8 +75,7 @@ namespace Bear_Browser.Services
         {
             try
             {
-                string json = JsonSerializer.Serialize(Settings, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(_settingsFilePath, json);
+                await _storageService.SaveAsync(_settingsFilePath, Settings);
                 SettingsChanged?.Invoke(this, Settings);
             }
             catch { }
