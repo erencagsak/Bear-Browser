@@ -50,11 +50,15 @@ namespace Bear_Browser.ViewModels
                     if (_currentTab != null)
                     {
                         _messenger.Send(new TabSelectedMessage(_currentTab));
+                        bool isVideoFullScreen = _currentTab.GetWebView().CoreWebView2?.ContainsFullScreenElement ?? false;
+                        FullScreenElementChanged?.Invoke(this, isVideoFullScreen);
+                        _messenger.Send(new FullScreenElementChangedMessage(isVideoFullScreen));
                     }
                 }
             }
         }
 
+        public event EventHandler<bool>? FullScreenElementChanged;
         public event EventHandler<BrowserTab?>? CurrentTabChanged;
         public event EventHandler<BrowserTab>? TabNavigated;
         public event EventHandler<(BrowserTab tab, bool isLoading)>? TabLoadingChanged;
@@ -254,6 +258,20 @@ namespace Bear_Browser.ViewModels
         public void HookCoreEvents(BrowserTab tab)
         {
             if (tab.GetWebView().CoreWebView2 is not CoreWebView2 core) return;
+
+            // HTML5 Tam Ekran (Video vb.)
+            core.ContainsFullScreenElementChanged += (sender, args) =>
+            {
+                tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
+                {
+                    if (CurrentTab == tab)
+                    {
+                        bool isVideoFullScreen = core.ContainsFullScreenElement;
+                        FullScreenElementChanged?.Invoke(this, isVideoFullScreen);
+                        _messenger.Send(new FullScreenElementChangedMessage(isVideoFullScreen));
+                    }
+                });
+            };
 
             // Chromium favicon
             core.FaviconChanged += (s, e) =>

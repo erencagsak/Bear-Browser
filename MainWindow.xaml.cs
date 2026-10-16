@@ -37,6 +37,8 @@ namespace Bear_Browser
         private readonly IMessenger _messenger;
 
         private bool _isFullScreen = false;
+        private bool _isManualFullScreen = false;
+        private bool _isVideoFullScreen = false;
         private DispatcherTimer? _hideTimer;
         private DispatcherTimer? _initialBannerTimer;
 
@@ -177,9 +179,25 @@ namespace Bear_Browser
             {
                 DispatcherQueue?.TryEnqueue(() =>
                 {
-                    if (_isFullScreen) ToggleFullScreen();
+                    if (_isFullScreen) SetFullScreen(false);
                 });
             });
+
+            _messenger.Register<FullScreenElementChangedMessage>(this, (r, m) =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
+                {
+                    OnFullScreenElementChanged(m.ContainsFullScreenElement);
+                });
+            });
+
+            ViewModel.FullScreenElementChanged += (s, contains) =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
+                {
+                    OnFullScreenElementChanged(contains);
+                });
+            };
 
             // Sayfa içinden gelen kısayolları bağla
             ViewModel.ShortcutActionTriggered += (s, action) => HandleGlobalAction(action);
@@ -627,24 +645,89 @@ namespace Bear_Browser
 
         private void ToggleFullScreen()
         {
-            SetFullScreen(!_isFullScreen);
+            SetFullScreen(!_isManualFullScreen);
         }
 
         public void SetFullScreen(bool enable)
         {
-            if (_isFullScreen == enable) return;
-            _isFullScreen = enable;
+            _isManualFullScreen = enable;
 
-            if (_isFullScreen)
+            if (_isManualFullScreen)
             {
+                _isFullScreen = true;
                 AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-                EnterFullScreenUi();
+                if (!_isVideoFullScreen)
+                {
+                    EnterFullScreenUi();
+                }
             }
             else
             {
+                if (_isVideoFullScreen)
+                {
+                    ExitVideoFullScreen();
+                }
+
+                _isFullScreen = false;
                 AppWindow.SetPresenter(AppWindowPresenterKind.Default);
                 ExitFullScreenUi();
             }
+        }
+
+        private void OnFullScreenElementChanged(bool containsFullScreenElement)
+        {
+            _isVideoFullScreen = containsFullScreenElement;
+
+            if (_isVideoFullScreen)
+            {
+                // Video tam ekran oldu: pencereyi tam ekran yap ve tüm tarayıcı chrome'unu gizle
+                _isFullScreen = true;
+                AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+                EnterVideoFullScreenUi();
+            }
+            else
+            {
+                // Video tam ekrandan çıktı:
+                TopBarArea.Visibility = Visibility.Visible;
+                if (_isManualFullScreen)
+                {
+                    EnterFullScreenUi();
+                }
+                else
+                {
+                    _isFullScreen = false;
+                    AppWindow.SetPresenter(AppWindowPresenterKind.Default);
+                    ExitFullScreenUi();
+                }
+            }
+        }
+
+        private void EnterVideoFullScreenUi()
+        {
+            _initialBannerTimer?.Stop();
+            _hideTimer?.Stop();
+
+            TopRowDefinition.Height = new GridLength(0);
+            Grid.SetRow(WebContentGrid, 0);
+            Grid.SetRowSpan(WebContentGrid, 2);
+            Grid.SetRowSpan(TopBarArea, 2);
+
+            FullScreenBanner.Visibility = Visibility.Collapsed;
+            TopHoverTrigger.Visibility = Visibility.Collapsed;
+            TopBarArea.Visibility = Visibility.Collapsed;
+            TopBarTransform.Y = -200;
+        }
+
+        private void ExitVideoFullScreen()
+        {
+            try
+            {
+                ViewModel.CurrentTab?.GetWebView().CoreWebView2?.ExecuteScriptAsync(
+                    "if (document.fullscreenElement) { document.exitFullscreen(); }"
+                );
+            }
+            catch { }
+            OnFullScreenElementChanged(false);
         }
 
         private void EnterFullScreenUi()
@@ -660,6 +743,7 @@ namespace Bear_Browser
 
             FullScreenBanner.Visibility = Visibility.Visible;
             TopHoverTrigger.Visibility = Visibility.Visible;
+            TopBarArea.Visibility = Visibility.Visible;
 
             TopBarTransform.Y = 0;
             _initialBannerTimer?.Stop();
@@ -667,7 +751,7 @@ namespace Bear_Browser
             _initialBannerTimer.Tick += (s, e) =>
             {
                 _initialBannerTimer.Stop();
-                if (_isFullScreen)
+                if (_isFullScreen && !_isVideoFullScreen)
                 {
                     HideTopBar();
                 }
@@ -680,6 +764,7 @@ namespace Bear_Browser
             _initialBannerTimer?.Stop();
             _hideTimer?.Stop();
 
+            TopBarArea.Visibility = Visibility.Visible;
             TopBarTransform.Y = 0;
             TopBarArea.Background = null;
             FullScreenBanner.Visibility = Visibility.Collapsed;
@@ -693,6 +778,7 @@ namespace Bear_Browser
 
         private void ShowTopBar()
         {
+            if (_isVideoFullScreen) return;
             _hideTimer?.Stop();
             _initialBannerTimer?.Stop();
             AnimateTopBar(0);
@@ -700,6 +786,7 @@ namespace Bear_Browser
 
         private void HideTopBar()
         {
+            if (_isVideoFullScreen) return;
             double targetY = TopBarArea.ActualHeight > 0 ? -TopBarArea.ActualHeight : -140;
             AnimateTopBar(targetY);
         }
@@ -721,22 +808,22 @@ namespace Bear_Browser
 
         private void TopHoverTrigger_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (_isFullScreen) ShowTopBar();
+            if (_isFullScreen && !_isVideoFullScreen) ShowTopBar();
         }
 
         private void TopHoverTrigger_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (_isFullScreen) ShowTopBar();
+            if (_isFullScreen && !_isVideoFullScreen) ShowTopBar();
         }
 
         private void TopBarArea_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (_isFullScreen) _hideTimer?.Stop();
+            if (_isFullScreen && !_isVideoFullScreen) _hideTimer?.Stop();
         }
 
         private void TopBarArea_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (_isFullScreen)
+            if (_isFullScreen && !_isVideoFullScreen)
             {
                 _hideTimer?.Stop();
                 _hideTimer?.Start();
@@ -974,6 +1061,13 @@ namespace Bear_Browser
             if (FindBar.Visibility == Visibility.Visible)
             {
                 FindBar.Visibility = Visibility.Collapsed;
+                args.Handled = true;
+                return;
+            }
+
+            if (_isVideoFullScreen)
+            {
+                ExitVideoFullScreen();
                 args.Handled = true;
                 return;
             }
