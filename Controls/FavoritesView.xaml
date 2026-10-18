@@ -1,154 +1,156 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Bear_Browser.Controls.FavoritesView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Bear_Browser.Controls">
 
-	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-		<Grid.ColumnDefinitions>
-			<!-- Sol Klasör Bölmesi -->
-			<ColumnDefinition Width="260" />
-			<ColumnDefinition Width="1" />
-			<!-- Sağ İçerik Bölmesi -->
-			<ColumnDefinition Width="*" />
-		</Grid.ColumnDefinitions>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Canvas IsHitTestVisible="False">
+            <Ellipse Width="450" Height="250" Canvas.Left="-100" Canvas.Top="-50" Opacity="0.06">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                        <GradientStop Color="{ThemeResource SystemAccentColor}" Offset="0" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
 
-		<!-- SOL BÖLME: Başlık, Arama, Klasör Listesi -->
-		<Grid Grid.Column="0" Padding="16,20,12,16" RowSpacing="12">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-			</Grid.RowDefinitions>
+        <ScrollViewer Padding="36,24,36,36">
+            <StackPanel HorizontalAlignment="Stretch" Spacing="16">
+                <Grid ColumnSpacing="16" Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
 
-			<TextBlock Grid.Row="0" Text="Sık Kullanılanlar" FontWeight="SemiBold" FontSize="18" />
+                        <ColumnDefinition Width="*" />
 
-			<TextBox x:Name="SearchBox" Grid.Row="1" Height="34"
-                     PlaceholderText="Sık kullanılanlarda ara..."
-                     TextChanged="SearchBox_TextChanged" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-			<ListView x:Name="FoldersListView" Grid.Row="2" SelectionMode="Single"
-                      SelectionChanged="FoldersListView_SelectionChanged" Padding="0">
-				<ListView.ItemTemplate>
-					<DataTemplate x:DataType="x:String">
-						<StackPanel Orientation="Horizontal" Spacing="10" Padding="4,6">
-							<FontIcon Glyph="&#xED25;" FontSize="14" Opacity="0.8" />
-							<TextBlock Text="{x:Bind}" FontSize="13" FontWeight="Medium" />
-						</StackPanel>
-					</DataTemplate>
-				</ListView.ItemTemplate>
-			</ListView>
-		</Grid>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                        <Border Width="40" Height="40" CornerRadius="12"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1">
+                            <FontIcon Glyph="&#xE734;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
 
-		<Border Grid.Column="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                            <StackPanel x:Name="BreadcrumbArea" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        AllowDrop="True" DragOver="BreadcrumbArea_DragOver" Drop="BreadcrumbArea_Drop">
+                                <Button x:Name="BackButton" Width="26" Height="26" Padding="0"
+                                        Style="{StaticResource ArcIconButtonStyle}"
+                                        Visibility="Collapsed" Click="BackButton_Click"
+                                        ToolTipService.ToolTip="Geri Dön" VerticalAlignment="Center">
+                                    <FontIcon Glyph="&#xE72B;" FontSize="11" />
+                                </Button>
+                                <TextBlock x:Name="BreadcrumbText" Text="Sık Kullanılanlar" FontSize="20" FontWeight="Bold" Foreground="{ThemeResource ArcTextPrimaryBrush}" VerticalAlignment="Center" />
+                                <Border Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="6,1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="CountBadgeText" Text="0 yer imi" FontSize="11" FontWeight="Medium" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
 
-		<!-- SAĞ BÖLME: Hiyerarşik Klasörler ve Bağlantılar -->
-		<Grid Grid.Column="2" Padding="28,20,28,16" RowSpacing="16">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-			</Grid.RowDefinitions>
+                    <Grid Grid.Column="1" HorizontalAlignment="Center" Width="320" VerticalAlignment="Center">
+                        <TextBox x:Name="SearchBox"
+                                 Style="{StaticResource ArcCompactSearchBoxStyle}"
+                                 PlaceholderText="Sık kullanılanlarda ara..."
+                                 TextChanged="SearchBox_TextChanged" />
+                        <FontIcon Glyph="&#xE721;" FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}"
+                                  HorizontalAlignment="Left" VerticalAlignment="Center" Margin="14,0,0,0" IsHitTestVisible="False" />
+                    </Grid>
 
-			<!-- Üst Araç Çubuğu & Breadcrumb -->
-			<Grid Grid.Row="0">
-				<StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-					<Button x:Name="BackButton" Width="30" Height="30" Padding="0"
-                            Visibility="Collapsed" Click="BackButton_Click"
-                            ToolTipService.ToolTip="Geri dön" Margin="0,0,4,0">
-						<FontIcon Glyph="&#xE72B;" FontSize="12" />
-					</Button>
-					<TextBlock x:Name="BreadcrumbText" Text="Sık Kullanılanlar"
-                               FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" />
-				</StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Button x:Name="AddFolderBtn" Style="{StaticResource ArcPillButtonStyle}" Click="AddFolderBtn_Click" ToolTipService.ToolTip="Yeni klasör oluştur">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xED25;" FontSize="12" Foreground="{ThemeResource ArcAccentBrush}" />
+                                <TextBlock Text="Klasör Ekle" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="AddFavBtn" Style="{StaticResource ArcPillButtonStyle}" Click="AddFavBtn_Click" ToolTipService.ToolTip="Yeni sık kullanılan ekle">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE710;" FontSize="12" Foreground="{ThemeResource ArcAccentBrush}" />
+                                <TextBlock Text="Ekle" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="ImportBookmarksBtn" Style="{StaticResource ArcPillButtonStyle}" Click="ImportBookmarksBtn_Click" ToolTipService.ToolTip="HTML dosyasından içe aktar">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE8B5;" FontSize="12" />
+                                <TextBlock Text="İçeri Aktar" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="ExportBookmarksBtn" Style="{StaticResource ArcPillButtonStyle}" Click="ExportBookmarksBtn_Click" ToolTipService.ToolTip="HTML olarak dışa aktar">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xEDE1;" FontSize="12" />
+                                <TextBlock Text="Dışarı Aktar" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="ToggleBarBtn" Style="{StaticResource ArcIconButtonStyle}" Width="32" Height="32" Click="ToggleBarBtn_Click" ToolTipService.ToolTip="Sık Kullanılanlar Çubuğunu Göster / Gizle">
+                            <FontIcon Glyph="&#xE7B3;" FontSize="13" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
 
-				<!-- Sağ Aksiyon Butonları -->
-				<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-					<Button x:Name="ImportBookmarksBtn" Padding="10,6" CornerRadius="6" Click="ImportBookmarksBtn_Click" ToolTipService.ToolTip="Başka bir tarayıcıdan dışa aktarılan HTML dosyasını içeri aktar">
-						<StackPanel Orientation="Horizontal" Spacing="6">
-							<FontIcon Glyph="&#xE8B5;" FontSize="13" />
-							<TextBlock Text="İçeri aktar" FontSize="12" />
-						</StackPanel>
-					</Button>
+                <ListView x:Name="ItemsListView" SelectionMode="None" IsItemClickEnabled="True"
+                          ItemClick="ItemsListView_ItemClick" Padding="0"
+                          AllowDrop="True" DragOver="ItemsListView_DragOver" Drop="ItemsListView_Drop">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:FavoriteDisplayItem">
+                            <Border Style="{StaticResource ArcCardStyle}" Padding="14,12" Margin="0,0,0,8"
+                                    HorizontalAlignment="Stretch" PointerPressed="ItemGrid_PointerPressed"
+                                    CanDrag="True" AllowDrop="True"
+                                    DragStarting="ItemCard_DragStarting" DragOver="ItemCard_DragOver" DragLeave="ItemCard_DragLeave" Drop="ItemCard_Drop"
+                                    Tag="{x:Bind}">
+                                <Grid ColumnSpacing="14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
 
-					<Button x:Name="ExportBookmarksBtn" Padding="10,6" CornerRadius="6" Click="ExportBookmarksBtn_Click" ToolTipService.ToolTip="Sık kullanılanlarınızı standart HTML dosyası olarak kaydet">
-						<StackPanel Orientation="Horizontal" Spacing="6">
-							<FontIcon Glyph="&#xEDE1;" FontSize="13" />
-							<TextBlock Text="Dışarı aktar" FontSize="12" />
-						</StackPanel>
-					</Button>
+                                        <ColumnDefinition Width="260" />
 
-					<Button x:Name="ToggleBarBtn" Padding="10,6" CornerRadius="6" Click="ToggleBarBtn_Click">
-						<StackPanel Orientation="Horizontal" Spacing="6">
-							<FontIcon Glyph="&#xE7B3;" FontSize="13" />
-							<TextBlock Text="Sık kullanılanlar çubuğunu göster" FontSize="12" />
-						</StackPanel>
-					</Button>
+                                        <ColumnDefinition Width="*" />
 
-					<Button x:Name="AddFavBtn" Padding="10,6" CornerRadius="6" Click="AddFavBtn_Click">
-						<StackPanel Orientation="Horizontal" Spacing="6">
-							<FontIcon Glyph="&#xE734;" FontSize="13" />
-							<TextBlock Text="Sık kullanılan ekle" FontSize="12" />
-						</StackPanel>
-					</Button>
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-					<Button x:Name="AddFolderBtn" Padding="10,6" CornerRadius="6" Click="AddFolderBtn_Click">
-						<StackPanel Orientation="Horizontal" Spacing="6">
-							<FontIcon Glyph="&#xED25;" FontSize="13" />
-							<TextBlock Text="Klasör ekle" FontSize="12" />
-						</StackPanel>
-					</Button>
-				</StackPanel>
-			</Grid>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
+                                            Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                            BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1"
+                                            VerticalAlignment="Center">
+                                        <Grid>
+                                            <FontIcon Glyph="{x:Bind Glyph}" FontSize="15" Foreground="{ThemeResource ArcAccentBrush}"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                      Visibility="{x:Bind FolderVisibility}" />
+                                            <Image Width="18" Height="18" Stretch="Uniform"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Visibility="{x:Bind FaviconVisibility}">
+                                                <Image.Source>
+                                                    <BitmapImage UriSource="{x:Bind FaviconUri}" />
+                                                </Image.Source>
+                                            </Image>
+                                        </Grid>
+                                    </Border>
 
-			<!-- Hiyerarşik Liste (Hem Klasörler Hem Siteler) -->
-			<ListView x:Name="ItemsListView" Grid.Row="1" SelectionMode="None" IsItemClickEnabled="True"
-                      ItemClick="ItemsListView_ItemClick" Padding="0">
-				<ListView.ItemTemplate>
-					<DataTemplate x:DataType="local:FavoriteDisplayItem">
-						<Grid Padding="10,8" Margin="0,2" CornerRadius="6"
-                              Background="{ThemeResource SubtleFillColorTransparentBrush}"
-                              HorizontalAlignment="Stretch" ColumnSpacing="16"
-                              PointerPressed="ItemGrid_PointerPressed">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="240" />
-								<ColumnDefinition Width="*" />
-								<ColumnDefinition Width="Auto" />
-							</Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="1" Text="{x:Bind Title}" FontSize="13.5" FontWeight="SemiBold"
+                                               Foreground="{ThemeResource ArcTextPrimaryBrush}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
 
-							<Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
-                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                    VerticalAlignment="Center">
-								<Grid>
-									<FontIcon Glyph="{x:Bind Glyph}" FontSize="12" Opacity="0.8"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center"
-                                              Visibility="{x:Bind FolderVisibility}" />
-									<Image Width="16" Height="16" Stretch="Uniform"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Visibility="{x:Bind FaviconVisibility}">
-										<Image.Source>
-											<BitmapImage UriSource="{x:Bind FaviconUri}" />
-										</Image.Source>
-									</Image>
-								</Grid>
-							</Border>
+                                    <TextBlock Grid.Column="2" Text="{x:Bind Subtitle}" FontSize="12"
+                                               Foreground="{ThemeResource ArcTextSecondaryBrush}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
 
-							<TextBlock Grid.Column="1" Text="{x:Bind Title}" FontSize="13" FontWeight="SemiBold"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-
-							<TextBlock Grid.Column="2" Text="{x:Bind Subtitle}" FontSize="12" Opacity="0.6"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-
-							<Button Grid.Column="3" Width="28" Height="28" Padding="0"
-                                    Background="Transparent" BorderThickness="0" CornerRadius="4"
-                                    ToolTipService.ToolTip="Sil" Click="DeleteItem_Click" Tag="{x:Bind Tag}">
-								<FontIcon Glyph="&#xE711;" FontSize="11" Opacity="0.6" />
-							</Button>
-						</Grid>
-					</DataTemplate>
-				</ListView.ItemTemplate>
-			</ListView>
-		</Grid>
-	</Grid>
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <Button Width="32" Height="32" Padding="0" Style="{StaticResource ArcIconButtonStyle}"
+                                                ToolTipService.ToolTip="Sil" Click="DeleteItem_Click" Tag="{x:Bind Tag}">
+                                            <FontIcon Glyph="&#xE74D;" FontSize="12" Foreground="#EF4444" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

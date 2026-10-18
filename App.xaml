@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Application
     x:Class="Bear_Browser.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -14,7 +14,6 @@
                 <ResourceDictionary Source="ms-appx:///Theme/Inputs.xaml" />
                 <ResourceDictionary Source="ms-appx:///Theme/Cards.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <!-- Global Value Converters -->
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />

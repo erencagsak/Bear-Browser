@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Bear_Browser.Controls.ExtensionsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,20 +8,23 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="280" />
+
             <ColumnDefinition Width="1" />
+
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- SOL BÖLME: MAĞAZALAR VE GELİŞTİRİCİ ARAÇLARI -->
         <Grid Grid.Column="0" Padding="18,24,14,18" RowSpacing="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+
                 <RowDefinition Height="Auto" />
+
                 <RowDefinition Height="Auto" />
+
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Başlık -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                 <Border Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
                     <FontIcon Glyph="&#xE74C;" FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -32,12 +35,10 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- Arama Kutusu -->
             <TextBox x:Name="SearchBox" Grid.Row="1" Height="36" CornerRadius="6"
                      PlaceholderText="Yüklü uzantılarda ara..."
                      TextChanged="SearchBox_TextChanged" />
 
-            <!-- Eklenti Mağazaları Kartı -->
             <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1" CornerRadius="10" Padding="14,14">
@@ -63,7 +64,6 @@
                 </StackPanel>
             </Border>
 
-            <!-- Geliştirici Modu & Yerel Yükleme -->
             <Border Grid.Row="3" VerticalAlignment="Top" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1" CornerRadius="10" Padding="14,14">
@@ -87,17 +87,15 @@
             </Border>
         </Grid>
 
-        <!-- DİKEY AYIRICI ÇİZGİ -->
         <Border Grid.Column="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
-        <!-- SAĞ BÖLME: YÜKLÜ EKLENTİLER LİSTESİ -->
         <Grid Grid.Column="2" Padding="28,24,28,20" RowSpacing="18">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Başlık ve Sayaç -->
             <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                     <TextBlock Text="Yüklü Uzantılar" FontWeight="SemiBold" FontSize="20" />
@@ -107,7 +105,6 @@
                 </StackPanel>
             </Grid>
 
-            <!-- BOŞ DURUM EKRANI (HENÜZ EKLENTİ YOKSA) -->
             <Border x:Name="EmptyStateBorder" Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                     CornerRadius="12" Padding="36" HorizontalAlignment="Stretch" VerticalAlignment="Center"
@@ -130,7 +127,6 @@
                 </StackPanel>
             </Border>
 
-            <!-- EKLENTİLER LİSTESİ -->
             <ScrollViewer Grid.Row="1">
                 <ItemsControl x:Name="ExtensionsItemsControl">
                     <ItemsControl.ItemTemplate>
@@ -141,11 +137,12 @@
                                 <Grid ColumnSpacing="16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
+
                                         <ColumnDefinition Width="*" />
+
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- İkon -->
                                     <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Background="{ThemeResource LayerFillColorDefaultBrush}" VerticalAlignment="Top">
                                         <Grid>
                                             <FontIcon Glyph="&#xE74C;" FontSize="20" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -153,7 +150,6 @@
                                         </Grid>
                                     </Border>
 
-                                    <!-- Bilgiler -->
                                     <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                             <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" />
@@ -168,7 +164,6 @@
                                         <TextBlock Text="{x:Bind Id, Mode=OneWay}" FontSize="10" Opacity="0.4" FontFamily="Consolas" Margin="0,2,0,0" />
                                     </StackPanel>
 
-                                    <!-- Aksiyonlar: Toggle & Sil -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                                         <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" Toggled="ExtensionToggle_Toggled" Tag="{x:Bind Id}" />
 

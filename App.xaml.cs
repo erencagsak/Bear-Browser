@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
@@ -14,27 +14,14 @@ using Bear_Browser.ViewModels;
 
 namespace Bear_Browser
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         private Window? _window;
 
-        /// <summary>
-        /// Gets the current <see cref="App"/> instance in use.
-        /// </summary>
         public new static App Current => (App)Application.Current;
 
-        /// <summary>
-        /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
-        /// </summary>
         public static IServiceProvider Services { get; private set; } = null!;
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
         public App()
         {
             Services = ConfigureServices();
@@ -44,26 +31,19 @@ namespace Bear_Browser
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Configures the dependency injection container and registers all application services.
-        /// </summary>
         private static IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
 
-            // MVVM Messaging
             services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
-            // Data & Storage Services
             services.AddSingleton<IJsonStorageService, JsonStorageService>();
 
-            // Platform Services (WinUI)
             services.AddSingleton<IDataProtectionService, WindowsDataProtectionService>();
             services.AddSingleton<IDefaultBrowserService, WindowsDefaultBrowserService>();
             services.AddSingleton<IPlatformWindowService, WindowsPlatformWindowService>();
             services.AddSingleton<IPlatformProcessService, WindowsPlatformProcessService>();
 
-            // Domain Services
             services.AddSingleton<IBookmarkService, BookmarkService>();
             services.AddSingleton<IHistoryService, HistoryService>();
             services.AddSingleton<IDownloadService, DownloadService>();
@@ -79,8 +59,8 @@ namespace Bear_Browser
             services.AddSingleton<IExtensionInstallerService, ExtensionInstallerService>();
             services.AddSingleton<IAutofillService, AutofillService>();
             services.AddSingleton<IDownloadHandlerService, DownloadHandlerService>();
+            services.AddSingleton<IUpdateService, UpdateService>();
 
-            // ViewModels
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<NavigationBarViewModel>();
             services.AddTransient<DownloadsViewModel>();
@@ -92,10 +72,6 @@ namespace Bear_Browser
             return services.BuildServiceProvider();
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();

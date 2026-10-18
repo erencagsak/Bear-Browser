@@ -1,10 +1,7 @@
-using System;
+﻿using System;
 
 namespace Bear_Browser.Models
 {
-    /// <summary>
-    /// Kullanıcı profil verilerini temsil eden model.
-    /// </summary>
     public class UserProfile
     {
         public string Id { get; set; } = "default";

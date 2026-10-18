@@ -1,11 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace Bear_Browser.Helpers
 {
-    /// <summary>
-    /// URL çözümleme, dosya indirme bağlantısı tespiti ve alan adı (domain) eşleştirme yardımcı metotları.
-    /// </summary>
     public static class UrlHelper
     {
         private static readonly string[] DownloadFileExtensions =
@@ -18,9 +15,6 @@ namespace Bear_Browser.Helpers
             ".torrent"
         };
 
-        /// <summary>
-        /// Verilen URL'in doğrudan indirilebilir bir dosya veya indirme eylemi olup olmadığını belirler.
-        /// </summary>
         public static bool IsDownloadUrl(string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return false;
@@ -28,11 +22,9 @@ namespace Bear_Browser.Helpers
             string cleanUrl = url.Split('?')[0].ToLowerInvariant();
             string lowerUrl = url.ToLowerInvariant();
 
-            // 1. Bilinen dosya uzantıları
             if (DownloadFileExtensions.Any(ext => cleanUrl.EndsWith(ext)))
                 return true;
 
-            // 2. Doğrudan indirme parametreleri
             if (lowerUrl.Contains("export=download") ||
                 lowerUrl.Contains("action=download") ||
                 lowerUrl.Contains("response-content-disposition=attachment") ||
@@ -46,9 +38,6 @@ namespace Bear_Browser.Helpers
             return false;
         }
 
-        /// <summary>
-        /// Bir URL veya Host metninden Host kısmını ayıklar.
-        /// </summary>
         public static string GetHost(string urlOrHost)
         {
             if (string.IsNullOrWhiteSpace(urlOrHost)) return string.Empty;
@@ -66,9 +55,6 @@ namespace Bear_Browser.Helpers
             }
         }
 
-        /// <summary>
-        /// Alan adının kök (root) domainini çıkarır (örn: mail.google.com -> google.com, test.co.uk -> test.co.uk).
-        /// </summary>
         public static string GetRootDomain(string host)
         {
             if (string.IsNullOrWhiteSpace(host)) return string.Empty;
@@ -84,9 +70,6 @@ namespace Bear_Browser.Helpers
             return $"{parts[^2]}.{parts[^1]}";
         }
 
-        /// <summary>
-        /// İki alan adının aynı kök domain veya alt domaine sahip olup olmadığını karşılaştırır.
-        /// </summary>
         public static bool IsDomainMatch(string currentHost, string savedDomain)
         {
             if (string.IsNullOrEmpty(currentHost) || string.IsNullOrEmpty(savedDomain))

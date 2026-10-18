@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="Bear_Browser.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -14,7 +14,6 @@
         <MicaBackdrop Kind="BaseAlt" />
     </Window.SystemBackdrop>
 
-    <!-- KeyboardAcceleratorPlacementMode="Hidden" ile CTRL+T tooltip'i tamamen kapatıldı -->
     <Grid x:Name="RootGrid" KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="T" Modifiers="Control" Invoked="Shortcut_NewTab_Invoked" />
@@ -30,17 +29,17 @@
 
         <Grid.RowDefinitions>
             <RowDefinition x:Name="TopRowDefinition" Height="Auto" />
+
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Ana İçerik Alanı (Sol Kenar Çubuğu + Yüzen Web Sayfası) -->
         <Grid x:Name="MainContentHostGrid" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftSidebarColumn" Width="Auto" />
+
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- SOL KENAR ÇUBUĞU (Arc / Zen Dikey Sekmeler Paneli) -->
             <Border x:Name="LeftSidebarPanel" Grid.Column="0" Width="230"
                     Visibility="Collapsed"
                     Margin="8,2,2,8"
@@ -51,16 +50,22 @@
                 <Grid RowSpacing="6" Padding="8,8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+
                         <RowDefinition Height="*" />
+
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!-- Üst: Bear Başlık & Yeni Sekme Butonu -->
                     <Grid Grid.Row="0" Margin="4,2,2,4">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <Image Width="20" Height="20" Source="ms-appx:///Assets/Bear-Browser-Logo.jpg" />
                             <TextBlock Text="Bear Browser" FontSize="13" FontWeight="SemiBold"
                                        Foreground="{ThemeResource ArcTextPrimaryBrush}" VerticalAlignment="Center" />
+                            <Border x:Name="LeftInPrivateBadge" Visibility="Collapsed"
+                                    Background="#2A1747" BorderBrush="#7C4DFF" BorderThickness="1"
+                                    CornerRadius="10" Padding="6,1" VerticalAlignment="Center">
+                                <TextBlock Text="InPrivate" FontSize="10" FontWeight="SemiBold" Foreground="#D1B3FF" />
+                            </Border>
                         </StackPanel>
                         <Button x:Name="LeftNewTabButton" HorizontalAlignment="Right"
                                 Style="{StaticResource ArcIconButtonStyle}" Width="28" Height="28"
@@ -69,7 +74,6 @@
                         </Button>
                     </Grid>
 
-                    <!-- Orta: Dikey Sekmeler Listesi -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <ListView x:Name="LeftVerticalTabsList"
                                   ItemsSource="{x:Bind ViewModel.Tabs}"
@@ -82,11 +86,12 @@
                                     <Grid Height="34" Padding="6,2" Margin="0,1" CornerRadius="8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
+
                                             <ColumnDefinition Width="*" />
+
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Favicon / Progress -->
                                         <Grid Grid.Column="0" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center">
                                             <ProgressRing Width="14" Height="14"
                                                           IsActive="{x:Bind IsLoading, Mode=OneWay}"
@@ -97,14 +102,19 @@
                                                     <BitmapImage UriSource="{x:Bind FaviconUri, Mode=OneWay}" />
                                                 </Image.Source>
                                             </Image>
+                                            <Border Width="16" Height="16" CornerRadius="8"
+                                                    Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                                    BorderBrush="{ThemeResource ArcAccentBrush}" BorderThickness="1"
+                                                    Visibility="{Binding IsSleeping, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    ToolTipService.ToolTip="Uyku Modunda (Kaynak Tasarrufu)">
+                                                <FontIcon Glyph="&#xE708;" FontSize="9" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
                                         </Grid>
 
-                                        <!-- Başlık -->
                                         <TextBlock Grid.Column="1" Text="{x:Bind Title, Mode=OneWay}"
                                                    FontSize="12" TextTrimming="CharacterEllipsis"
                                                    VerticalAlignment="Center" />
 
-                                        <!-- Kapat Butonu -->
                                         <Button Grid.Column="2" Width="22" Height="22" Padding="0"
                                                 Background="Transparent" BorderThickness="0" CornerRadius="4"
                                                 Click="LeftTabClose_Click" Tag="{x:Bind}">
@@ -116,7 +126,6 @@
                         </ListView>
                     </ScrollViewer>
 
-                    <!-- Alt: Hızlı Erişim İkonları (Ayarlar, İndirmeler, Geçmiş) -->
                     <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" Padding="2,6,2,0">
                         <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
                             <Button Style="{StaticResource ArcIconButtonStyle}" Width="30" Height="30"
@@ -140,16 +149,15 @@
                 </Grid>
             </Border>
 
-            <!-- YÜZEN WEB SAYFASI ADASI (Arc / Zen Floating Canvas) -->
             <Border x:Name="WebCanvasContainer"
                     Grid.Column="1"
-                    Style="{StaticResource ArcFloatingCanvasStyle}"
-                    Margin="8,2,8,8">
-                <Grid x:Name="WebContentGrid" CornerRadius="{StaticResource ArcCanvasCornerRadius}" />
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderThickness="0"
+                    Margin="0">
+                <Grid x:Name="WebContentGrid" />
             </Border>
         </Grid>
 
-        <!-- Tam Ekran Fare Algılayıcı Şerit -->
         <Border x:Name="TopHoverTrigger"
                 Grid.Row="0" Grid.RowSpan="2" Height="6"
                 VerticalAlignment="Top" Background="Transparent"
@@ -157,15 +165,16 @@
                 PointerEntered="TopHoverTrigger_PointerEntered"
                 PointerMoved="TopHoverTrigger_PointerMoved" />
 
-        <!-- ÜST PANEL -->
         <Grid x:Name="TopBarArea" Grid.Row="0" Canvas.ZIndex="1000" VerticalAlignment="Top"
+              Background="{ThemeResource BearTabStripBackgroundBrush}"
+              BorderBrush="{ThemeResource BearTabStripBorderBrush}"
+              BorderThickness="0,0,0,1"
               PointerEntered="TopBarArea_PointerEntered" PointerExited="TopBarArea_PointerExited">
             <Grid.RenderTransform>
                 <TranslateTransform x:Name="TopBarTransform" Y="0" />
             </Grid.RenderTransform>
 
             <StackPanel x:Name="TopBarContent">
-                <!-- Sekmeler -->
                 <TabView x:Name="TabsControl"
                          KeyboardAcceleratorPlacementMode="Hidden"
                          VerticalAlignment="Top"
@@ -173,12 +182,21 @@
                          AddTabButtonClick="TabsControl_AddTabButtonClick"
                          TabCloseRequested="TabsControl_TabCloseRequested"
                          SelectionChanged="TabsControl_SelectionChanged">
+                    <TabView.TabStripHeader>
+                        <Border x:Name="InPrivateBadge" Visibility="Collapsed"
+                                Background="#2A1747" BorderBrush="#7C4DFF" BorderThickness="1"
+                                CornerRadius="12" Padding="8,2" Margin="10,0,6,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE727;" FontSize="11" Foreground="#D1B3FF" />
+                                <TextBlock Text="InPrivate" FontSize="11" FontWeight="SemiBold" Foreground="#D1B3FF" />
+                            </StackPanel>
+                        </Border>
+                    </TabView.TabStripHeader>
                     <TabView.TabItemTemplate>
                         <DataTemplate x:DataType="models:BrowserTab">
                             <TabViewItem>
                                 <TabViewItem.Header>
                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <!-- Yükleniyor Göstergesi / Favicon -->
                                         <Grid Width="16" Height="16" VerticalAlignment="Center">
                                             <ProgressRing Width="14" Height="14"
                                                           IsActive="{x:Bind IsLoading, Mode=OneWay}"
@@ -189,6 +207,13 @@
                                                     <BitmapImage UriSource="{x:Bind FaviconUri, Mode=OneWay}" />
                                                 </Image.Source>
                                             </Image>
+                                            <Border Width="16" Height="16" CornerRadius="8"
+                                                    Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                                    BorderBrush="{ThemeResource ArcAccentBrush}" BorderThickness="1"
+                                                    Visibility="{Binding IsSleeping, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    ToolTipService.ToolTip="Uyku Modunda (Kaynak Tasarrufu)">
+                                                <FontIcon Glyph="&#xE708;" FontSize="9" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
                                         </Grid>
                                         <TextBlock Text="{x:Bind Title, Mode=OneWay}"
                                                    MaxWidth="180"
@@ -201,133 +226,185 @@
                     </TabView.TabItemTemplate>
                 </TabView>
 
-                <!-- Navigasyon Barı -->
                 <controls:NavigationBar x:Name="NavBar" Margin="12,2,12,2" />
 
-                <!-- Sık Kullanılanlar Çubuğu -->
                 <controls:FavoritesBar x:Name="FavBar" Margin="12,0,12,4" />
-
-                <!-- CTRL + F SAYFADA BUL ÇUBUĞU (Edge Stili) -->
-                <Border x:Name="FindBar" HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,2,24,6" Padding="8,6" CornerRadius="8"
-                        Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                        Canvas.ZIndex="500" Visibility="Collapsed">
-                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <TextBox x:Name="FindTextBox" Width="180" Height="32" PlaceholderText="Sayfada bul..."
-                                 TextChanged="FindTextBox_TextChanged" KeyDown="FindTextBox_KeyDown" />
-                        <Button x:Name="FindPrevBtn" Width="28" Height="28" Padding="0" CornerRadius="4"
-                                ToolTipService.ToolTip="Önceki (Shift+Enter)" Click="FindPrevBtn_Click">
-                            <FontIcon Glyph="&#xE70E;" FontSize="10" />
-                        </Button>
-                        <Button x:Name="FindNextBtn" Width="28" Height="28" Padding="0" CornerRadius="4"
-                                ToolTipService.ToolTip="Sonraki (Enter)" Click="FindNextBtn_Click">
-                            <FontIcon Glyph="&#xE70D;" FontSize="10" />
-                        </Button>
-                        <Button x:Name="FindCloseBtn" Width="28" Height="28" Padding="0" CornerRadius="4"
-                                ToolTipService.ToolTip="Kapat (Esc)" Click="FindCloseBtn_Click">
-                            <FontIcon Glyph="&#xE711;" FontSize="10" />
-                        </Button>
-                    </StackPanel>
-                </Border>
-
-                <!-- ŞİFRE KAYDETME BİLDİRİM KARTI (Edge Stili) -->
-                <Border x:Name="PasswordPromptBar" HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,2,24,6" Padding="16,12" CornerRadius="8" MaxWidth="320"
-                        Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                        Canvas.ZIndex="600" Visibility="Collapsed">
-                    <StackPanel Spacing="8">
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE8D7;" FontSize="16" />
-                            <TextBlock Text="Parola kaydedilsin mi?" FontWeight="SemiBold" FontSize="14" />
-                        </StackPanel>
-                        <TextBlock x:Name="PasswordPromptUserText" FontSize="12" Opacity="0.8" TextTrimming="CharacterEllipsis" />
-                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,4,0,0">
-                            <Button Content="Kaydet" Style="{ThemeResource AccentButtonStyle}" Click="SavePasswordPrompt_Click" />
-                            <Button Content="Şimdi değil" Click="DismissPasswordPrompt_Click" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- EKLENTİ YÜKLEME BİLDİRİM KARTI (Chrome & Edge Mağazası Entegrasyonu) -->
-                <Border x:Name="ExtensionInstallBar" HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,2,24,6" Padding="16,14" CornerRadius="10" MaxWidth="380"
-                        Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-                        BorderBrush="{ThemeResource AccentFillColorDefaultBrush}" BorderThickness="1.5"
-                        Canvas.ZIndex="650" Visibility="Collapsed">
-                    <StackPanel Spacing="10">
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="38" Height="38" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE74C;" FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock x:Name="ExtensionInstallTitleText" Text="Eklenti Yüklensin mi?" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
-                                <TextBlock x:Name="ExtensionInstallStoreText" Text="Chrome Web Mağazası" FontSize="12" Opacity="0.75" />
-                            </StackPanel>
-                        </Grid>
-
-                        <TextBlock x:Name="ExtensionInstallStatusText" Text="Bu uzantıyı Bear Browser'a eklemek ve tüm web sitelerinde çalıştırmak istiyor musunuz?" FontSize="12" Opacity="0.8" TextWrapping="Wrap" />
-
-                        <Grid ColumnSpacing="8" Margin="0,4,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ProgressRing x:Name="ExtensionInstallProgress" Grid.Column="0" Width="18" Height="18" HorizontalAlignment="Left" Visibility="Collapsed" IsActive="False" />
-                            <Button x:Name="ConfirmInstallExtensionBtn" Grid.Column="1" Style="{ThemeResource AccentButtonStyle}" Click="ConfirmInstallExtensionBtn_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon Glyph="&#xE896;" FontSize="12" />
-                                    <TextBlock x:Name="ConfirmInstallExtensionBtnText" Text="Bear Browser'a Ekle" />
-                                </StackPanel>
-                            </Button>
-                            <Button x:Name="DismissExtensionInstallBtn" Grid.Column="2" Content="İptal" Click="DismissExtensionInstallBtn_Click" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-
-                <!-- Tam Ekran Çıkış Bildirimi -->
-                <Border x:Name="FullScreenBanner"
-                        HorizontalAlignment="Center" Margin="0,0,0,10"
-                        Background="#E6202020" BorderBrush="#40FFFFFF" BorderThickness="1"
-                        CornerRadius="8" Padding="16,6,8,6" Visibility="Collapsed">
-                    <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                        <TextBlock Text="Tam ekrandan çıkmak için fareyi ekranın üstüne taşı veya F11 tuşuna basın"
-                                   Foreground="#F0F0F0" FontSize="13" VerticalAlignment="Center" />
-                        <Button x:Name="ExitFullScreenBtn" Width="28" Height="28" Padding="0"
-                                Background="#33FFFFFF" BorderThickness="0" CornerRadius="4"
-                                ToolTipService.ToolTip="Tam ekrandan çık (F11 veya Esc)" Click="ExitFullScreenBtn_Click">
-                            <FontIcon Glyph="&#xE73F;" FontSize="12" Foreground="White" />
-                        </Button>
-                    </StackPanel>
-                </Border>
             </StackPanel>
         </Grid>
 
-        <!-- SADE VE ŞIK AÇILIŞ (LOADING) EKRANI -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" Canvas.ZIndex="3000">
+            <Border x:Name="FindBar" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,86,24,0" Padding="8,6" CornerRadius="8"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                    IsHitTestVisible="True" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <TextBox x:Name="FindTextBox" Width="180" Height="32" PlaceholderText="Sayfada bul..."
+                             TextChanged="FindTextBox_TextChanged" KeyDown="FindTextBox_KeyDown" />
+                    <Button x:Name="FindPrevBtn" Width="28" Height="28" Padding="0" CornerRadius="4"
+                            ToolTipService.ToolTip="Önceki (Shift+Enter)" Click="FindPrevBtn_Click">
+                        <FontIcon Glyph="&#xE70E;" FontSize="10" />
+                    </Button>
+                    <Button x:Name="FindNextBtn" Width="28" Height="28" Padding="0" CornerRadius="4"
+                            ToolTipService.ToolTip="Sonraki (Enter)" Click="FindNextBtn_Click">
+                        <FontIcon Glyph="&#xE70D;" FontSize="10" />
+                    </Button>
+                    <Button x:Name="FindCloseBtn" Width="28" Height="28" Padding="0" CornerRadius="4"
+                            ToolTipService.ToolTip="Kapat (Esc)" Click="FindCloseBtn_Click">
+                        <FontIcon Glyph="&#xE711;" FontSize="10" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="PasswordPromptBar" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,86,24,0" Padding="16,12" CornerRadius="8" MaxWidth="320"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                    IsHitTestVisible="True" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE8D7;" FontSize="16" />
+                        <TextBlock Text="Parola kaydedilsin mi?" FontWeight="SemiBold" FontSize="14" />
+                    </StackPanel>
+                    <TextBlock x:Name="PasswordPromptUserText" FontSize="12" Opacity="0.8" TextTrimming="CharacterEllipsis" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,4,0,0">
+                        <Button Content="Kaydet" Style="{ThemeResource AccentButtonStyle}" Click="SavePasswordPrompt_Click" />
+                        <Button Content="Şimdi değil" Click="DismissPasswordPrompt_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="ExtensionInstallBar" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,86,24,0" Padding="16,14" CornerRadius="10" MaxWidth="380"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}" BorderThickness="1.5"
+                    IsHitTestVisible="True" Visibility="Collapsed">
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                            <FontIcon Glyph="&#xE74C;" FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock x:Name="ExtensionInstallTitleText" Text="Eklenti Yüklensin mi?" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="ExtensionInstallStoreText" Text="Chrome Web Mağazası" FontSize="12" Opacity="0.75" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock x:Name="ExtensionInstallStatusText" Text="Bu uzantıyı Bear Browser'a eklemek ve tüm web sitelerinde çalıştırmak istiyor musunuz?" FontSize="12" Opacity="0.8" TextWrapping="Wrap" />
+
+                    <Grid ColumnSpacing="8" Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+
+                            <ColumnDefinition Width="Auto" />
+
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ProgressRing x:Name="ExtensionInstallProgress" Grid.Column="0" Width="18" Height="18" HorizontalAlignment="Left" Visibility="Collapsed" IsActive="False" />
+                        <Button x:Name="ConfirmInstallExtensionBtn" Grid.Column="1" Style="{ThemeResource AccentButtonStyle}" Click="ConfirmInstallExtensionBtn_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE896;" FontSize="12" />
+                                <TextBlock x:Name="ConfirmInstallExtensionBtnText" Text="Bear Browser'a Ekle" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="DismissExtensionInstallBtn" Grid.Column="2" Content="İptal" Click="DismissExtensionInstallBtn_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="UpdateNotificationBar" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,86,24,0" Padding="18,14" CornerRadius="12" MaxWidth="400"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="#E07A1E" BorderThickness="1.5"
+                    IsHitTestVisible="True" Visibility="Collapsed">
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+
+                            <ColumnDefinition Width="*" />
+
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="19" Background="#30E07A1E">
+                            <FontIcon Glyph="&#xE896;" FontSize="18" Foreground="#E07A1E" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock x:Name="UpdateVersionTitleText" Text="Yeni Güncelleme Mevcut! 🚀" FontWeight="SemiBold" FontSize="13.5" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                            <TextBlock x:Name="UpdateVersionSubText" Text="Bear Browser v1.1.0 hazır" FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                        </StackPanel>
+
+                        <Button Grid.Column="2" Click="DismissUpdateNotification_Click" Width="28" Height="28" Padding="0" Background="Transparent" BorderThickness="0" CornerRadius="14">
+                            <FontIcon Glyph="&#xE711;" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                        </Button>
+                    </Grid>
+
+                    <TextBlock x:Name="UpdateReleaseNotesText" Text="Hata düzeltmeleri ve performans iyileştirmeleri içerir." FontSize="11.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" MaxHeight="80" TextTrimming="CharacterEllipsis" />
+
+                    <ProgressBar x:Name="UpdateDownloadProgress" Minimum="0" Maximum="100" Value="0" Visibility="Collapsed" Height="4" CornerRadius="2" Foreground="#E07A1E" />
+
+                    <TextBlock x:Name="UpdateDownloadStatusText" FontSize="11" Foreground="#E07A1E" Visibility="Collapsed" TextWrapping="Wrap" />
+
+                    <Grid ColumnSpacing="8" Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+
+                            <ColumnDefinition Width="Auto" />
+
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button x:Name="DownloadUpdateButton" Grid.Column="1" Click="DownloadUpdateButton_Click"
+                                Background="#E07A1E" Foreground="White" FontWeight="SemiBold" CornerRadius="8" Padding="14,6">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE896;" FontSize="12" Foreground="White" />
+                                <TextBlock x:Name="DownloadUpdateButtonText" Text="İndir ve Güncelle" FontSize="12" Foreground="White" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="LaterUpdateButton" Grid.Column="2" Content="Daha Sonra" Click="DismissUpdateNotification_Click"
+                                Background="Transparent" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12,6" FontSize="12" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="FullScreenBanner"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                    Background="#E6202020" BorderBrush="#40FFFFFF" BorderThickness="1"
+                    CornerRadius="8" Padding="16,6,8,6" IsHitTestVisible="True" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                    <TextBlock Text="Tam ekrandan çıkmak için fareyi ekranın üstüne taşı veya F11 tuşuna basın"
+                               Foreground="#F0F0F0" FontSize="13" VerticalAlignment="Center" />
+                    <Button x:Name="ExitFullScreenBtn" Width="28" Height="28" Padding="0"
+                            Background="#33FFFFFF" BorderThickness="0" CornerRadius="4"
+                            ToolTipService.ToolTip="Tam ekrandan çık (F11 veya Esc)" Click="ExitFullScreenBtn_Click">
+                        <FontIcon Glyph="&#xE73F;" FontSize="12" Foreground="White" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <Grid x:Name="LoadingOverlay" Grid.Row="0" Grid.RowSpan="2" Canvas.ZIndex="9999"
               Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
-                <!-- Bear Browser Gerçek Logo (Yuvarlatılmış Şık Çerçeve) -->
                 <Border Width="96" Height="96" CornerRadius="22" HorizontalAlignment="Center">
                     <Border.Background>
                         <ImageBrush ImageSource="ms-appx:///Assets/Bear-Browser-Logo.jpg" Stretch="UniformToFill" />
                     </Border.Background>
                 </Border>
 
-                <!-- Başlık ve Durum -->
                 <StackPanel Spacing="4" HorizontalAlignment="Center">
                     <TextBlock Text="Bear Browser" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" />
                     <TextBlock Text="Başlatılıyor..." FontSize="13" Opacity="0.6" HorizontalAlignment="Center" />
                 </StackPanel>
 
-                <!-- Zarif İnce İlerleme Çubuğu -->
                 <ProgressBar Width="140" Height="2.5" IsIndeterminate="True" 
                              CornerRadius="1.25" HorizontalAlignment="Center" Margin="0,6,0,0" />
             </StackPanel>

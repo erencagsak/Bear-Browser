@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Bear_Browser.Models;
@@ -40,7 +40,6 @@ namespace Bear_Browser.Controls
         {
             var picker = new FileOpenPicker();
 
-            // WinUI 3 masaüstü pencere kimliğini bağla
             WinRT.Interop.InitializeWithWindow.Initialize(picker, MainWindow.WindowHandle);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
@@ -58,7 +57,6 @@ namespace Bear_Browser.Controls
                 var bitmap = new BitmapImage(new Uri(file.Path));
                 SourceCropImage.Source = bitmap;
 
-                // Konumu ve yakınlaştırmayı sıfırla
                 ImageTransform.TranslateX = 0;
                 ImageTransform.TranslateY = 0;
                 ImageTransform.ScaleX = 1.0;
@@ -148,7 +146,6 @@ namespace Bear_Browser.Controls
                     string avatarFileName = $"avatar_{DateTime.UtcNow.Ticks}.png";
                     string destPath = Path.Combine(profileFolder, avatarFileName);
 
-                    // Eski avatar dosyalarını temizle
                     foreach (var old in Directory.GetFiles(profileFolder, "avatar*"))
                     {
                         try { File.Delete(old); } catch { }

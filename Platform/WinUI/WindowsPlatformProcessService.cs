@@ -1,13 +1,10 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Bear_Browser.Platform.Interfaces;
 
 namespace Bear_Browser.Platform.WinUI
 {
-    /// <summary>
-    /// Windows platformunda süreç yönetimi, bellek optimizasyonu ve yerel mesaj kutusu API'lerini yürüten servis.
-    /// </summary>
     public class WindowsPlatformProcessService : IPlatformProcessService
     {
         private const uint MB_ICONERROR = 0x00000010;
@@ -19,7 +16,6 @@ namespace Bear_Browser.Platform.WinUI
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
-        /// <inheritdoc />
         public bool EmptyWorkingSet()
         {
             try
@@ -33,7 +29,6 @@ namespace Bear_Browser.Platform.WinUI
             }
         }
 
-        /// <inheritdoc />
         public void ShowNativeMessageBox(IntPtr windowHandle, string text, string caption, bool isError)
         {
             try
@@ -43,7 +38,6 @@ namespace Bear_Browser.Platform.WinUI
             }
             catch
             {
-                // Sessizce devam et
             }
         }
     }

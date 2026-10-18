@@ -22,6 +22,9 @@ namespace Bear_Browser.Services
         public bool EcoModeEnabled { get; set; } = true;
         public string Language { get; set; } = "system"; // "system", "tr", "en", "de", "es", "fr"
         public string TabPosition { get; set; } = "Top"; // "Top", "Left"
+        public bool IsOnboardingCompleted { get; set; } = false;
+        public string GitHubRepo { get; set; } = "eren-project/Bear-Browser";
+        public bool AutoCheckUpdates { get; set; } = true;
     }
 
     public class SettingsService : ISettingsService

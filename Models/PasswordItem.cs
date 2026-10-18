@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Bear_Browser.Models
 {
-    /// <summary>
-    /// Kayıtlı parola öğesini temsil eden model. UI tiplerinden ve gliflerinden arındırılmıştır.
-    /// </summary>
     public class PasswordItem : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -41,5 +38,20 @@ namespace Bear_Browser.Models
 
         [JsonIgnore]
         public string FormattedDate => SavedAt.ToString("dd.MM.yyyy HH:mm");
+
+        [JsonIgnore]
+        public Uri? FaviconUri
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Domain)) return new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
+                try
+                {
+                    return new Uri($"https://www.google.com/s2/favicons?domain={Domain}&sz=32");
+                }
+                catch { }
+                return new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
+            }
+        }
     }
 }

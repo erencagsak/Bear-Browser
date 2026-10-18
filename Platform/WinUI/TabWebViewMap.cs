@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using Bear_Browser.Models;
 using Bear_Browser.Platform.Interfaces;
@@ -45,7 +45,6 @@ namespace Bear_Browser.Platform.WinUI
             return _adapterMap.GetOrAdd(tabId, id => new WebView2Adapter(GetOrCreate(id)));
         }
 
-        // Extension methods for BrowserTab
         public static WebView2 GetWebView(this BrowserTab tab)
         {
             return GetOrCreate(tab.Id);

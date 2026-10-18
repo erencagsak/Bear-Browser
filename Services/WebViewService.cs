@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,10 +49,8 @@ namespace Bear_Browser.Services
                     "--enable-accelerated-video-decode " +
                     "--enable-quic " +
                     "--enable-async-dns " +
-                    "--enable-tcp-fast-open " +
-                    "--process-per-site " +
                     "--disable-features=Translate,OptimizationHints,MediaRouter " +
-                    "--enable-features=SmoothScrolling,CanvasOopRasterization,VaapiVideoDecoder,BackForwardCache,AutomaticTabDiscarding,WebContentsDiscard,CalculateNativeWinOcclusion,TurnOffStreamingMediaWithHiddenWindow " +
+                    "--enable-features=SmoothScrolling,CanvasOopRasterization,BackForwardCache " +
                     "--high-dpi-support=1"
             };
 
@@ -83,9 +81,8 @@ namespace Bear_Browser.Services
                         "--use-angle=d3d11 " +
                         "--enable-accelerated-2d-canvas " +
                         "--enable-accelerated-video-decode " +
-                        "--process-per-site " +
                         "--disable-features=Translate,OptimizationHints,MediaRouter " +
-                        "--enable-features=SmoothScrolling,CanvasOopRasterization,VaapiVideoDecoder,CalculateNativeWinOcclusion,TurnOffStreamingMediaWithHiddenWindow " +
+                        "--enable-features=SmoothScrolling,CanvasOopRasterization " +
                         "--high-dpi-support=1"
                 };
                 env = await CoreWebView2Environment.CreateWithOptionsAsync(null, tempFolder, options);
@@ -115,10 +112,8 @@ namespace Bear_Browser.Services
                 settings.IsGeneralAutofillEnabled = false;
                 settings.IsPasswordAutosaveEnabled = false;
 
-                // ⚡ KRİTİK AYAR: Chromium'un Ctrl+T / Ctrl+W tuşlarını yutmasını engelliyoruz!
                 settings.AreBrowserAcceleratorKeysEnabled = false;
 
-                // WebView2 Motoru veya Render İşlemi Çökmesi Yakalayıcısı
                 webView.CoreWebView2.ProcessFailed += (s, args) =>
                 {
                     string info = $"İşlem Türü: {args.ProcessFailedKind}\nNeden: {args.Reason}\nÇıkış Kodu: {args.ExitCode}\nAçıklama: {args.ProcessDescription}";
@@ -126,7 +121,6 @@ namespace Bear_Browser.Services
                     crashService?.LogCustomError("WebView2 İşlem Hatası (ProcessFailed)", info);
                 };
 
-                // Betikleri Embedded Resource üzerinden enjekte et
                 if (!string.IsNullOrEmpty(ShortcutsScript.Value))
                 {
                     await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ShortcutsScript.Value);

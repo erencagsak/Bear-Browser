@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Bear_Browser.Models;
@@ -143,7 +143,6 @@ namespace Bear_Browser.Controls
         {
             var loc = _localizationService;
 
-            // Navigasyon butonları ipuçları
             if (BackButton != null) ToolTipService.SetToolTip(BackButton, loc["Nav_Back"]);
             if (ForwardButton != null) ToolTipService.SetToolTip(ForwardButton, loc["Nav_Forward"]);
             if (RefreshButton != null) ToolTipService.SetToolTip(RefreshButton, _isLoading ? loc["Nav_Stop"] : loc["Nav_Refresh"]);
@@ -155,24 +154,20 @@ namespace Bear_Browser.Controls
             if (ProfileButton != null) ToolTipService.SetToolTip(ProfileButton, loc["Nav_Profile"]);
             if (MoreMenuButton != null) ToolTipService.SetToolTip(MoreMenuButton, loc["Nav_More"]);
 
-            // Sık Kullanılanlar Flyout
             if (BookmarkTitleText != null) BookmarkTitleText.Text = loc["Bookmark_Title"];
             if (BookmarkNameLabel != null) BookmarkNameLabel.Text = loc["Bookmark_Name"];
             if (BookmarkFolderLabel != null) BookmarkFolderLabel.Text = loc["Bookmark_Folder"];
             if (DoneBookmarkBtn != null) DoneBookmarkBtn.Content = loc["Bookmark_Done"];
             if (RemoveBookmarkBtn != null) RemoveBookmarkBtn.Content = loc["Bookmark_Remove"];
 
-            // Profil Flyout
             if (FlyoutProfileOfflineText != null) FlyoutProfileOfflineText.Text = loc["Profile_Offline"];
             if (ManageProfileBtn != null) ManageProfileBtn.Content = loc["Profile_Manage"];
 
-            // Uzantılar Flyout
             if (FlyoutExtensionsTitleText != null) FlyoutExtensionsTitleText.Text = loc["Extensions_Title"];
             if (EmptyExtensionsText != null) EmptyExtensionsText.Text = loc["Extensions_NoInstalled"];
             if (FlyoutManageExtensionsText != null) FlyoutManageExtensionsText.Text = loc["Menu_ManageExtensions"];
             if (FlyoutChromeStoreText != null) FlyoutChromeStoreText.Text = loc["Menu_ChromeWebStore"];
 
-            // Üç Nokta Menüsü
             if (MenuNewTabItem != null) MenuNewTabItem.Text = loc["Menu_NewTab"];
             if (MenuNewWindowItem != null) MenuNewWindowItem.Text = loc["Menu_NewWindow"];
             if (MenuNewInPrivateItem != null) MenuNewInPrivateItem.Text = loc["Menu_NewInPrivate"];
@@ -191,9 +186,7 @@ namespace Bear_Browser.Controls
             if (MenuExitItem != null) MenuExitItem.Text = loc["Menu_CloseBrowser"];
         }
 
-        // --- YILDIZ VE SIK KULLANILAN DÜZENLEME MENÜSÜ ---
-
-        private void UpdateBookmarkState()
+private void UpdateBookmarkState()
         {
             string url = AddressBar.Text.Trim();
             bool isBookmarked = !string.IsNullOrEmpty(url) && _bookmarkService.IsBookmarked(url);
@@ -211,7 +204,6 @@ namespace Bear_Browser.Controls
 
             string title = !string.IsNullOrWhiteSpace(_currentPageTitle) ? _currentPageTitle : url;
 
-            // Eğer sayfada ilk kez basılıyorsa otomatik olarak ekle ve yıldızı yak
             if (!_bookmarkService.IsBookmarked(url))
             {
                 await _bookmarkService.AddOrUpdateBookmarkAsync(url, title, "Sık kullanılanlar çubuğu");
@@ -308,16 +300,13 @@ namespace Bear_Browser.Controls
             }
         }
 
-        // --- İNDİRİLENLER FLYOUT YÖNETİMİ ---
-
-        public void SetDownloadStatus(bool isDownloading, bool isCompleted)
+public void SetDownloadStatus(bool isDownloading, bool isCompleted)
         {
             if (isDownloading)
             {
                 DownloadProgressRing.Visibility = Visibility.Visible;
                 DownloadProgressRing.IsActive = true;
                 DownloadCompletedBadge.Visibility = Visibility.Collapsed;
-                // İndirme başladığında Edge gibi popup'ı otomatik aç
                 if (!DownloadsFlyout.IsOpen)
                 {
                     DownloadsFlyout.ShowAt(DownloadButton);
@@ -333,7 +322,6 @@ namespace Bear_Browser.Controls
 
         private void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
-            // Butona basıldığında yeşil onay simgesini sıfırla ve popup'ı aç
             DownloadCompletedBadge.Visibility = Visibility.Collapsed;
             DownloadsFlyout.ShowAt(DownloadButton);
         }
@@ -384,7 +372,6 @@ namespace Bear_Browser.Controls
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                // Kullanıcı başlatmayı iptal etti veya onay vermedi
             }
             catch { }
         }

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Bear_Browser.Models;
+using Bear_Browser.Services.Interfaces;
 using Bear_Browser.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Bear_Browser.Controls
 {
@@ -22,14 +26,21 @@ namespace Bear_Browser.Controls
         {
             get
             {
-                if (IsFolder || string.IsNullOrWhiteSpace(Url)) return null;
-                try
+                if (IsFolder) return null;
+                if (!string.IsNullOrWhiteSpace(FaviconUrl))
                 {
-                    var uri = new Uri(Url);
-                    if (!string.IsNullOrEmpty(uri.Host))
-                        return new Uri($"https://www.google.com/s2/favicons?domain={uri.Host}&sz=32");
+                    try { return new Uri(FaviconUrl); } catch { }
                 }
-                catch { }
+                if (!string.IsNullOrWhiteSpace(Url))
+                {
+                    try
+                    {
+                        var uri = new Uri(Url);
+                        if (!string.IsNullOrEmpty(uri.Host))
+                            return new Uri($"https://icons.duckduckgo.com/ip3/{uri.Host}.ico");
+                    }
+                    catch { }
+                }
                 return new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
             }
         }
@@ -44,18 +55,23 @@ namespace Bear_Browser.Controls
         public event EventHandler<string>? NewTabRequested;
         public event EventHandler? ToggleFavoritesBarRequested;
 
+        private readonly IBookmarkService _bookmarkService;
         public FavoritesViewModel ViewModel { get; }
 
         public FavoritesView()
         {
             InitializeComponent();
+            _bookmarkService = App.Services.GetRequiredService<IBookmarkService>();
             ViewModel = App.Services.GetRequiredService<FavoritesViewModel>();
 
-            FoldersListView.ItemsSource = ViewModel.Folders;
-            FoldersListView.SelectedItem = ViewModel.CurrentFolder;
             ItemsListView.ItemsSource = ViewModel.DisplayedItems;
 
             UpdateNavigationUI();
+            ViewModel.DisplayedItems.CollectionChanged += (s, e) =>
+            {
+                CountBadgeText.Text = $"{ViewModel.DisplayedItems.Count} yer imi";
+            };
+
             ViewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(ViewModel.CurrentFolder) ||
@@ -71,14 +87,7 @@ namespace Bear_Browser.Controls
         {
             BackButton.Visibility = ViewModel.IsRootFolder ? Visibility.Collapsed : Visibility.Visible;
             BreadcrumbText.Text = ViewModel.BreadcrumbText;
-        }
-
-        private void FoldersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (FoldersListView.SelectedItem is string folder)
-            {
-                ViewModel.CurrentFolder = folder;
-            }
+            CountBadgeText.Text = $"{ViewModel.DisplayedItems.Count} yer imi";
         }
 
         private void ItemsListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -88,7 +97,6 @@ namespace Bear_Browser.Controls
                 if (item.IsFolder)
                 {
                     ViewModel.OpenFolder(item.Title);
-                    FoldersListView.SelectedItem = item.Title;
                 }
                 else
                 {
@@ -100,7 +108,6 @@ namespace Bear_Browser.Controls
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.NavigateToRoot();
-            FoldersListView.SelectedItem = ViewModel.CurrentFolder;
         }
 
         private async void DeleteItem_Click(object sender, RoutedEventArgs e)
@@ -256,6 +263,225 @@ namespace Bear_Browser.Controls
                 };
                 await errDialog.ShowAsync();
             }
+        }
+
+        private void BreadcrumbArea_DragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        private async void BreadcrumbArea_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (e.DataView.Contains(StandardDataFormats.Text))
+                {
+                    string data = await e.DataView.GetTextAsync();
+                    if (data.StartsWith("bear-bookmark-id:"))
+                    {
+                        string idStr = data.Substring("bear-bookmark-id:".Length);
+                        if (Guid.TryParse(idStr, out Guid bId))
+                        {
+                            var item = _bookmarkService.Bookmarks.FirstOrDefault(b => b.Id == bId);
+                            if (item != null)
+                            {
+                                item.Folder = "Sık kullanılanlar çubuğu";
+                                _bookmarkService.Bookmarks.Remove(item);
+                                _bookmarkService.Bookmarks.Add(item);
+                                await _bookmarkService.SaveChangesAsync();
+                                ViewModel.RefreshList();
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void ItemCard_DragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is FavoriteDisplayItem displayItem)
+            {
+                if (displayItem.IsFolder)
+                {
+                    e.Data.SetText("bear-folder:" + displayItem.Title);
+                }
+                else if (displayItem.Tag is Guid bId)
+                {
+                    e.Data.SetText("bear-bookmark-id:" + bId.ToString());
+                }
+                e.Data.RequestedOperation = DataPackageOperation.Move;
+            }
+        }
+
+        private void ItemCard_DragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            if (sender is Border border)
+            {
+                var p = e.GetPosition(border);
+                if (border.Tag is FavoriteDisplayItem displayItem && displayItem.IsFolder)
+                {
+                    border.BorderBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 249, 115, 22));
+                    border.BorderThickness = new Thickness(2);
+                }
+                else
+                {
+                    border.BorderBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 249, 115, 22));
+                    if (p.Y < border.ActualHeight / 2.0)
+                    {
+                        border.BorderThickness = new Thickness(0, 2.5, 0, 0);
+                    }
+                    else
+                    {
+                        border.BorderThickness = new Thickness(0, 0, 0, 2.5);
+                    }
+                }
+            }
+        }
+
+        private void ItemCard_DragLeave(object sender, DragEventArgs e)
+        {
+            if (sender is Border border)
+            {
+                border.BorderBrush = (Brush)Application.Current.Resources["ArcBorderSubtleBrush"];
+                border.BorderThickness = new Thickness(1);
+            }
+        }
+
+        private async void ItemCard_Drop(object sender, DragEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not FavoriteDisplayItem targetItem)
+                return;
+
+            if (sender is Border border)
+            {
+                border.BorderBrush = (Brush)Application.Current.Resources["ArcBorderSubtleBrush"];
+                border.BorderThickness = new Thickness(1);
+            }
+
+            try
+            {
+                if (e.DataView.Contains(StandardDataFormats.Text))
+                {
+                    string data = await e.DataView.GetTextAsync();
+
+                    if (data.StartsWith("bear-bookmark-id:"))
+                    {
+                        string idStr = data.Substring("bear-bookmark-id:".Length);
+                        if (Guid.TryParse(idStr, out Guid srcId))
+                        {
+                            var srcItem = _bookmarkService.Bookmarks.FirstOrDefault(b => b.Id == srcId);
+                            if (srcItem != null)
+                            {
+                                if (targetItem.IsFolder)
+                                {
+                                    srcItem.Folder = targetItem.Title;
+                                    _bookmarkService.Bookmarks.Remove(srcItem);
+                                    _bookmarkService.Bookmarks.Add(srcItem);
+                                    await _bookmarkService.SaveChangesAsync();
+                                    ViewModel.RefreshList();
+                                }
+                                else if (targetItem.Tag is Guid targetGuid && targetGuid != srcId)
+                                {
+                                    var targetBookmark = _bookmarkService.Bookmarks.FirstOrDefault(b => b.Id == targetGuid);
+                                    if (targetBookmark != null)
+                                    {
+                                        var p = e.GetPosition(fe);
+                                        bool insertBefore = p.Y < (fe.ActualHeight / 2.0);
+
+                                        srcItem.Folder = targetBookmark.Folder;
+                                        _bookmarkService.Bookmarks.Remove(srcItem);
+
+                                        int targetIndex = _bookmarkService.Bookmarks.IndexOf(targetBookmark);
+                                        if (targetIndex >= 0)
+                                        {
+                                            if (!insertBefore) targetIndex++;
+                                            if (targetIndex <= _bookmarkService.Bookmarks.Count)
+                                                _bookmarkService.Bookmarks.Insert(targetIndex, srcItem);
+                                            else
+                                                _bookmarkService.Bookmarks.Add(srcItem);
+                                        }
+                                        else
+                                        {
+                                            _bookmarkService.Bookmarks.Add(srcItem);
+                                        }
+
+                                        await _bookmarkService.SaveChangesAsync();
+                                        ViewModel.RefreshList();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (data.StartsWith("bear-folder:"))
+                    {
+                        string srcFolderName = data.Substring("bear-folder:".Length);
+                        if (targetItem.IsFolder && !srcFolderName.Equals(targetItem.Title, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var p = e.GetPosition(fe);
+                            bool insertBefore = p.Y < (fe.ActualHeight / 2.0);
+
+                            int srcIndex = _bookmarkService.Folders.IndexOf(srcFolderName);
+                            if (srcIndex >= 0)
+                            {
+                                _bookmarkService.Folders.RemoveAt(srcIndex);
+                                int targetIndex = _bookmarkService.Folders.IndexOf(targetItem.Title);
+                                if (targetIndex >= 0)
+                                {
+                                    if (!insertBefore) targetIndex++;
+                                    if (targetIndex <= _bookmarkService.Folders.Count)
+                                        _bookmarkService.Folders.Insert(targetIndex, srcFolderName);
+                                    else
+                                        _bookmarkService.Folders.Add(srcFolderName);
+                                }
+                                else
+                                {
+                                    _bookmarkService.Folders.Add(srcFolderName);
+                                }
+
+                                await _bookmarkService.SaveChangesAsync();
+                                ViewModel.SyncFolders();
+                                ViewModel.RefreshList();
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void ItemsListView_DragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        private async void ItemsListView_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (e.DataView.Contains(StandardDataFormats.Text))
+                {
+                    string data = await e.DataView.GetTextAsync();
+                    if (data.StartsWith("bear-bookmark-id:"))
+                    {
+                        string idStr = data.Substring("bear-bookmark-id:".Length);
+                        if (Guid.TryParse(idStr, out Guid srcId))
+                        {
+                            var srcItem = _bookmarkService.Bookmarks.FirstOrDefault(b => b.Id == srcId);
+                            if (srcItem != null)
+                            {
+                                srcItem.Folder = ViewModel.CurrentFolder;
+                                _bookmarkService.Bookmarks.Remove(srcItem);
+                                _bookmarkService.Bookmarks.Add(srcItem);
+                                await _bookmarkService.SaveChangesAsync();
+                                ViewModel.RefreshList();
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
         }
     }
 }

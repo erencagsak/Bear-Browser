@@ -1,13 +1,10 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Bear_Browser.Platform.Interfaces;
 
 namespace Bear_Browser.Platform.WinUI
 {
-    /// <summary>
-    /// Windows platformunda pencere ve uygulama kimliği API'lerini yürüten servis.
-    /// </summary>
     public class WindowsPlatformWindowService : IPlatformWindowService
     {
         private const uint WM_SETICON = 0x0080;
@@ -26,7 +23,6 @@ namespace Bear_Browser.Platform.WinUI
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr LoadImage(IntPtr hinst, string lpszName, uint uType, int cxDesired, int cyDesired, uint fuLoad);
 
-        /// <inheritdoc />
         public void SetAppUserModelId(string appId)
         {
             if (string.IsNullOrWhiteSpace(appId)) return;
@@ -36,11 +32,9 @@ namespace Bear_Browser.Platform.WinUI
             }
             catch
             {
-                // İşletim sistemi izin vermezse sessizce devam edilir
             }
         }
 
-        /// <inheritdoc />
         public void SetWindowIcon(IntPtr windowHandle, string iconPath)
         {
             if (windowHandle == IntPtr.Zero || string.IsNullOrWhiteSpace(iconPath) || !File.Exists(iconPath))
@@ -59,7 +53,6 @@ namespace Bear_Browser.Platform.WinUI
             }
             catch
             {
-                // İkon yükleme hatası durumunda sessizce devam edilir
             }
         }
 
@@ -74,7 +67,6 @@ namespace Bear_Browser.Platform.WinUI
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetCursorPos(out POINT lpPoint);
 
-        /// <inheritdoc />
         public bool TryGetCursorPos(out int x, out int y)
         {
             if (GetCursorPos(out POINT pt))

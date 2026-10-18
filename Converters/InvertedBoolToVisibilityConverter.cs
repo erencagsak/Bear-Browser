@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Bear_Browser.Converters
 {
-    /// <summary>
-    /// Boolean değerinin tersini Visibility (Collapsed / Visible) değerine dönüştürür.
-    /// </summary>
     public class InvertedBoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)

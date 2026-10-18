@@ -1,4 +1,4 @@
-using Bear_Browser.Controls;
+﻿using Bear_Browser.Controls;
 using Bear_Browser.Messages;
 using Bear_Browser.Models;
 using Bear_Browser.Platform.Interfaces;
@@ -35,6 +35,11 @@ namespace Bear_Browser
         private readonly ICrashReportingService _crashReportingService;
         private readonly IPlatformWindowService _platformWindowService;
         private readonly IMessenger _messenger;
+        private readonly IBookmarkService _bookmarkService;
+        private readonly IUpdateService _updateService;
+
+        private UpdateInfo? _currentUpdateInfo;
+        private System.Threading.CancellationTokenSource? _updateCts;
 
         private bool _isFullScreen = false;
         private bool _isManualFullScreen = false;
@@ -42,11 +47,23 @@ namespace Bear_Browser
         private DispatcherTimer? _hideTimer;
         private DispatcherTimer? _initialBannerTimer;
 
-        public MainWindow() : this(isInPrivate: false)
+        private FavoritesView? _cachedFavoritesView;
+        private HistoryView? _cachedHistoryView;
+        private DownloadsView? _cachedDownloadsView;
+        private PasswordsView? _cachedPasswordsView;
+        private SettingsView? _cachedSettingsView;
+        private NewTabView? _cachedNewTabView;
+        private OnboardingView? _cachedOnboardingView;
+
+        public MainWindow() : this(isInPrivate: false, initialUrl: null)
         {
         }
 
-        public MainWindow(bool isInPrivate = false)
+        public MainWindow(bool isInPrivate) : this(isInPrivate, initialUrl: null)
+        {
+        }
+
+        public MainWindow(bool isInPrivate, string? initialUrl)
         {
             _platformWindowService = App.Services.GetRequiredService<IPlatformWindowService>();
             _localizationService = App.Services.GetRequiredService<ILocalizationService>();
@@ -58,6 +75,8 @@ namespace Bear_Browser
             _adBlockService = App.Services.GetRequiredService<IAdBlockService>();
             _crashReportingService = App.Services.GetRequiredService<ICrashReportingService>();
             _messenger = App.Services.GetRequiredService<IMessenger>();
+            _bookmarkService = App.Services.GetRequiredService<IBookmarkService>();
+            _updateService = App.Services.GetRequiredService<IUpdateService>();
 
             try
             {
@@ -70,13 +89,21 @@ namespace Bear_Browser
 
             InitializeComponent();
 
+            this.Closed += (s, e) =>
+            {
+                try
+                {
+                    _messenger.UnregisterAll(this);
+                    _messenger.UnregisterAll(ViewModel);
+                }
+                catch { }
+            };
+
             WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-            // Görev çubuğu ve pencere simgesini hem bin klasöründe hem de ana Assets klasöründe ara
             string iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Bear-Browser-Logo.ico");
             if (!System.IO.File.Exists(iconPath))
             {
-                // Visual Studio Debug modunda ana proje klasöründen oku
                 string devPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\Assets\Bear-Browser-Logo.ico"));
                 if (System.IO.File.Exists(devPath)) iconPath = devPath;
             }
@@ -94,6 +121,11 @@ namespace Bear_Browser
             if (IsInPrivate)
             {
                 Title = $"Bear Browser ({_localizationService["Tab_InPrivate"]})";
+                InPrivateBadge.Visibility = Visibility.Visible;
+                LeftInPrivateBadge.Visibility = Visibility.Visible;
+                RootGrid.RequestedTheme = ElementTheme.Dark;
+                RootGrid.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 12, 12, 14));
+                TopBarArea.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 15, 15, 19));
             }
 
             _localizationService.LanguageChanged += (s, e) =>
@@ -135,10 +167,8 @@ namespace Bear_Browser
                 });
             };
 
-            // Arka plan bellek optimizasyon servisini başlat
             _memoryOptimizerService.Start(this.DispatcherQueue);
 
-            // Ayarları ve temayı uygula
             ApplyTheme(_settingsService.Settings.Theme);
             ApplyTabPosition(_settingsService.Settings.TabPosition);
             FavBar.Visibility = _settingsService.Settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
@@ -155,7 +185,6 @@ namespace Bear_Browser
                 });
             };
 
-            // Fare üst panelden ayrılınca gecikmeli gizleme zamanlayıcısı (400ms)
             _hideTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
             _hideTimer.Tick += (s, e) =>
             {
@@ -166,7 +195,6 @@ namespace Bear_Browser
                 }
             };
 
-            // Messenger kayıtları
             _messenger.Register<FindInPageMessage>(this, (r, m) =>
             {
                 DispatcherQueue?.TryEnqueue(ToggleFindBar);
@@ -201,10 +229,8 @@ namespace Bear_Browser
                 });
             };
 
-            // Sayfa içinden gelen kısayolları bağla
             ViewModel.ShortcutActionTriggered += (s, action) => HandleGlobalAction(action);
 
-            // Sayfa gezindiğinde başlık ve adresi anlık senkronize et (Google/YouTube başlık düzeltmesi)
             ViewModel.TabNavigated += (s, tab) =>
             {
                 if (ViewModel.CurrentTab == tab)
@@ -215,19 +241,31 @@ namespace Bear_Browser
                     }
                     UpdateNavigationButtons(tab);
                 }
+                else
+                {
+                    if (tab != null && !tab.IsLoading)
+                    {
+                        tab.IsSleeping = true;
+                    }
+                }
+
+                if (tab != null && !string.IsNullOrWhiteSpace(tab.Url) && !tab.Url.StartsWith("bear://") && tab.FaviconUri != null)
+                {
+                    _ = _bookmarkService.UpdateFaviconAsync(tab.Url, tab.FaviconUri.ToString());
+                }
             };
 
-            // Sık Kullanılanlar çubuğundaki bağlantılara tıklanması
-            FavBar.NavigateRequested += (s, url) =>
+            FavBar.NavigateRequested += (s, url) => NavigateToUrl(url);
+            FavBar.NewTabRequested += (s, url) => CreateNewTab(url);
+            FavBar.NewWindowRequested += (s, url) => OpenNewWindow(isInPrivate: false, initialUrl: url);
+            FavBar.NewInPrivateRequested += (s, url) => OpenNewWindow(isInPrivate: true, initialUrl: url);
+            FavBar.HideFavoritesBarRequested += (s, e) =>
             {
-                NavigateToUrl(url);
-            };
-            FavBar.NewTabRequested += (s, url) =>
-            {
-                CreateNewTab(url);
+                FavBar.Visibility = Visibility.Collapsed;
+                _settingsService.Settings.ShowFavoritesBar = false;
+                _ = _settingsService.SaveAsync();
             };
 
-            // Navigasyon bar olayları
             NavBar.NavigateRequested += NavBar_NavigateRequested;
             NavBar.BackRequested += NavBar_BackRequested;
             NavBar.ForwardRequested += NavBar_ForwardRequested;
@@ -243,12 +281,10 @@ namespace Bear_Browser
             NavBar.NewTabRequested += (s, e) => CreateNewTab();
             NavBar.MenuActionTriggered += (s, action) => HandleGlobalAction(action);
 
-            // Yakınlaştırma ve Tam Ekran
             NavBar.ZoomInRequested += (s, e) => ChangeZoom(0.1);
             NavBar.ZoomOutRequested += (s, e) => ChangeZoom(-0.1);
             NavBar.FullScreenRequested += (s, e) => ToggleFullScreen();
 
-            // Profil güncellemeleri
             _profileService.ProfileUpdated += (s, profile) => NavBar.UpdateProfile(profile);
             NavBar.UpdateProfile(_profileService.CurrentProfile);
 
@@ -259,10 +295,13 @@ namespace Bear_Browser
                 {
                     NavBar.SetLoading(args.isLoading);
                 }
+                else if (!args.isLoading && args.tab != null)
+                {
+                    args.tab.IsSleeping = true;
+                }
             };
 
-            // İlk sekmeyi aç ve hazır olunca loading ekranını yumuşakça kapat
-            _ = InitializeStartupAsync();
+            _ = InitializeStartupAsync(initialUrl);
 
             ViewModel.DownloadStateChanged += (s, state) =>
             {
@@ -316,31 +355,21 @@ namespace Bear_Browser
             };
         }
 
-        // --- İÇERİK VE SAYFA GEZİNTİSİ ---
-
-        private void ViewModel_CurrentTabChanged(object? sender, BrowserTab? currentTab)
+private void ViewModel_CurrentTabChanged(object? sender, BrowserTab? currentTab)
         {
-            // Arka plandaki diğer sekmelerin bellek ve kaynak kullanımını minimuma indir
             foreach (var tab in ViewModel.Tabs)
             {
-                if (tab != currentTab && tab.GetWebView().CoreWebView2 != null)
+                if (tab != currentTab)
                 {
-                    try
+                    if (!tab.IsLoading)
                     {
-                        tab.GetWebView().CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                        tab.IsSleeping = true;
                     }
-                    catch { }
                 }
-            }
-
-            // Aktif sekmeyi normal performans moduna al
-            if (currentTab != null && currentTab.GetWebView().CoreWebView2 != null)
-            {
-                try
+                else
                 {
-                    currentTab.GetWebView().CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
+                    tab.IsSleeping = false;
                 }
-                catch { }
             }
 
             if (currentTab != null)
@@ -350,7 +379,10 @@ namespace Bear_Browser
                     currentTab.IsLoading = false;
                 }
 
-                TabsControl.SelectedItem = currentTab;
+                if (TabsControl.SelectedItem != currentTab)
+                {
+                    TabsControl.SelectedItem = currentTab;
+                }
                 NavBar.SetLoading(currentTab.IsLoading);
             }
 
@@ -370,138 +402,177 @@ namespace Bear_Browser
 
         private void RenderCurrentTabContent(BrowserTab? currentTab)
         {
-            WebContentGrid.Children.Clear();
-            if (currentTab != null)
+            if (currentTab == null)
             {
-                if (currentTab.Url.StartsWith("bear://", StringComparison.OrdinalIgnoreCase))
+                foreach (var child in WebContentGrid.Children)
                 {
-                    currentTab.IsLoading = false;
-                    NavBar.SetLoading(false);
+                    child.Visibility = Visibility.Collapsed;
                 }
+                return;
+            }
 
-                if (currentTab.Url.StartsWith("bear://favorites", StringComparison.OrdinalIgnoreCase))
+            if (currentTab.Url.StartsWith("bear://", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.IsLoading = false;
+                NavBar.SetLoading(false);
+            }
+
+            foreach (var child in WebContentGrid.Children)
+            {
+                child.Visibility = Visibility.Collapsed;
+            }
+
+            if (currentTab.Url.StartsWith("bear://favorites", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = _localizationService["Tab_Favorites"];
+                currentTab.FaviconUri = new Uri("ms-appx:///Assets/favorites.png");
+                if (_cachedFavoritesView == null)
                 {
-                    currentTab.Title = _localizationService["Tab_Favorites"];
-                    currentTab.FaviconUri = new Uri("ms-appx:///Assets/favorites.png");
-                    var favView = new FavoritesView();
-                    favView.NavigateRequested += (s, url) => NavigateToUrl(url);
-                    favView.NewTabRequested += (s, url) => CreateNewTab(url);
-                    favView.ToggleFavoritesBarRequested += (s, e) =>
+                    _cachedFavoritesView = new FavoritesView();
+                    _cachedFavoritesView.NavigateRequested += (s, url) => NavigateToUrl(url);
+                    _cachedFavoritesView.NewTabRequested += (s, url) => CreateNewTab(url);
+                    _cachedFavoritesView.ToggleFavoritesBarRequested += (s, e) =>
                     {
                         FavBar.Visibility = FavBar.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
                     };
-                    WebContentGrid.Children.Add(favView);
-                    NavBar.UpdateUrl("bear://favorites", currentTab.Title);
+                    WebContentGrid.Children.Add(_cachedFavoritesView);
                 }
-                else if (currentTab.Url.StartsWith("bear://history", StringComparison.OrdinalIgnoreCase))
+                _cachedFavoritesView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl("bear://favorites", currentTab.Title);
+            }
+            else if (currentTab.Url.StartsWith("bear://history", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = _localizationService["Tab_History"];
+                currentTab.FaviconUri = new Uri("ms-appx:///Assets/history.png");
+                if (_cachedHistoryView == null)
                 {
-                    currentTab.Title = _localizationService["Tab_History"];
-                    currentTab.FaviconUri = new Uri("ms-appx:///Assets/history.png");
-                    var historyView = new HistoryView();
-                    historyView.NavigateRequested += (s, url) => NavigateToUrl(url);
-                    WebContentGrid.Children.Add(historyView);
-                    NavBar.UpdateUrl("bear://history", currentTab.Title);
+                    _cachedHistoryView = new HistoryView();
+                    _cachedHistoryView.NavigateRequested += (s, url) => NavigateToUrl(url);
+                    WebContentGrid.Children.Add(_cachedHistoryView);
                 }
-                else if (currentTab.Url.StartsWith("bear://downloads", StringComparison.OrdinalIgnoreCase))
+                _cachedHistoryView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl("bear://history", currentTab.Title);
+            }
+            else if (currentTab.Url.StartsWith("bear://downloads", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = _localizationService["Tab_Downloads"];
+                currentTab.FaviconUri = new Uri("ms-appx:///Assets/downloads.png");
+                if (_cachedDownloadsView == null)
                 {
-                    currentTab.Title = _localizationService["Tab_Downloads"];
-                    currentTab.FaviconUri = new Uri("ms-appx:///Assets/downloads.png");
-                    var downloadsView = new DownloadsView();
-                    WebContentGrid.Children.Add(downloadsView);
-                    NavBar.UpdateUrl("bear://downloads", currentTab.Title);
+                    _cachedDownloadsView = new DownloadsView();
+                    WebContentGrid.Children.Add(_cachedDownloadsView);
                 }
-                else if (currentTab.Url.StartsWith("bear://passwords", StringComparison.OrdinalIgnoreCase))
+                _cachedDownloadsView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl("bear://downloads", currentTab.Title);
+            }
+            else if (currentTab.Url.StartsWith("bear://passwords", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = _localizationService["Tab_Passwords"];
+                currentTab.FaviconUri = new Uri("ms-appx:///Assets/passwords.png");
+                if (_cachedPasswordsView == null)
                 {
-                    currentTab.Title = _localizationService["Tab_Passwords"];
-                    currentTab.FaviconUri = new Uri("ms-appx:///Assets/passwords.png");
-                    var passwordsView = new PasswordsView();
-                    WebContentGrid.Children.Add(passwordsView);
-                    NavBar.UpdateUrl("bear://passwords", currentTab.Title);
+                    _cachedPasswordsView = new PasswordsView();
+                    WebContentGrid.Children.Add(_cachedPasswordsView);
                 }
-                else if (currentTab.Url.StartsWith("bear://extensions", StringComparison.OrdinalIgnoreCase))
+                _cachedPasswordsView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl("bear://passwords", currentTab.Title);
+            }
+            else if (currentTab.Url.StartsWith("bear://extensions", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Url = "bear://settings/extensions";
+                RenderCurrentTabContent(currentTab);
+                return;
+            }
+            else if (currentTab.Url.StartsWith("bear://settings", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = _localizationService["Tab_Settings"];
+                if (_cachedSettingsView == null)
                 {
-                    currentTab.Url = "bear://settings/extensions";
-                    RenderCurrentTabContent(currentTab);
-                    return;
-                }
-                else if (currentTab.Url.StartsWith("bear://settings", StringComparison.OrdinalIgnoreCase))
-                {
-                    currentTab.Title = _localizationService["Tab_Settings"];
-                    var settingsView = new SettingsView();
-                    if (currentTab.GetWebView().CoreWebView2 != null)
+                    _cachedSettingsView = new SettingsView();
+                    _cachedSettingsView.NavigateRequested += (s, targetUrl) => NavigateToUrl(targetUrl);
+                    _cachedSettingsView.UpdateAvailableDetected += (s, update) => ShowUpdateNotification(update);
+                    _cachedSettingsView.SectionNavigated += (s, section) =>
                     {
-                        settingsView.SetProfile(currentTab.GetWebView().CoreWebView2.Profile);
-                    }
-                    settingsView.NavigateRequested += (s, targetUrl) => NavigateToUrl(targetUrl);
-
-                    // Sol menüde gezinildikçe adres çubuğundaki URL'yi senkronize et
-                    settingsView.SectionNavigated += (s, section) =>
-                    {
-                        currentTab.Url = $"bear://settings/{section}";
-                        NavBar.UpdateUrl(currentTab.Url, _localizationService["Tab_Settings"]);
+                        if (ViewModel.CurrentTab != null && ViewModel.CurrentTab.Url.StartsWith("bear://settings", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ViewModel.CurrentTab.Url = $"bear://settings/{section}";
+                            NavBar.UpdateUrl(ViewModel.CurrentTab.Url, _localizationService["Tab_Settings"]);
+                        }
                     };
-
-                    if (currentTab.Url.Contains("/profiles"))
-                    {
-                        settingsView.SelectSection("profiles");
-                    }
-                    else if (currentTab.Url.Contains("/privacy"))
-                    {
-                        settingsView.SelectSection("privacy");
-                    }
-                    else if (currentTab.Url.Contains("/appearance"))
-                    {
-                        settingsView.SelectSection("appearance");
-                    }
-                    else if (currentTab.Url.Contains("/extensions"))
-                    {
-                        settingsView.SelectSection("extensions");
-                    }
-                    else if (currentTab.Url.Contains("/downloads"))
-                    {
-                        settingsView.SelectSection("downloads");
-                    }
-                    else if (currentTab.Url.Contains("/defaultbrowser"))
-                    {
-                        settingsView.SelectSection("defaultbrowser");
-                    }
-                    else if (currentTab.Url.Contains("/languages"))
-                    {
-                        settingsView.SelectSection("languages");
-                    }
-                    else if (currentTab.Url.Contains("/system"))
-                    {
-                        settingsView.SelectSection("system");
-                    }
-                    else
-                    {
-                        currentTab.Url = "bear://settings/about";
-                        settingsView.SelectSection("about");
-                    }
-
-                    WebContentGrid.Children.Add(settingsView);
-                    NavBar.UpdateUrl(currentTab.Url, _localizationService["Tab_Settings"]);
+                    WebContentGrid.Children.Add(_cachedSettingsView);
                 }
-                else if (currentTab.Url.StartsWith("bear://newtab", StringComparison.OrdinalIgnoreCase))
+
+                if (currentTab.GetWebView().CoreWebView2 != null)
                 {
-                    currentTab.Title = _localizationService["Tab_NewTab"];
-                    currentTab.FaviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
-                    var newTabView = new NewTabView();
-                    newTabView.NavigateRequested += (s, targetUrl) => NavigateToUrl(targetUrl);
-                    newTabView.NewTabRequested += (s, targetUrl) => CreateNewTab(targetUrl);
-                    WebContentGrid.Children.Add(newTabView);
-                    NavBar.UpdateUrl("", _localizationService["Tab_NewTab"]);
-                    newTabView.FocusSearchBox();
+                    _cachedSettingsView.SetProfile(currentTab.GetWebView().CoreWebView2.Profile);
                 }
+
+                string sectionToSelect = "about";
+                if (currentTab.Url.Contains("/profiles")) sectionToSelect = "profiles";
+                else if (currentTab.Url.Contains("/privacy")) sectionToSelect = "privacy";
+                else if (currentTab.Url.Contains("/appearance")) sectionToSelect = "appearance";
+                else if (currentTab.Url.Contains("/extensions")) sectionToSelect = "extensions";
+                else if (currentTab.Url.Contains("/downloads")) sectionToSelect = "downloads";
+                else if (currentTab.Url.Contains("/defaultbrowser")) sectionToSelect = "defaultbrowser";
+                else if (currentTab.Url.Contains("/languages")) sectionToSelect = "languages";
+                else if (currentTab.Url.Contains("/system")) sectionToSelect = "system";
                 else
                 {
-                    WebContentGrid.Children.Add(currentTab.GetWebView());
-                    NavBar.UpdateUrl(currentTab.Url, currentTab.Title);
-                    NavBar.UpdateZoomDisplay(currentTab.ZoomFactor);
+                    currentTab.Url = "bear://settings/about";
                 }
 
-                UpdateNavigationButtons(currentTab);
+                _cachedSettingsView.SelectSection(sectionToSelect);
+                _cachedSettingsView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl(currentTab.Url, _localizationService["Tab_Settings"]);
             }
+            else if (currentTab.Url.StartsWith("bear://newtab", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = _localizationService["Tab_NewTab"];
+                currentTab.FaviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
+                if (_cachedNewTabView == null)
+                {
+                    _cachedNewTabView = new NewTabView(IsInPrivate);
+                    _cachedNewTabView.NavigateRequested += (s, targetUrl) => NavigateToUrl(targetUrl);
+                    _cachedNewTabView.NewTabRequested += (s, targetUrl) => CreateNewTab(targetUrl);
+                    WebContentGrid.Children.Add(_cachedNewTabView);
+                }
+                _cachedNewTabView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl("", _localizationService["Tab_NewTab"]);
+                _cachedNewTabView.FocusSearchBox();
+            }
+            else if (currentTab.Url.StartsWith("bear://welcome", StringComparison.OrdinalIgnoreCase))
+            {
+                currentTab.Title = "Kurulum Sihirbazı";
+                currentTab.FaviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
+                if (_cachedOnboardingView == null)
+                {
+                    _cachedOnboardingView = new OnboardingView();
+                    _cachedOnboardingView.OnboardingCompleted += (s, e) =>
+                    {
+                        ApplyTheme(_settingsService.Settings.Theme);
+                        ApplyTabPosition(_settingsService.Settings.TabPosition);
+                        FavBar.Visibility = _settingsService.Settings.ShowFavoritesBar ? Visibility.Visible : Visibility.Collapsed;
+                        _adBlockService.IsEnabled = _settingsService.Settings.AdBlockEnabled;
+                        NavigateToUrl("bear://newtab");
+                    };
+                    WebContentGrid.Children.Add(_cachedOnboardingView);
+                }
+                _cachedOnboardingView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl("", "Hoş Geldiniz");
+            }
+            else
+            {
+                var webView = currentTab.GetWebView();
+                if (!WebContentGrid.Children.Contains(webView))
+                {
+                    WebContentGrid.Children.Add(webView);
+                }
+                webView.Visibility = Visibility.Visible;
+                NavBar.UpdateUrl(currentTab.Url, currentTab.Title);
+                NavBar.UpdateZoomDisplay(currentTab.ZoomFactor);
+            }
+
+            UpdateNavigationButtons(currentTab);
         }
 
         private async void NavigateToUrl(string url, bool isHistoryNavigation = false)
@@ -523,6 +594,16 @@ namespace Bear_Browser
             {
                 ViewModel.CurrentTab.Url = "bear://newtab";
                 ViewModel.CurrentTab.Title = "Yeni Sekme";
+                ViewModel.CurrentTab.FaviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
+                RenderCurrentTabContent(ViewModel.CurrentTab);
+                UpdateNavigationButtons(ViewModel.CurrentTab);
+                return;
+            }
+
+            if (url.StartsWith("bear://welcome", StringComparison.OrdinalIgnoreCase))
+            {
+                ViewModel.CurrentTab.Url = "bear://welcome";
+                ViewModel.CurrentTab.Title = "Kurulum Sihirbazı";
                 ViewModel.CurrentTab.FaviconUri = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
                 RenderCurrentTabContent(ViewModel.CurrentTab);
                 UpdateNavigationButtons(ViewModel.CurrentTab);
@@ -595,7 +676,6 @@ namespace Bear_Browser
                 return;
             }
 
-            // Eğer dahili sayfadayken bir web bağlantısına tıklanırsa WebView motorunu hazırla
             if (ViewModel.CurrentTab.GetWebView().CoreWebView2 == null || !ViewModel.CurrentTab.IsWebViewInitialized)
             {
                 await ViewModel.EnsureTabWebViewInitializedAsync(ViewModel.CurrentTab);
@@ -604,16 +684,33 @@ namespace Bear_Browser
             ViewModel.CurrentTab.Url = url;
             ViewModel.CurrentTab.IsLoading = true;
             NavBar.SetLoading(true);
+
+            RenderCurrentTabContent(ViewModel.CurrentTab);
+
             try
             {
-                ViewModel.CurrentTab.GetWebView().Source = new Uri(url);
+                if (ViewModel.CurrentTab.GetWebView().CoreWebView2 != null)
+                {
+                    ViewModel.CurrentTab.GetWebView().CoreWebView2.Navigate(url);
+                }
+                else
+                {
+                    ViewModel.CurrentTab.GetWebView().Source = new Uri(url);
+                }
             }
             catch
             {
-                ViewModel.CurrentTab.GetWebView().Source = new Uri(_settingsService.GetSearchUrl(url));
+                string searchUrl = _settingsService.GetSearchUrl(url);
+                if (ViewModel.CurrentTab.GetWebView().CoreWebView2 != null)
+                {
+                    ViewModel.CurrentTab.GetWebView().CoreWebView2.Navigate(searchUrl);
+                }
+                else
+                {
+                    ViewModel.CurrentTab.GetWebView().Source = new Uri(searchUrl);
+                }
             }
 
-            RenderCurrentTabContent(ViewModel.CurrentTab);
             UpdateNavigationButtons(ViewModel.CurrentTab);
         }
 
@@ -640,9 +737,7 @@ namespace Bear_Browser
             NavigateToUrl(targetUrl);
         }
 
-        // --- TAM EKRAN (FULLSCREEN) YÖNETİMİ ---
-
-        private void ToggleFullScreen()
+private void ToggleFullScreen()
         {
             SetFullScreen(!_isManualFullScreen);
         }
@@ -654,7 +749,7 @@ namespace Bear_Browser
             if (_isManualFullScreen)
             {
                 _isFullScreen = true;
-                AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+                try { AppWindow?.SetPresenter(AppWindowPresenterKind.FullScreen); } catch { }
                 if (!_isVideoFullScreen)
                 {
                     EnterFullScreenUi();
@@ -668,36 +763,41 @@ namespace Bear_Browser
                 }
 
                 _isFullScreen = false;
-                AppWindow.SetPresenter(AppWindowPresenterKind.Default);
+                try { AppWindow?.SetPresenter(AppWindowPresenterKind.Default); } catch { }
                 ExitFullScreenUi();
             }
         }
 
         private void OnFullScreenElementChanged(bool containsFullScreenElement)
         {
-            _isVideoFullScreen = containsFullScreenElement;
+            try
+            {
+                _isVideoFullScreen = containsFullScreenElement;
 
-            if (_isVideoFullScreen)
-            {
-                // Video tam ekran oldu: pencereyi tam ekran yap ve tüm tarayıcı chrome'unu gizle
-                _isFullScreen = true;
-                AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-                EnterVideoFullScreenUi();
-            }
-            else
-            {
-                // Video tam ekrandan çıktı:
-                TopBarArea.Visibility = Visibility.Visible;
-                if (_isManualFullScreen)
+                if (_isVideoFullScreen)
                 {
-                    EnterFullScreenUi();
+                    _isFullScreen = true;
+                    try { AppWindow?.SetPresenter(AppWindowPresenterKind.FullScreen); } catch { }
+                    EnterVideoFullScreenUi();
                 }
                 else
                 {
-                    _isFullScreen = false;
-                    AppWindow.SetPresenter(AppWindowPresenterKind.Default);
-                    ExitFullScreenUi();
+                    if (TopBarArea != null) TopBarArea.Visibility = Visibility.Visible;
+                    if (_isManualFullScreen)
+                    {
+                        EnterFullScreenUi();
+                    }
+                    else
+                    {
+                        _isFullScreen = false;
+                        try { AppWindow?.SetPresenter(AppWindowPresenterKind.Default); } catch { }
+                        ExitFullScreenUi();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FullScreen] OnFullScreenElementChanged error: {ex.Message}");
             }
         }
 
@@ -768,22 +868,45 @@ namespace Bear_Browser
 
         private void ExitFullScreenUi()
         {
-            _initialBannerTimer?.Stop();
-            _hideTimer?.Stop();
+            try
+            {
+                _initialBannerTimer?.Stop();
+                _hideTimer?.Stop();
 
-            TopBarArea.Visibility = Visibility.Visible;
-            TopBarTransform.Y = 0;
-            TopBarArea.Background = null;
-            FullScreenBanner.Visibility = Visibility.Collapsed;
-            TopHoverTrigger.Visibility = Visibility.Collapsed;
+                if (TopBarArea != null)
+                {
+                    TopBarArea.Visibility = Visibility.Visible;
+                    TopBarArea.Background = null;
+                    Grid.SetRowSpan(TopBarArea, 1);
+                }
 
-            TopRowDefinition.Height = GridLength.Auto;
-            Grid.SetRow(MainContentHostGrid, 1);
-            Grid.SetRowSpan(MainContentHostGrid, 1);
-            Grid.SetRowSpan(TopBarArea, 1);
-            WebCanvasContainer.CornerRadius = new CornerRadius(12);
-            WebCanvasContainer.BorderThickness = new Thickness(1);
-            ApplyTabPosition(_settingsService.Settings.TabPosition);
+                if (TopBarTransform != null) TopBarTransform.Y = 0;
+                if (FullScreenBanner != null) FullScreenBanner.Visibility = Visibility.Collapsed;
+                if (TopHoverTrigger != null) TopHoverTrigger.Visibility = Visibility.Collapsed;
+
+                if (TopRowDefinition != null) TopRowDefinition.Height = GridLength.Auto;
+                if (MainContentHostGrid != null)
+                {
+                    Grid.SetRow(MainContentHostGrid, 1);
+                    Grid.SetRowSpan(MainContentHostGrid, 1);
+                }
+
+                if (WebCanvasContainer != null)
+                {
+                    WebCanvasContainer.CornerRadius = new CornerRadius(0);
+                    WebCanvasContainer.BorderThickness = new Thickness(0);
+                    WebCanvasContainer.Margin = new Thickness(0);
+                }
+
+                if (_settingsService?.Settings != null)
+                {
+                    ApplyTabPosition(_settingsService.Settings.TabPosition);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ExitFullScreenUi] Exception: {ex.Message}");
+            }
         }
 
         private void ShowTopBar()
@@ -847,6 +970,13 @@ namespace Bear_Browser
 
         private void ApplyTheme(string theme)
         {
+            if (IsInPrivate)
+            {
+                RootGrid.RequestedTheme = ElementTheme.Dark;
+                ApplyThemeToWebViews("Dark");
+                return;
+            }
+
             RootGrid.RequestedTheme = theme switch
             {
                 "Dark" => ElementTheme.Dark,
@@ -918,9 +1048,7 @@ namespace Bear_Browser
             catch { }
         }
 
-        // --- YAKINLAŞTIRMA ---
-
-        private async void ChangeZoom(double delta)
+private async void ChangeZoom(double delta)
         {
             if (ViewModel.CurrentTab != null)
             {
@@ -938,9 +1066,7 @@ namespace Bear_Browser
             }
         }
 
-        // --- KISAYOLLAR VE MENÜ AKSİYONLARI ---
-
-        private void HandleGlobalAction(string action)
+private void HandleGlobalAction(string action)
         {
             switch (action)
             {
@@ -997,7 +1123,7 @@ namespace Bear_Browser
                     CreateNewTab("bear://settings/about");
                     break;
                 case "DevTools":
-                    ViewModel.CurrentTab?.GetWebView().CoreWebView2?.OpenDevToolsWindow();
+                    OpenDevTools();
                     break;
                 case "Passwords":
                     CreateNewTab("bear://passwords");
@@ -1008,6 +1134,29 @@ namespace Bear_Browser
                 case "Feedback":
                     CreateNewTab("https://discord.gg/bearbrowser");
                     break;
+            }
+        }
+
+        private async void OpenDevTools()
+        {
+            var tab = ViewModel.CurrentTab;
+            if (tab == null) return;
+            try
+            {
+                var webView = tab.GetWebView();
+                if (webView.CoreWebView2 == null)
+                {
+                    await ViewModel.EnsureTabWebViewInitializedAsync(tab);
+                }
+                if (webView.CoreWebView2 != null)
+                {
+                    webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
+                    webView.CoreWebView2.OpenDevToolsWindow();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DevTools] Exception: {ex.Message}");
             }
         }
 
@@ -1030,9 +1179,9 @@ namespace Bear_Browser
             CreateNewTab("bear://favorites");
         }
 
-        private void OpenNewWindow(bool isInPrivate)
+        private void OpenNewWindow(bool isInPrivate, string? initialUrl = null)
         {
-            var win = new MainWindow(isInPrivate);
+            var win = new MainWindow(isInPrivate, initialUrl);
             win.Activate();
         }
 
@@ -1102,11 +1251,27 @@ namespace Bear_Browser
             args.Handled = true;
         }
 
-        private async Task InitializeStartupAsync()
+        private async Task InitializeStartupAsync(string? explicitStartUrl = null)
         {
-            string startUrl = !string.IsNullOrWhiteSpace(_settingsService.Settings.HomePageUrl) && _settingsService.Settings.HomePageUrl != "https://www.google.com"
-                ? _settingsService.Settings.HomePageUrl
-                : "bear://newtab";
+            string startUrl;
+            if (!string.IsNullOrWhiteSpace(explicitStartUrl))
+            {
+                startUrl = explicitStartUrl;
+            }
+            else if (IsInPrivate)
+            {
+                startUrl = "bear://newtab";
+            }
+            else if (!_settingsService.Settings.IsOnboardingCompleted)
+            {
+                startUrl = "bear://welcome";
+            }
+            else
+            {
+                startUrl = !string.IsNullOrWhiteSpace(_settingsService.Settings.HomePageUrl) && _settingsService.Settings.HomePageUrl != "https://www.google.com"
+                    ? _settingsService.Settings.HomePageUrl
+                    : "bear://newtab";
+            }
 
             var tab = await ViewModel.CreateNewTabAsync(startUrl);
             if (tab != null)
@@ -1121,10 +1286,13 @@ namespace Bear_Browser
                     }
                 }
 
-                // Sayfa ilk yüklendiğinde loading ekranını kaldır
+                if (startUrl.StartsWith("bear://", StringComparison.OrdinalIgnoreCase))
+                {
+                    DismissLoading();
+                }
+
                 tab.GetWebView().NavigationCompleted += (s, e) => DismissLoading();
 
-                // Güvenlik zaman aşımı: Ağ veya site gecikse bile en geç 1 saniye içinde kaldır
                 await Task.Delay(1000);
                 DismissLoading();
             }
@@ -1132,13 +1300,17 @@ namespace Bear_Browser
             {
                 HideLoadingScreenWithFade();
             }
+
+            if (!IsInPrivate && _settingsService.Settings.AutoCheckUpdates)
+            {
+                _ = CheckForUpdatesOnStartupAsync();
+            }
         }
 
         private async void HideLoadingScreenWithFade()
         {
             if (LoadingOverlay == null || LoadingOverlay.Visibility == Visibility.Collapsed) return;
 
-            // Akıcı kaybolma animasyonu (Fade-Out)
             for (double opacity = 1.0; opacity >= 0.0; opacity -= 0.1)
             {
                 LoadingOverlay.Opacity = opacity;
@@ -1239,12 +1411,10 @@ namespace Bear_Browser
         {
             if (ViewModel.CurrentTab == null) return;
 
-            // Eğer Geçmiş veya Sık Kullanılanlar gibi dahili bir sayfadaysak yerel görünümü yenile
             if (ViewModel.CurrentTab.Url.StartsWith("bear://", StringComparison.OrdinalIgnoreCase))
             {
                 RenderCurrentTabContent(ViewModel.CurrentTab);
             }
-            // Normal bir web sitesindeysek ve WebView hazırsa sayfayı yenile
             else if (ViewModel.CurrentTab.GetWebView().CoreWebView2 != null)
             {
                 ViewModel.CurrentTab.GetWebView().Reload();
@@ -1260,24 +1430,26 @@ namespace Bear_Browser
         {
             if (args.Item is BrowserTab tab)
             {
+                if (WebContentGrid.Children.Contains(tab.GetWebView()))
+                {
+                    WebContentGrid.Children.Remove(tab.GetWebView());
+                }
                 ViewModel.CloseTab(tab);
             }
         }
 
         private void TabsControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TabsControl.SelectedItem is BrowserTab selectedTab)
+            if (TabsControl.SelectedItem is BrowserTab selectedTab && selectedTab != ViewModel.CurrentTab)
             {
                 ViewModel.CurrentTab = selectedTab;
             }
         }
 
-        // --- F12 & CTRL + F KISAYOLLARI ---
-
-        private void Shortcut_DevTools_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+private void Shortcut_DevTools_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             args.Handled = true;
-            ViewModel.CurrentTab?.GetWebView().CoreWebView2?.OpenDevToolsWindow();
+            OpenDevTools();
         }
 
         private void Shortcut_FindInPage_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -1286,9 +1458,7 @@ namespace Bear_Browser
             ToggleFindBar();
         }
 
-        // --- CTRL + F SAYFADA BUL MANTIĞI ---
-
-        private void ToggleFindBar()
+private void ToggleFindBar()
         {
             if (FindBar.Visibility == Visibility.Visible)
             {
@@ -1335,9 +1505,7 @@ namespace Bear_Browser
         private void FindNextBtn_Click(object sender, RoutedEventArgs e) => PerformFind(FindTextBox.Text, backwards: false);
         private void FindCloseBtn_Click(object sender, RoutedEventArgs e) => FindBar.Visibility = Visibility.Collapsed;
 
-        // --- PAROLA BİLDİRİMİ İŞLEMLERİ ---
-
-        private (string url, string username, string password)? _pendingPasswordData;
+private (string url, string username, string password)? _pendingPasswordData;
 
         private async void SavePasswordPrompt_Click(object sender, RoutedEventArgs e)
         {
@@ -1354,9 +1522,7 @@ namespace Bear_Browser
             PasswordPromptBar.Visibility = Visibility.Collapsed;
         }
 
-        // --- EKLENTİ YÜKLEME İŞLEMLERİ ---
-
-        private string _pendingExtensionStoreType = "";
+private string _pendingExtensionStoreType = "";
         private string _pendingExtensionId = "";
         private string _pendingExtensionName = "";
 
@@ -1454,6 +1620,137 @@ namespace Bear_Browser
             });
         }
 
+        private async Task CheckForUpdatesOnStartupAsync()
+        {
+            try
+            {
+                await Task.Delay(4000);
+
+                var update = await _updateService.CheckForUpdatesAsync(silent: true);
+                if (update.IsUpdateAvailable)
+                {
+                    DispatcherQueue?.TryEnqueue(() =>
+                    {
+                        ShowUpdateNotification(update);
+                    });
+                }
+            }
+            catch { }
+        }
+
+        public void ShowUpdateNotification(UpdateInfo update)
+        {
+            _currentUpdateInfo = update;
+
+            UpdateVersionTitleText.Text = string.IsNullOrWhiteSpace(update.ReleaseTitle)
+                ? "Yeni Güncelleme Mevcut! 🚀"
+                : update.ReleaseTitle;
+
+            UpdateVersionSubText.Text = $"Bear Browser v{update.LatestVersion} hazır (Mevcut: v{update.CurrentVersion})";
+
+            UpdateReleaseNotesText.Text = string.IsNullOrWhiteSpace(update.ReleaseNotes)
+                ? "Hata düzeltmeleri ve performans iyileştirmeleri içerir."
+                : update.ReleaseNotes;
+
+            UpdateDownloadProgress.Visibility = Visibility.Collapsed;
+            UpdateDownloadProgress.Value = 0;
+            UpdateDownloadStatusText.Visibility = Visibility.Collapsed;
+
+            DownloadUpdateButton.IsEnabled = true;
+            LaterUpdateButton.IsEnabled = true;
+            DownloadUpdateButtonText.Text = "İndir ve Güncelle";
+
+            UpdateNotificationBar.Visibility = Visibility.Visible;
+        }
+
+        private void DismissUpdateNotification_Click(object sender, RoutedEventArgs e)
+        {
+            _updateCts?.Cancel();
+            UpdateNotificationBar.Visibility = Visibility.Collapsed;
+        }
+
+        private async void DownloadUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentUpdateInfo == null) return;
+
+            if (string.IsNullOrEmpty(_currentUpdateInfo.InstallerDownloadUrl) ||
+                (!_currentUpdateInfo.InstallerDownloadUrl.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
+                 !_currentUpdateInfo.InstallerDownloadUrl.EndsWith(".msix", StringComparison.OrdinalIgnoreCase) &&
+                 !_currentUpdateInfo.IsTestSimulation))
+            {
+                UpdateDownloadStatusText.Visibility = Visibility.Visible;
+                UpdateDownloadStatusText.Text = "Kurulum dosyası (.exe) bulunamadı. Lütfen repo Release eklerini kontrol edin.";
+                return;
+            }
+
+            DownloadUpdateButton.IsEnabled = false;
+            LaterUpdateButton.IsEnabled = false;
+            DownloadUpdateButtonText.Text = "İndiriliyor...";
+            UpdateDownloadProgress.Visibility = Visibility.Visible;
+            UpdateDownloadProgress.Value = 0;
+            UpdateDownloadStatusText.Visibility = Visibility.Visible;
+            UpdateDownloadStatusText.Text = "%0 indirildi...";
+
+            _updateCts?.Cancel();
+            _updateCts = new System.Threading.CancellationTokenSource();
+
+            var progress = new Progress<double>(percent =>
+            {
+                DispatcherQueue?.TryEnqueue(() =>
+                {
+                    UpdateDownloadProgress.Value = percent;
+                    UpdateDownloadStatusText.Text = $"%{Math.Round(percent)} indirildi...";
+                });
+            });
+
+            try
+            {
+                string? setupPath = await _updateService.DownloadInstallerAsync(_currentUpdateInfo, progress, _updateCts.Token);
+
+                if (!string.IsNullOrEmpty(setupPath))
+                {
+                    UpdateDownloadStatusText.Text = "✓ İndirme tamamlandı! Kurulum başlatılıyor...";
+                    DownloadUpdateButtonText.Text = "Yükleniyor...";
+                    await Task.Delay(1500);
+
+                    if (_currentUpdateInfo.IsTestSimulation)
+                    {
+                        UpdateDownloadStatusText.Text = "✓ Test Başarılı! (Simülasyon tamamlandı)";
+                        DownloadUpdateButtonText.Text = "Tamamlandı";
+                        await Task.Delay(2000);
+                        UpdateNotificationBar.Visibility = Visibility.Collapsed;
+                        LaterUpdateButton.IsEnabled = true;
+                        DownloadUpdateButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        _updateService.LaunchInstallerAndExit(setupPath);
+                    }
+                }
+                else
+                {
+                    UpdateDownloadStatusText.Text = "İndirme başarısız oldu. Lütfen internet bağlantınızı kontrol edin.";
+                    DownloadUpdateButton.IsEnabled = true;
+                    LaterUpdateButton.IsEnabled = true;
+                    DownloadUpdateButtonText.Text = "Yeniden Dene";
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                UpdateDownloadStatusText.Text = "İndirme iptal edildi.";
+                DownloadUpdateButton.IsEnabled = true;
+                LaterUpdateButton.IsEnabled = true;
+                DownloadUpdateButtonText.Text = "İndir ve Güncelle";
+            }
+            catch (Exception ex)
+            {
+                UpdateDownloadStatusText.Text = $"Hata: {ex.Message}";
+                DownloadUpdateButton.IsEnabled = true;
+                LaterUpdateButton.IsEnabled = true;
+                DownloadUpdateButtonText.Text = "Yeniden Dene";
+            }
+        }
+
         private void ApplyTabPosition(string? position)
         {
             bool isLeft = string.Equals(position, "Left", StringComparison.OrdinalIgnoreCase);
@@ -1461,13 +1758,18 @@ namespace Bear_Browser
             {
                 TabsControl.Visibility = Visibility.Collapsed;
                 LeftSidebarPanel.Visibility = _isFullScreen ? Visibility.Collapsed : Visibility.Visible;
-                WebCanvasContainer.Margin = _isFullScreen ? new Thickness(0) : new Thickness(4, 2, 8, 8);
             }
             else
             {
                 TabsControl.Visibility = _isFullScreen ? Visibility.Collapsed : Visibility.Visible;
                 LeftSidebarPanel.Visibility = Visibility.Collapsed;
-                WebCanvasContainer.Margin = _isFullScreen ? new Thickness(0) : new Thickness(8, 2, 8, 8);
+            }
+
+            if (WebCanvasContainer != null)
+            {
+                WebCanvasContainer.Margin = new Thickness(0);
+                WebCanvasContainer.CornerRadius = new CornerRadius(0);
+                WebCanvasContainer.BorderThickness = new Thickness(0);
             }
         }
 
@@ -1480,6 +1782,10 @@ namespace Bear_Browser
         {
             if (sender is Button btn && btn.Tag is BrowserTab tab)
             {
+                if (WebContentGrid.Children.Contains(tab.GetWebView()))
+                {
+                    WebContentGrid.Children.Remove(tab.GetWebView());
+                }
                 ViewModel.CloseTab(tab);
             }
         }

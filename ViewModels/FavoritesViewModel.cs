@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -58,7 +58,6 @@ namespace Bear_Browser.ViewModels
             DisplayedItems.Clear();
             string query = SearchQuery?.Trim() ?? "";
 
-            // 1. Kök dizindeysek alt klasörleri listele
             if (IsRootFolder && string.IsNullOrEmpty(query))
             {
                 var customFolders = _bookmarkService.Folders
@@ -79,7 +78,6 @@ namespace Bear_Browser.ViewModels
                 }
             }
 
-            // 2. Bu klasöre ait yer imleri
             var bookmarks = _bookmarkService.Bookmarks
                 .Where(b => b.Folder.Equals(CurrentFolder, StringComparison.OrdinalIgnoreCase))
                 .ToList();

@@ -1,11 +1,8 @@
-using System;
+﻿using System;
 using Microsoft.UI.Xaml.Data;
 
 namespace Bear_Browser.Converters
 {
-    /// <summary>
-    /// Parola görünürlük durumuna (bool) göre göz ikonu glifini (\uED1A veya \uE7B3) döndürür.
-    /// </summary>
     public class PasswordGlyphConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)

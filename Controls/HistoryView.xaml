@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Bear_Browser.Controls.HistoryView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,119 +6,167 @@
     xmlns:models="using:Bear_Browser.Models">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid.ColumnDefinitions>
-            <!-- Sol Filtre Bölmesi -->
-            <ColumnDefinition Width="260" />
-            <ColumnDefinition Width="1" />
-            <!-- Sağ Ziyaret Listesi Bölmesi -->
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <Canvas IsHitTestVisible="False">
+            <Ellipse Width="450" Height="250" Canvas.Left="-100" Canvas.Top="-50" Opacity="0.06">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                        <GradientStop Color="{ThemeResource SystemAccentColor}" Offset="0" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
 
-        <!-- SOL BÖLME -->
-        <Grid Grid.Column="0" Padding="16,20,12,16" RowSpacing="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <ScrollViewer Padding="36,24,36,36">
+            <StackPanel HorizontalAlignment="Stretch" Spacing="16">
+                <Grid ColumnSpacing="16" Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
 
-            <!-- Başlık -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <FontIcon Glyph="&#xE81C;" FontSize="18" />
-                <TextBlock Text="Geçmiş" FontWeight="SemiBold" FontSize="18" />
-            </StackPanel>
+                        <ColumnDefinition Width="*" />
 
-            <!-- Arama Kutusu -->
-            <TextBox x:Name="SearchBox" Grid.Row="1" Height="34"
-                     PlaceholderText="Geçmişte ara..."
-                     TextChanged="SearchBox_TextChanged" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <!-- Zaman Filtreleri -->
-            <ListView x:Name="FiltersListView" Grid.Row="2" SelectionMode="Single"
-                      SelectionChanged="FiltersListView_SelectionChanged" Padding="0">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <StackPanel Orientation="Horizontal" Spacing="10" Padding="4,6">
-                            <FontIcon Glyph="&#xE823;" FontSize="13" Opacity="0.7" />
-                            <TextBlock Text="{x:Bind}" FontSize="13" FontWeight="Medium" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                        <Border Width="40" Height="40" CornerRadius="12"
+                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1">
+                            <FontIcon Glyph="&#xE81C;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        
+                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Geçmiş" FontSize="20" FontWeight="Bold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <Border Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="6,1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="CountBadgeText" Text="0 kayıt" FontSize="11" FontWeight="Medium" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
 
-        <Border Grid.Column="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
-        <!-- SAĞ BÖLME -->
-        <Grid Grid.Column="2" Padding="28,20,28,16" RowSpacing="16">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <!-- Üst Bar: Başlık ve Temizle Butonu -->
-            <Grid Grid.Row="0">
-                <TextBlock x:Name="CurrentFilterTitleText" Text="Tüm Geçmiş"
-                           FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" />
-
-                <Button x:Name="ClearHistoryBtn" HorizontalAlignment="Right" Padding="12,6"
-                        CornerRadius="6" Click="ClearHistoryBtn_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE74D;" FontSize="13" />
-                        <TextBlock Text="Tüm geçmişi temizle" FontSize="12" />
+                        <ListView x:Name="FiltersListView" SelectionMode="Single"
+                                  SelectionChanged="FiltersListView_SelectionChanged"
+                                  Padding="0" VerticalAlignment="Center" Margin="10,0,0,0">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="CornerRadius" Value="14" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,6,0" />
+                                    <Setter Property="MinHeight" Value="28" />
+                                    <Setter Property="MinWidth" Value="0" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border CornerRadius="14" Padding="12,5"
+                                            Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                            BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{x:Bind}" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </StackPanel>
-                </Button>
-            </Grid>
 
-            <!-- Geçmiş Listesi -->
-            <ListView x:Name="HistoryListView" Grid.Row="1" SelectionMode="None" IsItemClickEnabled="True"
-                      ItemClick="HistoryListView_ItemClick" Padding="0">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:HistoryItem">
-                        <Grid Padding="10,8" Margin="0,2" CornerRadius="6"
-                              Background="{ThemeResource SubtleFillColorTransparentBrush}"
-                              HorizontalAlignment="Stretch" ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="280" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="1" HorizontalAlignment="Center" Width="320" VerticalAlignment="Center">
+                        <TextBox x:Name="SearchBox"
+                                 Style="{StaticResource ArcCompactSearchBoxStyle}"
+                                 PlaceholderText="Geçmişte ara..."
+                                 TextChanged="SearchBox_TextChanged" />
+                        <FontIcon Glyph="&#xE721;" FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}"
+                                  HorizontalAlignment="Left" Margin="14,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                    </Grid>
 
-                            <!-- Web İkonu (Site Faviconu) -->
-                            <Border Grid.Column="0" Width="28" Height="28" CornerRadius="6"
-                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                    VerticalAlignment="Center">
-                                <Image Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Image.Source>
-                                        <BitmapImage UriSource="{x:Bind FaviconUri}" />
-                                    </Image.Source>
-                                </Image>
+                    <Button x:Name="ClearHistoryBtn" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"
+                            Style="{StaticResource ArcPillButtonStyle}" Click="ClearHistoryBtn_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE74D;" FontSize="12" Foreground="#EF4444" />
+                            <TextBlock Text="Temizle" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <Border x:Name="EmptyStateContainer" Style="{StaticResource ArcCardStyle}" Padding="40" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <StackPanel Spacing="14" HorizontalAlignment="Center" MaxWidth="440">
+                        <Border Width="64" Height="64" CornerRadius="16" Background="{ThemeResource ArcSurfaceDefaultBrush}" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE81C;" FontSize="28" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Kayıtlı geçmiş bulunamadı" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="Aramanızla eşleşen bir ziyaret kaydı yok veya gözatma geçmişiniz henüz boş."
+                                   FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <ListView x:Name="HistoryListView" SelectionMode="None" IsItemClickEnabled="True"
+                          ItemClick="HistoryListView_ItemClick" Padding="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0,0,0,6" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:HistoryItem">
+                            <Border Style="{StaticResource ArcCardStyle}" Padding="14,10" HorizontalAlignment="Stretch">
+                                <Grid ColumnSpacing="14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+
+                                        <ColumnDefinition Width="*" />
+
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
+                                            Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                            BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1"
+                                            VerticalAlignment="Center">
+                                        <Image Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image.Source>
+                                                <BitmapImage UriSource="{x:Bind FaviconUri}" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                        <TextBlock Text="{x:Bind Title}" FontSize="13.5" FontWeight="SemiBold"
+                                                   Foreground="{ThemeResource ArcTextPrimaryBrush}"
+                                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <Border Background="{ThemeResource ArcSurfaceSubtleBrush}" CornerRadius="4" Padding="6,1.5">
+                                                <TextBlock Text="{x:Bind Domain}" FontSize="11" FontWeight="Medium" Foreground="{ThemeResource ArcAccentBrush}" />
+                                            </Border>
+                                            <TextBlock Text="{x:Bind Url}" FontSize="11.5" Foreground="{ThemeResource ArcTextSecondaryBrush}"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Border Background="{ThemeResource ArcSurfaceDefaultBrush}" CornerRadius="6" Padding="6,2.5">
+                                            <TextBlock Text="{x:Bind FormattedTime}" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                        </Border>
+
+                                        <Button Width="30" Height="30" Padding="0"
+                                                Style="{StaticResource ArcIconButtonStyle}"
+                                                ToolTipService.ToolTip="Bu kaydı sil"
+                                                Click="DeleteHistoryItem_Click" Tag="{x:Bind Id}">
+                                            <FontIcon Glyph="&#xE711;" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
-
-                            <!-- Ziyaret Saati (Eski: VisitedAt.ToString('HH:mm') yerine FormattedTime) -->
-                            <TextBlock Grid.Column="1" Text="{x:Bind FormattedTime}"
-                                        FontSize="12" Opacity="0.5" VerticalAlignment="Center" Width="44" />
-
-                            <!-- Sayfa Başlığı -->
-                            <TextBlock Grid.Column="2" Text="{x:Bind Title}" FontSize="13" FontWeight="SemiBold"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-
-                            <!-- URL -->
-                            <TextBlock Grid.Column="3" Text="{x:Bind Url}" FontSize="12" Opacity="0.6"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-
-                            <!-- Tekil Sil Butonu -->
-                            <Button Grid.Column="4" Width="28" Height="28" Padding="0"
-                                    Background="Transparent" BorderThickness="0" CornerRadius="4"
-                                    ToolTipService.ToolTip="Kaldır" Click="DeleteHistoryItem_Click" Tag="{x:Bind Id}">
-                                <FontIcon Glyph="&#xE711;" FontSize="11" Opacity="0.6" />
-                            </Button>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

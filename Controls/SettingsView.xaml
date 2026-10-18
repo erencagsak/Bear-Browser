@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Bear_Browser.Controls.SettingsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -13,138 +13,206 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
-            <!-- Sol Menü Bölmesi -->
             <ColumnDefinition Width="280" />
+
             <ColumnDefinition Width="1" />
-            <!-- Sağ İçerik Bölmesi -->
+
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- SOL MENÜ -->
-        <Grid Grid.Column="0" Padding="16,24,16,16" Background="{ThemeResource LayerFillColorDefaultBrush}" RowSpacing="12">
+        <Canvas Grid.ColumnSpan="3" IsHitTestVisible="False">
+            <Ellipse Width="600" Height="350" Canvas.Left="-150" Canvas.Top="-100" Opacity="0.05">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                        <GradientStop Color="{ThemeResource SystemAccentColor}" Offset="0" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
+
+        <Grid Grid.Column="0" Padding="16,22,14,16" Background="{ThemeResource ArcSurfaceDefaultBrush}" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+
                 <RowDefinition Height="Auto" />
+
                 <RowDefinition Height="*" />
+
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Başlık -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="6,0,0,6">
-                <Border Width="30" Height="30" CornerRadius="8" Background="{ThemeResource AccentFillColorDefaultBrush}">
-                    <FontIcon Glyph="&#xE713;" FontSize="15" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" Margin="6,4,0,8">
+                <Border Width="38" Height="38" CornerRadius="12"
+                        Background="{ThemeResource ArcAccentBrush}"
+                        BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1">
+                    <FontIcon Glyph="&#xE713;" FontSize="17" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
-                <TextBlock x:Name="NavTitleText" Text="Ayarlar" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" />
+                <StackPanel VerticalAlignment="Center" Spacing="1">
+                    <TextBlock x:Name="NavTitleText" Text="Ayarlar" FontWeight="Bold" FontSize="19" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                    <TextBlock Text="Bear Browser Tercihleri" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                </StackPanel>
             </StackPanel>
 
-            <!-- Arama Kutusu -->
-            <TextBox x:Name="SearchSettingsBox" Grid.Row="1" Height="36"
-                     PlaceholderText="Ayarları ara..." CornerRadius="8"
-                     TextChanged="SearchSettingsBox_TextChanged" />
+            <Grid Grid.Row="1">
+                <TextBox x:Name="SearchSettingsBox" Height="36" CornerRadius="18"
+                         Background="{ThemeResource ArcAddressBarBackgroundBrush}"
+                         BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
+                         BorderThickness="1"
+                         Foreground="{ThemeResource ArcTextPrimaryBrush}"
+                         Padding="36,7.5,12,6.5"
+                         FontSize="13"
+                         VerticalContentAlignment="Center"
+                         PlaceholderText="Ayarlarda ara..."
+                         TextChanged="SearchSettingsBox_TextChanged" />
+                <FontIcon Glyph="&#xE721;" FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}"
+                          HorizontalAlignment="Left" Margin="14,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+            </Grid>
 
-            <!-- Kategoriler -->
             <ListView x:Name="SettingsNavList" Grid.Row="2" SelectionMode="Single"
                       SelectionChanged="SettingsNavList_SelectionChanged" Padding="0">
-                <ListViewItem x:Name="ProfilesNavItem" Tag="profiles" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE77B;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="ProfilesNavText" Text="Profiller" FontSize="13" VerticalAlignment="Center" />
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Height" Value="42" />
+                        <Setter Property="CornerRadius" Value="10" />
+                        <Setter Property="Padding" Value="10,0" />
+                        <Setter Property="Margin" Value="0,2" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListViewItem x:Name="ProfilesNavItem" Tag="profiles">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE77B;" FontSize="13" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="ProfilesNavText" Text="Profiller" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="PrivacyNavItem" Tag="privacy" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE72E;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="PrivacyNavText" Text="Gizlilik, arama ve hizmetler" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="PrivacyNavItem" Tag="privacy">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE72E;" FontSize="13" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="PrivacyNavText" Text="Gizlilik, arama ve hizmetler" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="AppearanceNavItem" Tag="appearance" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE790;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="AppearanceNavText" Text="Görünüm" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="AppearanceNavItem" Tag="appearance">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE790;" FontSize="13" Foreground="#8B5CF6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="AppearanceNavText" Text="Görünüm" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="DefaultBrowserNavItem" Tag="defaultbrowser" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE774;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="DefaultBrowserNavText" Text="Varsayılan tarayıcı" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="DefaultBrowserNavItem" Tag="defaultbrowser">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE774;" FontSize="13" Foreground="#3B82F6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="DefaultBrowserNavText" Text="Varsayılan tarayıcı" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="LanguagesNavItem" Tag="languages" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xF2B7;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="LanguagesNavText" Text="Diller" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="LanguagesNavItem" Tag="languages">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xF2B7;" FontSize="13" Foreground="#EC4899" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="LanguagesNavText" Text="Diller" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="ExtensionsNavItem" Tag="extensions" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE74C;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="ExtensionsNavText" Text="Uzantılar" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="ExtensionsNavItem" Tag="extensions">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE74C;" FontSize="13" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="ExtensionsNavText" Text="Uzantılar" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="DownloadsNavItem" Tag="downloads" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE896;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="DownloadsNavText" Text="İndirmeler" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="DownloadsNavItem" Tag="downloads">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE896;" FontSize="13" Foreground="#06B6D4" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="DownloadsNavText" Text="İndirmeler" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
-                <ListViewItem x:Name="SystemNavItem" Tag="system" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE770;" FontSize="15" Opacity="0.8" />
-                        <TextBlock x:Name="SystemNavText" Text="Sistem ve performans" FontSize="13" VerticalAlignment="Center" />
+
+                <ListViewItem x:Name="SystemNavItem" Tag="system">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                            <FontIcon Glyph="&#xE770;" FontSize="13" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="SystemNavText" Text="Sistem ve performans" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </ListViewItem>
             </ListView>
 
-            <!-- En Alttaki "Bear Browser Hakkında" -->
-            <ListView x:Name="AboutNavList" Grid.Row="3" SelectionMode="Single"
-                      SelectionChanged="AboutNavList_SelectionChanged" Padding="0">
-                <ListViewItem x:Name="AboutNavItem" Tag="about" Height="42" CornerRadius="6">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon Glyph="&#xE946;" FontSize="15" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                        <TextBlock x:Name="AboutNavText" Text="Bear Browser hakkında" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
-                    </StackPanel>
-                </ListViewItem>
-            </ListView>
+            <Border Grid.Row="3" Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="2">
+                <ListView x:Name="AboutNavList" SelectionMode="Single"
+                          SelectionChanged="AboutNavList_SelectionChanged" Padding="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Height" Value="42" />
+                            <Setter Property="CornerRadius" Value="10" />
+                            <Setter Property="Padding" Value="10,0" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListViewItem x:Name="AboutNavItem" Tag="about">
+                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <Border Width="28" Height="28" CornerRadius="8" Background="{ThemeResource ArcAccentSubtleBrush}">
+                                <FontIcon Glyph="&#xE946;" FontSize="13" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock x:Name="AboutNavText" Text="Bear Browser hakkında" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                </ListView>
+            </Border>
         </Grid>
 
-        <!-- Dikey Çizgi -->
-        <Border Grid.Column="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+        <Border Grid.Column="1" Background="{ThemeResource ArcBorderSubtleBrush}" />
 
-        <!-- SAĞ İÇERİK BÖLGESİ -->
-        <ScrollViewer Grid.Column="2" Padding="48,36,48,36">
+        <ScrollViewer Grid.Column="2" Padding="44,32,44,40">
             <Grid>
-                <!-- 1. PROFİLLER PANELİ -->
-                <StackPanel x:Name="ProfilesContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="ProfilesContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Profiller" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="Kullanıcı profilinizi, fotoğraflarınızı ve kayıtlı verilerinizi yönetin." FontSize="13" Opacity="0.7" />
+                        <TextBlock Text="Profiller" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="Kullanıcı profilinizi, fotoğraflarınızı ve kayıtlı tarayıcı verilerinizi yönetin." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <!-- Ana Profil Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="24,20">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="24,20">
                         <Grid ColumnSpacing="20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <PersonPicture x:Name="ProfileAvatarPic" Width="68" Height="68" Grid.Column="0" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="72" Height="72" CornerRadius="36"
+                                    Background="{ThemeResource ArcSurfaceDefaultBrush}"
+                                    BorderBrush="{ThemeResource ArcAccentBrush}" BorderThickness="2">
+                                <PersonPicture x:Name="ProfileAvatarPic" Width="68" Height="68" VerticalAlignment="Center" />
+                            </Border>
 
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="5">
                                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                    <TextBlock x:Name="ProfileNameText" Text="Kullanıcı 1" FontSize="20" FontWeight="SemiBold" />
-                                    <Border Background="{ThemeResource AccentFillColorSecondaryBrush}" CornerRadius="12" Padding="8,2">
-                                        <TextBlock Text="Aktif Profil" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                    <TextBlock x:Name="ProfileNameText" Text="Kullanıcı 1" FontSize="20" FontWeight="Bold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <Border Background="{ThemeResource ArcAccentSubtleBrush}" CornerRadius="12" Padding="10,2">
+                                        <TextBlock Text="Aktif Profil" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource ArcAccentBrush}" />
                                     </Border>
                                 </StackPanel>
-                                <TextBlock x:Name="ProfileCreatedDateText" Text="Varsayılan Yerel Profil" FontSize="12" Opacity="0.6" />
+                                <TextBlock x:Name="ProfileCreatedDateText" Text="Varsayılan Yerel Profil" FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
 
                             <Button x:Name="EditProfileBtn" Grid.Column="2" VerticalAlignment="Center"
-                                    Height="36" CornerRadius="8" Style="{ThemeResource AccentButtonStyle}"
+                                    Style="{StaticResource ArcAccentButtonStyle}"
                                     Click="EditProfileBtn_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon Glyph="&#xE70F;" FontSize="13" />
@@ -154,207 +222,178 @@
                         </Grid>
                     </Border>
 
-                    <TextBlock Text="Profil Verileri ve Kayıtlar" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
+                    <TextBlock Text="Profil Verileri ve Kayıtlar" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
 
-                    <!-- Parolalar Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,14">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+
+                            <ColumnDefinition Width="*" />
+
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource ArcCardStyle}" Padding="16,14">
+                            <StackPanel Spacing="10">
+                                <Border Width="36" Height="36" CornerRadius="10" Background="{ThemeResource ArcSurfaceDefaultBrush}" HorizontalAlignment="Left">
+                                    <FontIcon Glyph="&#xE8D7;" FontSize="15" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Parolalar" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock x:Name="PasswordsCountText" Text="0 adet kayıtlı parola" FontSize="11.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </StackPanel>
+                                <Button Style="{StaticResource ArcPillButtonStyle}" Padding="10,4" HorizontalAlignment="Stretch" Click="GoToPasswords_Click">
+                                    <TextBlock Text="Yönet" FontSize="11.5" HorizontalAlignment="Center" />
+                                </Button>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Style="{StaticResource ArcCardStyle}" Padding="16,14">
+                            <StackPanel Spacing="10">
+                                <Border Width="36" Height="36" CornerRadius="10" Background="{ThemeResource ArcSurfaceDefaultBrush}" HorizontalAlignment="Left">
+                                    <FontIcon Glyph="&#xE734;" FontSize="15" Foreground="Gold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Sık Kullanılanlar" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock x:Name="BookmarksCountText" Text="0 adet yer imi" FontSize="11.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </StackPanel>
+                                <Button Style="{StaticResource ArcPillButtonStyle}" Padding="10,4" HorizontalAlignment="Stretch" Click="GoToFavorites_Click">
+                                    <TextBlock Text="Yönet" FontSize="11.5" HorizontalAlignment="Center" />
+                                </Button>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Style="{StaticResource ArcCardStyle}" Padding="16,14">
+                            <StackPanel Spacing="10">
+                                <Border Width="36" Height="36" CornerRadius="10" Background="{ThemeResource ArcSurfaceDefaultBrush}" HorizontalAlignment="Left">
+                                    <FontIcon Glyph="&#xE81C;" FontSize="15" Foreground="#3B82F6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Gözatma Geçmişi" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock x:Name="HistoryCountText" Text="0 adet ziyaret" FontSize="11.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </StackPanel>
+                                <Button Style="{StaticResource ArcPillButtonStyle}" Padding="10,4" HorizontalAlignment="Stretch" Click="GoToHistory_Click">
+                                    <TextBlock Text="Yönet" FontSize="11.5" HorizontalAlignment="Center" />
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="18,14">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE8D7;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="38" Height="38" CornerRadius="10" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xED25;" FontSize="16" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Parolalar" FontSize="14" FontWeight="Medium" />
-                                <TextBlock x:Name="PasswordsCountText" Text="0 adet kayıtlı parola" FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Profil Veri Klasörü" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Profilinizin çerez, geçmiş ve yerel ayar verilerinin saklandığı güvenli yerel klasör." FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
 
-                            <Button Grid.Column="2" Height="34" CornerRadius="6" VerticalAlignment="Center" Click="GoToPasswords_Click">
-                                <TextBlock Text="Parolaları Yönet" FontSize="12" />
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- Sık Kullanılanlar Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,14">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE734;" FontSize="15" Foreground="Gold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Sık Kullanılanlar" FontSize="14" FontWeight="Medium" />
-                                <TextBlock x:Name="BookmarksCountText" Text="0 adet yer imi" FontSize="12" Opacity="0.7" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Height="34" CornerRadius="6" VerticalAlignment="Center" Click="GoToFavorites_Click">
-                                <TextBlock Text="Sık Kullanılanları Yönet" FontSize="12" />
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- Geçmiş Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,14">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE81C;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Gözatma Geçmişi" FontSize="14" FontWeight="Medium" />
-                                <TextBlock x:Name="HistoryCountText" Text="0 adet ziyaret kaydı" FontSize="12" Opacity="0.7" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Height="34" CornerRadius="6" VerticalAlignment="Center" Click="GoToHistory_Click">
-                                <TextBlock Text="Geçmişi Yönet" FontSize="12" />
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- Profil Klasörü -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,14">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xED25;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Profil Veri Klasörü" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Profilinizin çerez, geçmiş ve yerel ayar verilerinin saklandığı klasör." FontSize="12" Opacity="0.7" />
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Height="34" CornerRadius="6" VerticalAlignment="Center" Click="OpenProfileFolder_Click">
+                            <Button Grid.Column="2" Style="{StaticResource ArcPillButtonStyle}" VerticalAlignment="Center" Click="OpenProfileFolder_Click">
                                 <TextBlock Text="Klasörde Göster" FontSize="12" />
                             </Button>
                         </Grid>
                     </Border>
                 </StackPanel>
 
-                <!-- 2. GİZLİLİK, ARAMA VE HİZMETLER PANELİ -->
-                <StackPanel x:Name="PrivacyContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="PrivacyContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Gizlilik, Arama ve Hizmetler" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="İzleyicileri engelleyin, arama motorunuzu seçin ve gözatma verilerinizi kontrol edin." FontSize="13" Opacity="0.7" />
+                        <TextBlock Text="Gizlilik, Arama ve Hizmetler" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="İzleyicileri engelleyin, arama motorunuzu seçin ve gözatma verilerinizi kontrol edin." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <!-- Reklam & İzleyici Engelleme -->
-                    <TextBlock Text="İzlenme Engelleme" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
-                        <Grid RowSpacing="14">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <Grid Grid.Row="0" ColumnSpacing="16">
+                    <TextBlock Text="İzlenme Engelleme Kalkanı" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,18">
+                        <StackPanel Spacing="16">
+                            <Grid ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
+
                                     <ColumnDefinition Width="*" />
+
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                    <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                    <FontIcon Glyph="&#xE72E;" FontSize="18" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="Gelişmiş Reklam ve İzleyici Kalkanı" FontSize="14" FontWeight="Medium" />
-                                    <TextBlock Text="Zararlı reklamları, pop-up pencereleri ve üçüncü taraf takipçi betiklerini otomatik engeller." FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                                    <TextBlock Text="Gelişmiş Reklam ve İzleyici Kalkanı" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock Text="Zararlı reklamları, gizli pencereleri ve üçüncü taraf takipçi betiklerini otomatik olarak engeller." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                                 <ToggleSwitch x:Name="AdBlockToggle" Grid.Column="2" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="AdBlockToggle_Toggled" />
                             </Grid>
 
-                            <Border Grid.Row="1" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="14,10">
+                            <Border Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="14,10">
                                 <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
+
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Engelleme Seviyesi" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" />
-                                    <ComboBox x:Name="AdBlockLevelCombo" Grid.Column="1" Width="180" Height="34" SelectionChanged="AdBlockLevelCombo_SelectionChanged">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Engelleme Seviyesi" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                        <TextBlock Text="Dengeli veya sıkı koruma modunu belirleyin." FontSize="11.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                    </StackPanel>
+                                    <ComboBox x:Name="AdBlockLevelCombo" Grid.Column="1" Width="180" Height="36" CornerRadius="8" SelectionChanged="AdBlockLevelCombo_SelectionChanged">
                                         <ComboBoxItem Content="Dengeli (Önerilen)" Tag="Balanced" />
                                         <ComboBoxItem Content="Sıkı (Maksimum)" Tag="Strict" />
                                     </ComboBox>
                                 </Grid>
                             </Border>
-                        </Grid>
+                        </StackPanel>
                     </Border>
 
-                    <!-- Gözatma Verilerini Temizleme -->
-                    <TextBlock Text="Gözatma Verilerini Temizle" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Gözatma Verilerini Temizle" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE74D;" FontSize="16" Foreground="#E81123" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE74D;" FontSize="17" Foreground="#EF4444" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Gözatma verilerini şimdi temizle" FontSize="14" FontWeight="Medium" />
-                                <TextBlock x:Name="ClearDataStatusText" Text="Geçmişi, indirme kayıtlarını, önbelleği ve çerezleri sıfırlayın." FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                                <TextBlock Text="Gözatma verilerini şimdi temizle" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock x:Name="ClearDataStatusText" Text="Geçmişi, indirme kayıtlarını, önbelleği ve çerezleri sıfırlayın." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
-                            <Button x:Name="ClearDataBtn" Grid.Column="2" Height="36" CornerRadius="6" VerticalAlignment="Center"
+                            <Button x:Name="ClearDataBtn" Grid.Column="2" Style="{StaticResource ArcPillButtonStyle}" VerticalAlignment="Center"
                                     Click="ClearDataBtn_Click">
-                                <TextBlock Text="Verileri Temizle" FontSize="13" />
+                                <TextBlock Text="Verileri Temizle" FontSize="12.5" Foreground="#EF4444" />
                             </Button>
                         </Grid>
                     </Border>
 
-                    <!-- Arama Motoru -->
-                    <TextBlock Text="Arama Tercihleri" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Arama Tercihleri" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE721;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE721;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Adres çubuğunda kullanılan arama motoru" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Adres çubuğuna yazılan arama terimlerinin yönlendirileceği varsayılan motor." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Adres çubuğunda kullanılan arama motoru" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Adres kutusuna yazılan arama terimlerinin yönlendirileceği varsayılan motor." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
-                            <ComboBox x:Name="SearchEngineCombo" Grid.Column="2" Width="160" Height="36" VerticalAlignment="Center"
+                            <ComboBox x:Name="SearchEngineCombo" Grid.Column="2" Width="170" Height="36" CornerRadius="8" VerticalAlignment="Center"
                                       SelectionChanged="SearchEngineCombo_SelectionChanged">
                                 <ComboBoxItem Content="Google" Tag="Google" />
                                 <ComboBoxItem Content="Bing" Tag="Bing" />
@@ -364,34 +403,33 @@
                         </Grid>
                     </Border>
 
-                    <!-- Diğer Gizlilik Tercihleri -->
-                    <TextBlock Text="Güvenlik &amp; Tercihler" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
-                        <StackPanel Spacing="14">
+                    <TextBlock Text="Güvenlik ve Tercihler" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
+                        <StackPanel Spacing="16">
                             <Grid ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
+
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="Web sitelerine 'Beni İzleme' (Do Not Track) isteği gönder" FontSize="14" FontWeight="Medium" />
-                                    <TextBlock Text="Web sitelerine gezinme alışkanlıklarınızın kaydedilmesini istemediğinizi bildirir." FontSize="12" Opacity="0.7" />
+                                    <TextBlock Text="Web sitelerine 'Beni İzleme' (Do Not Track) isteği gönder" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock Text="Web sitelerine gezinme alışkanlıklarınızın kaydedilmesini istemediğinizi bildirir." FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                                 </StackPanel>
                                 <ToggleSwitch x:Name="DoNotTrackToggle" Grid.Column="1" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="DoNotTrackToggle_Toggled" />
                             </Grid>
 
-                            <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                            <Border Height="1" Background="{ThemeResource ArcBorderSubtleBrush}" />
 
                             <Grid ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
+
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="Parolaları kaydetmeyi öner" FontSize="14" FontWeight="Medium" />
-                                    <TextBlock Text="Giriş formlarında kullanıcı adı ve parolaların tek tıkla kaydedilmesini sağlar." FontSize="12" Opacity="0.7" />
+                                    <TextBlock Text="Parolaları kaydetmeyi öner" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock Text="Giriş formlarında kullanıcı adı ve parolaların tek tıkla yerel kasaya kaydedilmesini sağlar." FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                                 </StackPanel>
                                 <ToggleSwitch x:Name="AskPasswordToggle" Grid.Column="1" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="AskPasswordToggle_Toggled" />
                             </Grid>
@@ -399,32 +437,30 @@
                     </Border>
                 </StackPanel>
 
-                <!-- 3. GÖRÜNÜM PANELİ -->
-                <StackPanel x:Name="AppearanceContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="AppearanceContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Görünüm" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="Tarayıcının temasını, araç çubuklarını ve yakınlaştırma tercihlerini özelleştirin." FontSize="13" Opacity="0.7" />
+                        <TextBlock Text="Görünüm" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="Tarayıcının temasını, sekme düzenini, araç çubuklarını ve başlangıç sayfasını özelleştirin." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <!-- Tema Kartı -->
-                    <TextBlock Text="Tema Tercihi" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Tema Tercihi" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE790;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE790;" FontSize="17" Foreground="#8B5CF6" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Genel Görünüm Teması" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Bear Browser'ın arayüzünde kullanılan renk modunu seçin." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Genel Görünüm Teması" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Bear Browser'ın arayüzünde kullanılan renk modunu seçin." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
-                            <ComboBox x:Name="ThemeCombo" Grid.Column="2" Width="180" Height="36" VerticalAlignment="Center"
+                            <ComboBox x:Name="ThemeCombo" Grid.Column="2" Width="180" Height="36" CornerRadius="8" VerticalAlignment="Center"
                                       SelectionChanged="ThemeCombo_SelectionChanged">
                                 <ComboBoxItem Content="Sistem Varsayılanı" Tag="System" />
                                 <ComboBoxItem Content="Koyu Tema" Tag="Dark" />
@@ -433,25 +469,24 @@
                         </Grid>
                     </Border>
 
-                    <!-- Sekme Düzeni (Üst veya Sol Dikey Sekmeler) -->
-                    <TextBlock Text="Sekme Düzeni" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Sekme Düzeni" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE737;" FontSize="16" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE737;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Sekme Konumu" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Sekmelerin yatay üst çubukta mı yoksa Zen/Arc stili sol dikey kenar çubuğunda mı duracağını seçin." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Sekme Konumu" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Sekmelerin üst yatay çubukta mı yoksa Zen/Arc stili sol dikey kenar çubuğunda mı duracağını belirleyin." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
-                            <ComboBox x:Name="TabPositionCombo" Grid.Column="2" Width="210" Height="36" VerticalAlignment="Center"
+                            <ComboBox x:Name="TabPositionCombo" Grid.Column="2" Width="220" Height="36" CornerRadius="8" VerticalAlignment="Center"
                                       SelectionChanged="TabPositionCombo_SelectionChanged">
                                 <ComboBoxItem Content="Üstte (Varsayılan)" Tag="Top" />
                                 <ComboBoxItem Content="Sol Kenar Çubuğu (Zen / Arc)" Tag="Left" />
@@ -459,47 +494,45 @@
                         </Grid>
                     </Border>
 
-                    <!-- Sık Kullanılanlar Çubuğu -->
-                    <TextBlock Text="Araç Çubukları" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Araç Çubukları" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE734;" FontSize="16" Foreground="Gold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE734;" FontSize="17" Foreground="Gold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Sık kullanılanlar çubuğunu göster" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Adres çubuğunun hemen altında yer imlerinizi ve klasörlerinizi gösterin." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Sık kullanılanlar çubuğunu göster" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Adres çubuğunun hemen altında yer imlerinizi ve klasörlerinizi gösterin." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
                             <ToggleSwitch x:Name="ShowFavBarToggle" Grid.Column="2" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="ShowFavBarToggle_Toggled" />
                         </Grid>
                     </Border>
 
-                    <!-- Yakınlaştırma -->
-                    <TextBlock Text="Sayfa Yakınlaştırması" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Sayfa Yakınlaştırması" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE8A3;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE8A3;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Varsayılan sayfa yakınlaştırma düzeyi" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Yeni açılan tüm web sayfaları bu yakınlaştırma ölçeğiyle başlatılır." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Varsayılan sayfa yakınlaştırma düzeyi" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Yeni açılan tüm web sayfaları bu yakınlaştırma ölçeğiyle başlatılır." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
-                            <ComboBox x:Name="ZoomCombo" Grid.Column="2" Width="140" Height="36" VerticalAlignment="Center"
+                            <ComboBox x:Name="ZoomCombo" Grid.Column="2" Width="140" Height="36" CornerRadius="8" VerticalAlignment="Center"
                                       SelectionChanged="ZoomCombo_SelectionChanged">
                                 <ComboBoxItem Content="%75" Tag="0.75" />
                                 <ComboBoxItem Content="%90" Tag="0.9" />
@@ -511,102 +544,116 @@
                         </Grid>
                     </Border>
 
-                    <!-- Giriş Sayfası -->
-                    <TextBlock Text="Başlangıç Sayfası" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Başlangıç Sayfası" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid RowSpacing="12">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
+
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Spacing="2">
-                                <TextBlock Text="Yeni Sekme ve Giriş Sayfası Adresi" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Yeni sekme açıldığında otomatik yüklenecek web adresi." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Yeni Sekme ve Giriş Sayfası Adresi" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Yeni sekme açıldığında otomatik yüklenecek web adresi (Varsayılan: bear://newtab)." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
                             <Grid Grid.Row="1" ColumnSpacing="10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
+
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="HomePageBox" Height="36" CornerRadius="6" VerticalContentAlignment="Center" />
-                                <Button x:Name="SaveHomePageBtn" Grid.Column="1" Height="36" CornerRadius="6" Style="{ThemeResource AccentButtonStyle}"
+                                <TextBox x:Name="HomePageBox" Height="34" CornerRadius="17"
+                                         Background="{ThemeResource ArcAddressBarBackgroundBrush}"
+                                         BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
+                                         BorderThickness="1"
+                                         Padding="14,7.5,14,6.5"
+                                         Foreground="{ThemeResource ArcTextPrimaryBrush}"
+                                         VerticalContentAlignment="Center">
+                                    <TextBox.Resources>
+                                        <StaticResource x:Key="TextControlBackground" ResourceKey="ArcAddressBarBackgroundBrush" />
+                                        <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ArcAddressBarHoverBackgroundBrush" />
+                                        <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ArcAddressBarFocusBackgroundBrush" />
+                                        <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="ArcAddressBarBorderBrush" />
+                                        <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="ArcAccentBrush" />
+                                    </TextBox.Resources>
+                                </TextBox>
+                                <Button x:Name="SaveHomePageBtn" Grid.Column="1" Style="{StaticResource ArcAccentButtonStyle}"
                                         Click="SaveHomePageBtn_Click">
-                                    <TextBlock Text="Kaydet" FontSize="13" />
+                                    <TextBlock Text="Kaydet" FontSize="12.5" />
                                 </Button>
                             </Grid>
                         </Grid>
                     </Border>
                 </StackPanel>
 
-                <!-- 4. UZANTILAR PANELİ -->
-                <StackPanel x:Name="ExtensionsContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="ExtensionsContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Uzantılar" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="Tarayıcınıza yüklediğiniz eklentileri yönetin veya mağazalardan yeni uzantılar edinin." FontSize="13" Opacity="0.7" />
+                        <TextBlock Text="Uzantılar" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="Tarayıcınıza yüklediğiniz eklentileri yönetin veya mağazalardan yeni uzantılar edinin." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <!-- Mağazalar ve Hızlı Bağlantılar Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="20,18">
-                        <Grid RowSpacing="14">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
 
-                            <Grid Grid.Row="0">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="Eklenti Mağazaları" FontSize="15" FontWeight="SemiBold" />
-                                    <TextBlock Text="Google Chrome Web Mağazası ve Microsoft Edge Add-ons üzerinden milyonlarca eklentiyi tek tıkla Bear Browser'a ekleyebilirsiniz." FontSize="12" Opacity="0.7" />
-                                </StackPanel>
-                            </Grid>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                            <Grid Grid.Row="1" ColumnSpacing="12">
+                        <Border Grid.Column="0" Style="{StaticResource ArcCardStyle}" Padding="18,16">
+                            <Grid ColumnSpacing="14">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-
-                                <Button Grid.Column="0" Height="42" HorizontalAlignment="Stretch" CornerRadius="8"
-                                        Click="SettingsOpenChromeWebStore_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <FontIcon Glyph="&#xE774;" FontSize="15" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                                        <TextBlock Text="Chrome Web Mağazasını Aç" FontSize="13" FontWeight="Medium" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Grid.Column="1" Height="42" HorizontalAlignment="Stretch" CornerRadius="8"
-                                        Click="SettingsOpenEdgeAddons_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <FontIcon Glyph="&#xE774;" FontSize="15" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                                        <TextBlock Text="Microsoft Edge Eklentilerini Aç" FontSize="13" FontWeight="Medium" />
-                                    </StackPanel>
-                                </Button>
+                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                    <FontIcon Glyph="&#xE774;" FontSize="18" Foreground="#3B82F6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="Chrome Web Mağazası" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <Button Style="{StaticResource ArcPillButtonStyle}" Padding="10,4" HorizontalAlignment="Left" Click="SettingsOpenChromeWebStore_Click">
+                                        <TextBlock Text="Mağazayı Aç" FontSize="11.5" />
+                                    </Button>
+                                </StackPanel>
                             </Grid>
-                        </Grid>
-                    </Border>
+                        </Border>
 
-                    <!-- Geliştirici Modu & Yerel Yükleme Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="20,16">
+                        <Border Grid.Column="1" Style="{StaticResource ArcCardStyle}" Padding="18,16">
+                            <Grid ColumnSpacing="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                    <FontIcon Glyph="&#xE774;" FontSize="18" Foreground="#6366F1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="Microsoft Edge Add-ons" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <Button Style="{StaticResource ArcPillButtonStyle}" Padding="10,4" HorizontalAlignment="Left" Click="SettingsOpenEdgeAddons_Click">
+                                        <TextBlock Text="Eklentileri Aç" FontSize="11.5" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                                <TextBlock Text="Geliştirici Modu" FontSize="14" FontWeight="SemiBold" />
-                                <TextBlock Text="Bilgisayarınızdaki klasörden paketlenmemiş (unpacked) uzantı yükleyin." FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="Geliştirici Modu" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Bilgisayarınızdaki yerel klasörden paketlenmemiş (unpacked) uzantı yükleyin." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
 
-                                <Button x:Name="SettingsLoadUnpackedBtn" Visibility="Collapsed" Height="34" CornerRadius="6" Margin="0,8,0,0"
+                                <Button x:Name="SettingsLoadUnpackedBtn" Visibility="Collapsed" Style="{StaticResource ArcPillButtonStyle}" Margin="0,8,0,0"
                                         HorizontalAlignment="Left" Click="SettingsLoadUnpackedBtn_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <FontIcon Glyph="&#xED25;" FontSize="13" />
+                                        <FontIcon Glyph="&#xED25;" FontSize="13" Foreground="{ThemeResource ArcAccentBrush}" />
                                         <TextBlock Text="Paketlenmemiş uzantı yükle..." FontSize="12" />
                                     </StackPanel>
                                 </Button>
@@ -617,78 +664,83 @@
                         </Grid>
                     </Border>
 
-                    <!-- Yüklü Eklentiler Başlık & Arama -->
                     <Grid>
                         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <TextBlock Text="Yüklü Uzantılar" FontSize="18" FontWeight="SemiBold" />
-                            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
-                                <TextBlock x:Name="SettingsExtensionsCountBadge" Text="0 eklenti" FontSize="12" FontWeight="Medium" Opacity="0.8" />
+                            <TextBlock Text="Yüklü Uzantılar" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                            <Border Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="12" Padding="8,2" VerticalAlignment="Center">
+                                <TextBlock x:Name="SettingsExtensionsCountBadge" Text="0 eklenti" FontSize="11.5" FontWeight="Medium" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </Border>
                         </StackPanel>
 
-                        <TextBox x:Name="SettingsExtensionSearchBox" HorizontalAlignment="Right" Width="220" Height="34" CornerRadius="6"
-                                 PlaceholderText="Eklentilerde ara..." TextChanged="SettingsExtensionSearchBox_TextChanged" />
+                        <TextBox x:Name="SettingsExtensionSearchBox" HorizontalAlignment="Right" Width="240" Height="34" CornerRadius="17"
+                                 Background="{ThemeResource ArcAddressBarBackgroundBrush}"
+                                 BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
+                                 BorderThickness="1"
+                                 Padding="14,7.5,14,6.5"
+                                 VerticalContentAlignment="Center"
+                                 FontSize="12.5"
+                                 PlaceholderText="Eklentilerde ara..." TextChanged="SettingsExtensionSearchBox_TextChanged">
+                            <TextBox.Resources>
+                                <StaticResource x:Key="TextControlBackground" ResourceKey="ArcAddressBarBackgroundBrush" />
+                                <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ArcAddressBarHoverBackgroundBrush" />
+                                <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ArcAddressBarFocusBackgroundBrush" />
+                                <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="ArcAddressBarBorderBrush" />
+                                <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="ArcAccentBrush" />
+                            </TextBox.Resources>
+                        </TextBox>
                     </Grid>
 
-                    <!-- Boş Durum (Eklenti Yoksa) -->
-                    <Border x:Name="SettingsEmptyStateBorder" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                            CornerRadius="12" Padding="32" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <Border x:Name="SettingsEmptyStateBorder" Style="{StaticResource ArcCardStyle}" Padding="36" HorizontalAlignment="Stretch" Visibility="Collapsed">
                         <StackPanel Spacing="12" HorizontalAlignment="Center" MaxWidth="440">
-                            <Border Width="56" Height="56" CornerRadius="14" Background="{ThemeResource LayerFillColorDefaultBrush}" HorizontalAlignment="Center">
-                                <FontIcon Glyph="&#xE74C;" FontSize="24" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Width="56" Height="56" CornerRadius="16" Background="{ThemeResource ArcSurfaceDefaultBrush}" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE74C;" FontSize="24" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Henüz hiçbir uzantı yüklenmedi" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text="Henüz hiçbir uzantı yüklenmedi" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
                             <TextBlock Text="Chrome Web Mağazası veya Edge Add-ons üzerinden dilediğiniz eklentileri yükleyebilir, burada yönetebilirsiniz."
-                                       FontSize="12" Opacity="0.75" TextAlignment="Center" TextWrapping="Wrap" />
+                                       FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
 
-                    <!-- Uzantı Öğeleri Listesi -->
                     <ItemsControl x:Name="SettingsExtensionsItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ExtensionInfo">
-                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1" CornerRadius="10" Padding="18,16" Margin="0,0,0,12">
+                                <Border Style="{StaticResource ArcCardStyle}" Padding="18,14" Margin="0,0,0,10">
                                     <Grid ColumnSpacing="16">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
+
                                             <ColumnDefinition Width="*" />
+
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- İkon -->
-                                        <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Background="{ThemeResource LayerFillColorDefaultBrush}" VerticalAlignment="Top">
+                                        <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}" VerticalAlignment="Top">
                                             <Grid>
-                                                <FontIcon Glyph="&#xE74C;" FontSize="20" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <FontIcon Glyph="&#xE74C;" FontSize="20" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 <Image Source="{x:Bind IconPath, Mode=OneWay}" Width="36" Height="36" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Grid>
                                         </Border>
 
-                                        <!-- Bilgiler -->
                                         <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" />
-                                                <TextBlock Text="{x:Bind Version, Mode=OneWay}" FontSize="12" Opacity="0.6" VerticalAlignment="Center" />
-                                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                                                    <TextBlock Text="{x:Bind Source, Mode=OneWay}" FontSize="10" Opacity="0.75" />
+                                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                                <TextBlock Text="{x:Bind Version, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" VerticalAlignment="Center" />
+                                                <Border Background="{ThemeResource ArcSurfaceSubtleBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{x:Bind Source, Mode=OneWay}" FontSize="10" FontWeight="Medium" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                                                 </Border>
                                             </StackPanel>
 
-                                            <TextBlock Text="{x:Bind Description, Mode=OneWay}" FontSize="12" Opacity="0.75" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
-
+                                            <TextBlock Text="{x:Bind Description, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Text="{x:Bind Id, Mode=OneWay}" FontSize="10" Opacity="0.4" FontFamily="Consolas" Margin="0,2,0,0" />
                                         </StackPanel>
 
-                                        <!-- Aksiyonlar: Aç/Kapa Toggle & Kaldır Butonu -->
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                                             <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center"
                                                           Toggled="SettingsExtensionToggle_Toggled" Tag="{x:Bind Id}" />
 
-                                            <Button Width="36" Height="36" Padding="0" CornerRadius="6"
+                                            <Button Width="34" Height="34" Padding="0" Style="{StaticResource ArcIconButtonStyle}"
                                                     ToolTipService.ToolTip="Uzantıyı Kaldır" Click="SettingsRemoveExtension_Click" Tag="{x:Bind Id}">
-                                                <FontIcon Glyph="&#xE74D;" FontSize="13" Foreground="#E81123" />
+                                                <FontIcon Glyph="&#xE74D;" FontSize="13" Foreground="#EF4444" />
                                             </Button>
                                         </StackPanel>
                                     </Grid>
@@ -698,54 +750,55 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <!-- 5. İNDİRMELER PANELİ -->
-                <StackPanel x:Name="DownloadsContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="DownloadsContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="İndirmeler" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="İndirilen dosyalarınızın konumu ve indirme tercihleri." FontSize="13" Opacity="0.7" />
+                        <TextBlock Text="İndirmeler" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="İndirilen dosyalarınızın konumu ve indirme tercihleri." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="24,20">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="24,20">
                         <Grid RowSpacing="16">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
+
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
+
                                     <ColumnDefinition Width="*" />
+
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Background="{ThemeResource AccentFillColorSecondaryBrush}">
-                                    <FontIcon Glyph="&#xE896;" FontSize="20" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                    <FontIcon Glyph="&#xE896;" FontSize="20" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
-                                    <TextBlock Text="Varsayılan İndirme Klasörü" FontSize="15" FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DownloadsPathText" FontSize="12" Opacity="0.7" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="Varsayılan İndirme Klasörü" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock x:Name="DownloadsPathText" FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
-                                <Button Grid.Column="2" Height="36" CornerRadius="8" VerticalAlignment="Center" Click="OpenDownloadsFolder_Click">
+                                <Button Grid.Column="2" Style="{StaticResource ArcPillButtonStyle}" VerticalAlignment="Center" Click="OpenDownloadsFolder_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <FontIcon Glyph="&#xED25;" FontSize="13" />
-                                        <TextBlock Text="Klasörü Aç" FontSize="13" />
+                                        <FontIcon Glyph="&#xED25;" FontSize="13" Foreground="{ThemeResource ArcAccentBrush}" />
+                                        <TextBlock Text="Klasörü Aç" FontSize="12.5" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
 
-                            <Border Grid.Row="1" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="16,12">
+                            <Border Grid.Row="1" Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
                                 <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
+
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel VerticalAlignment="Center" Spacing="2">
-                                        <TextBlock Text="Tüm İndirme Geçmişini Görüntüle" FontSize="13" FontWeight="SemiBold" />
-                                        <TextBlock Text="Devam eden ve tamamlanan indirmelerinizi ayrıntılı sayfada yönetin." FontSize="12" Opacity="0.6" />
+                                        <TextBlock Text="Tüm İndirme Geçmişini Görüntüle" FontSize="13.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                        <TextBlock Text="Devam eden ve tamamlanan indirmelerinizi ayrıntılı sayfada yönetin." FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                                     </StackPanel>
-                                    <Button Grid.Column="1" Height="34" CornerRadius="6" Style="{ThemeResource AccentButtonStyle}" Click="GoToDownloadsPage_Click">
+                                    <Button Grid.Column="1" Style="{StaticResource ArcAccentButtonStyle}" Click="GoToDownloadsPage_Click">
                                         <TextBlock Text="İndirilenler Sayfasını Aç" FontSize="12" />
                                     </Button>
                                 </Grid>
@@ -754,255 +807,255 @@
                     </Border>
                 </StackPanel>
 
-                <!-- 5. SİSTEM VE PERFORMANS PANELİ (CANLI ANALİZ DASHBOARD) -->
-                <StackPanel x:Name="SystemContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="SystemContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Sistem ve Performans" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="Canlı bellek kullanımı, kaynak optimizasyonu ve donanım hızlandırma analizleri." FontSize="13" Opacity="0.7" />
+                        <TextBlock Text="Sistem ve Performans" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="Canlı bellek kullanımı, kaynak optimizasyonu ve donanım hızlandırma analizleri." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <!-- 4'lü Canlı Metrik Göstergesi -->
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
+
                             <ColumnDefinition Width="*" />
+
                             <ColumnDefinition Width="*" />
+
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- 1. RAM Göstergesi -->
-                        <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1" CornerRadius="10" Padding="16,14">
+                        <Border Grid.Column="0" Style="{StaticResource ArcCardStyle}" Padding="16,14">
                             <StackPanel Spacing="6">
-                                <FontIcon Glyph="&#xE770;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="LiveRamText" Text="-- MB" FontSize="22" FontWeight="Bold" />
-                                <TextBlock Text="Aktif RAM Tüketimi" FontSize="11" Opacity="0.6" FontWeight="Medium" />
+                                <FontIcon Glyph="&#xE770;" FontSize="16" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Left" />
+                                <TextBlock x:Name="LiveRamText" Text="-- MB" FontSize="22" FontWeight="Bold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Aktif RAM Tüketimi" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="Medium" />
                             </StackPanel>
                         </Border>
 
-                        <!-- 2. Engellenen Reklamlar -->
-                        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1" CornerRadius="10" Padding="16,14">
+                        <Border Grid.Column="1" Style="{StaticResource ArcCardStyle}" Padding="16,14">
                             <StackPanel Spacing="6">
-                                <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="#107C41" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="LiveBlockedAdsText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#107C41" />
-                                <TextBlock Text="Engellenen Reklam" FontSize="11" Opacity="0.6" FontWeight="Medium" />
+                                <FontIcon Glyph="&#xE72E;" FontSize="16" Foreground="#10B981" HorizontalAlignment="Left" />
+                                <TextBlock x:Name="LiveBlockedAdsText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#10B981" />
+                                <TextBlock Text="Engellenen Reklam" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="Medium" />
                             </StackPanel>
                         </Border>
 
-                        <!-- 3. Sayfa Yanıt Süresi -->
-                        <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1" CornerRadius="10" Padding="16,14">
+                        <Border Grid.Column="2" Style="{StaticResource ArcCardStyle}" Padding="16,14">
                             <StackPanel Spacing="6">
                                 <FontIcon Glyph="&#xE916;" FontSize="16" Foreground="#F59E0B" HorizontalAlignment="Left" />
-                                <TextBlock x:Name="LiveSpeedText" Text="~280 ms" FontSize="22" FontWeight="Bold" />
-                                <TextBlock Text="Ortalama Sayfa Yanıtı" FontSize="11" Opacity="0.6" FontWeight="Medium" />
+                                <TextBlock x:Name="LiveSpeedText" Text="~280 ms" FontSize="22" FontWeight="Bold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Ortalama Yanıt" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="Medium" />
                             </StackPanel>
                         </Border>
 
-                        <!-- 4. Donanım Hızlandırma -->
-                        <Border Grid.Column="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1" CornerRadius="10" Padding="16,14">
+                        <Border Grid.Column="3" Style="{StaticResource ArcCardStyle}" Padding="16,14">
                             <StackPanel Spacing="6">
                                 <FontIcon Glyph="&#xE7F4;" FontSize="16" Foreground="#6366F1" HorizontalAlignment="Left" />
                                 <TextBlock Text="D3D11" FontSize="22" FontWeight="Bold" Foreground="#6366F1" />
-                                <TextBlock Text="GPU Hızlandırma" FontSize="11" Opacity="0.6" FontWeight="Medium" />
+                                <TextBlock Text="GPU Hızlandırma" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="Medium" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
-                    <!-- Bellek Optimizasyon Kartı -->
-                    <TextBlock Text="Kaynak Yönetimi" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <TextBlock Text="Kaynak Yönetimi" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE91B;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE91B;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Belleği Şimdi Optimize Et" FontSize="14" FontWeight="Medium" />
-                                <TextBlock x:Name="MemoryOptimizeStatusText" Text="Arka plandaki gereksiz önbellekleri temizler ve işletim sistemine RAM iade eder." FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                                <TextBlock Text="Belleği Şimdi Optimize Et" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock x:Name="MemoryOptimizeStatusText" Text="Arka plandaki gereksiz önbellekleri temizler ve işletim sistemine RAM iade eder." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
-                            <Button x:Name="OptimizeMemoryBtn" Grid.Column="2" Height="36" CornerRadius="6" VerticalAlignment="Center"
-                                    Style="{ThemeResource AccentButtonStyle}" Click="OptimizeMemoryBtn_Click">
+                            <Button x:Name="OptimizeMemoryBtn" Grid.Column="2" Style="{StaticResource ArcAccentButtonStyle}" VerticalAlignment="Center"
+                                    Click="OptimizeMemoryBtn_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon Glyph="&#xE777;" FontSize="13" />
-                                    <TextBlock Text="Belleği Temizle" FontSize="13" />
+                                    <TextBlock Text="Belleği Temizle" FontSize="12.5" />
                                 </StackPanel>
                             </Button>
                         </Grid>
                     </Border>
 
-                    <!-- Eco-QoS / Uyku Modu -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xEC4A;" FontSize="16" Foreground="#107C41" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xEC4A;" FontSize="17" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <TextBlock Text="Arka Plan Sekmelerini Uyku Moduna Al (Eco-QoS)" FontSize="14" FontWeight="Medium" />
-                                    <Border Background="#107C41" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="Arka Plan Sekmelerini Uyku Moduna Al (Eco-QoS)" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <Border Background="#10B981" CornerRadius="4" Padding="6,2">
                                         <TextBlock Text="Aktif" FontSize="10" FontWeight="Bold" Foreground="White" />
                                     </Border>
                                 </StackPanel>
-                                <TextBlock Text="Kullanılmayan sekmeleri otomatik olarak minimum CPU ve RAM moduna alarak sistem kaynaklarını ve pil ömrünü korur." FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                                <TextBlock Text="Kullanılmayan sekmeleri otomatik minimum CPU moduna alarak pil ömrünü ve performansı korur." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                             <ToggleSwitch x:Name="EcoModeToggle" Grid.Column="2" VerticalAlignment="Center" OnContent="" OffContent="" IsOn="True" Toggled="EcoModeToggle_Toggled" />
                         </Grid>
                     </Border>
 
-                    <!-- Hata Ayıklama ve Çökme Teşhisi -->
-                    <TextBlock Text="Hata Ayıklama ve Çökme Teşhisi (Crash Diagnostics)" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="10" Padding="18,16">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <FontIcon Glyph="&#xE7BA;" FontSize="16" Foreground="#E81123" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE768;" FontSize="17" Foreground="{ThemeResource ArcAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Hata ve Çökme Günlükleri" FontSize="14" FontWeight="Medium" />
-                                <TextBlock Text="Oluşan tüm beklenmedik çökmeler, tam dosya adı ve satır numarasıyla günlüğe kaydedilir." FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                                <TextBlock Text="İlk Kurulum Sihirbazı" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Profil, sekme yerleşimi, sık kullanılanlar ve arama motoru ayarlarını adım adım yeniden yapılandırın." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <Button x:Name="OpenCrashLogsBtn" Height="36" CornerRadius="6" VerticalAlignment="Center"
-                                        Click="OpenCrashLogsBtn_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <FontIcon Glyph="&#xED25;" FontSize="13" />
-                                        <TextBlock Text="Günlük Klasörü" FontSize="13" />
-                                    </StackPanel>
-                                </Button>
-                                <Button x:Name="TestCrashBtn" Height="36" CornerRadius="6" VerticalAlignment="Center"
-                                        Click="TestCrashBtn_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <FontIcon Glyph="&#xEA39;" FontSize="13" Foreground="#E81123" />
-                                        <TextBlock Text="Crash Testi Yap" FontSize="13" Foreground="#E81123" />
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-
-                <!-- VARSAYILAN TARAYICI PANELİ -->
-                <StackPanel x:Name="DefaultBrowserContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Varsayılan Tarayıcı" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock Text="Bear Browser'ı web bağlantıları ve HTML dosyaları için varsayılan tarayıcınız yapın." FontSize="13" Opacity="0.7" />
-                    </StackPanel>
-
-                    <!-- Kart -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="24,20">
-                        <Grid ColumnSpacing="20">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0" Width="64" Height="64" CornerRadius="16"
-                                    Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                <Image Width="64" Height="64" Source="ms-appx:///Assets/Bear-Browser-Logo.jpg" Stretch="UniformToFill" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                <TextBlock Text="Bear Browser'ı varsayılan tarayıcı yap" FontSize="16" FontWeight="SemiBold" />
-                                <TextBlock Text="Web bağlantılarını, e-postalardaki linkleri ve internet sayfalarını her zaman Bear Browser ile açın." FontSize="13" Opacity="0.7" TextWrapping="Wrap" />
-                            </StackPanel>
-
-                            <Button x:Name="MakeDefaultBrowserBtn" Grid.Column="2" VerticalAlignment="Center"
-                                    Style="{ThemeResource AccentButtonStyle}" Padding="16,8" CornerRadius="8"
-                                    Click="MakeDefaultBrowserBtn_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon Glyph="&#xE774;" FontSize="14" />
-                                    <TextBlock Text="Varsayılan Yap" FontSize="13" FontWeight="SemiBold" />
+                            <Button x:Name="RestartOnboardingBtn" Grid.Column="2" Style="{StaticResource ArcPillButtonStyle}" Click="RestartOnboardingBtn_Click" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE768;" FontSize="13" Foreground="{ThemeResource ArcAccentBrush}" />
+                                    <TextBlock Text="Sihirbazı Başlat" FontSize="12" />
                                 </StackPanel>
                             </Button>
                         </Grid>
                     </Border>
 
-                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="10" Padding="16,14">
+                    <TextBlock Text="Hata Ayıklama ve Çökme Teşhisi" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+
+                                <ColumnDefinition Width="*" />
+
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="12" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <FontIcon Glyph="&#xE7BA;" FontSize="17" Foreground="#EF4444" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Hata ve Çökme Günlükleri" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Oluşan tüm beklenmedik çökmeler, tam dosya adı ve satır numarasıyla günlüğe kaydedilir." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Button x:Name="OpenCrashLogsBtn" Style="{StaticResource ArcPillButtonStyle}" Click="OpenCrashLogsBtn_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon Glyph="&#xED25;" FontSize="13" />
+                                        <TextBlock Text="Günlük Klasörü" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="TestCrashBtn" Style="{StaticResource ArcPillButtonStyle}" Click="TestCrashBtn_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon Glyph="&#xEA39;" FontSize="13" Foreground="#EF4444" />
+                                        <TextBlock Text="Crash Testi" FontSize="12" Foreground="#EF4444" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel x:Name="DefaultBrowserContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Varsayılan Tarayıcı" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock Text="Bear Browser'ı web bağlantıları ve HTML belgeleri için birincil tarayıcınız yapın." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="24,20">
+                        <Grid ColumnSpacing="20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+
+                                <ColumnDefinition Width="*" />
+
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Width="64" Height="64" CornerRadius="18" Background="{ThemeResource ArcSurfaceDefaultBrush}">
+                                <Image Width="64" Height="64" Source="ms-appx:///Assets/Bear-Browser-Logo.jpg" Stretch="UniformToFill" />
+                            </Border>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                <TextBlock Text="Bear Browser'ı varsayılan tarayıcı yap" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock Text="Web bağlantılarını, e-postalardaki linkleri ve internet sayfalarını her zaman Bear Browser ile açın." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <Button x:Name="MakeDefaultBrowserBtn" Grid.Column="2" VerticalAlignment="Center"
+                                    Style="{StaticResource ArcAccentButtonStyle}" Padding="16,8"
+                                    Click="MakeDefaultBrowserBtn_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE774;" FontSize="14" />
+                                    <TextBlock Text="Varsayılan Yap" FontSize="13" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="18,14">
                         <StackPanel Spacing="6">
                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <FontIcon Glyph="&#xE946;" FontSize="14" Opacity="0.8" />
-                                <TextBlock Text="Windows Varsayılan Uygulamalar Bilgisi" FontSize="13" FontWeight="SemiBold" />
+                                <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="{ThemeResource ArcAccentBrush}" />
+                                <TextBlock Text="Windows Varsayılan Uygulamalar Bilgisi" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
                             </StackPanel>
-                            <TextBlock Text="Yukarıdaki butona bastığınızda Windows Ayarları'ndaki Varsayılan Uygulamalar sayfası açılacaktır. Buradan Bear Browser'ı seçerek varsayılan olarak belirleyebilirsiniz."
-                                       FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                            <TextBlock Text="Yukarıdaki butona bastığınızda Windows Ayarları'ndaki Varsayılan Uygulamalar sayfası açılacaktır. Bear Browser'ı seçerek varsayılan olarak belirleyebilirsiniz."
+                                       FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <!-- DİLLER PANELİ -->
-                <StackPanel x:Name="LanguagesContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                <StackPanel x:Name="LanguagesContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Name="LanguagesTitleText" Text="Diller" FontSize="24" FontWeight="SemiBold" />
-                        <TextBlock x:Name="LanguagesSubtitleText" Text="Bear Browser arayüzü ve web siteleri için görüntüleme dillerini özelleştirin." FontSize="13" Opacity="0.7" />
+                        <TextBlock x:Name="LanguagesTitleText" Text="Diller" FontSize="26" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                        <TextBlock x:Name="LanguagesSubtitleText" Text="Bear Browser arayüzü ve web siteleri için görüntüleme dillerini özelleştirin." FontSize="13" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                     </StackPanel>
 
-                    <!-- Tercih Edilen Diller Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="20">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20">
                         <StackPanel Spacing="16">
                             <StackPanel VerticalAlignment="Center" Spacing="2">
-                                <TextBlock x:Name="LanguagesPreferredCardTitle" Text="Tercih Edilen Diller" FontSize="15" FontWeight="SemiBold" />
-                                <TextBlock x:Name="LanguagesPreferredCardSubtitle" Text="Bear Browser kullanıcı arayüzü ve web sayfaları için görüntüleme dilini seçin." FontSize="12" Opacity="0.65" />
+                                <TextBlock x:Name="LanguagesPreferredCardTitle" Text="Tercih Edilen Diller" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock x:Name="LanguagesPreferredCardSubtitle" Text="Bear Browser kullanıcı arayüzü ve web sayfaları için görüntüleme dilini seçin." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                             </StackPanel>
 
-                            <!-- Dinamik Dil Listesi -->
                             <ItemsControl x:Name="LanguagesItemsControl">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="services:LanguageItem">
-                                        <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,8">
+                                        <Border Style="{StaticResource ArcCardStyle}" Padding="16,12" Margin="0,0,0,8">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
+
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
 
                                                 <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
                                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                        <TextBlock Text="{x:Bind DisplayTitle}" FontSize="14" FontWeight="SemiBold" />
-                                                        <Border Background="#107C41" CornerRadius="4" Padding="6,2"
+                                                        <TextBlock Text="{x:Bind DisplayTitle}" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                                        <Border Background="#10B981" CornerRadius="4" Padding="6,2"
                                                                 Visibility="{x:Bind StatusBadgeVisibility, Mode=OneWay}">
                                                             <TextBlock Text="{x:Bind StatusBadgeText, Mode=OneWay}" FontSize="10" FontWeight="SemiBold" Foreground="White" />
                                                         </Border>
                                                     </StackPanel>
-                                                    <TextBlock Text="{x:Bind Subtitle}" FontSize="12" Opacity="0.6" />
+                                                    <TextBlock Text="{x:Bind Subtitle}" FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                                                    <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="#107C41" VerticalAlignment="Center"
+                                                    <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="#10B981" VerticalAlignment="Center"
                                                               Visibility="{x:Bind CheckmarkVisibility, Mode=OneWay}" Margin="0,0,8,0" />
-                                                    <Button Content="{x:Bind SelectButtonText}" FontSize="12" Padding="12,6" CornerRadius="6"
+                                                    <Button Content="{x:Bind SelectButtonText}" FontSize="12" Style="{StaticResource ArcPillButtonStyle}" Padding="12,5"
                                                             Tag="{x:Bind Code}" Click="SelectLanguage_Click"
                                                             Visibility="{x:Bind SelectButtonVisibility, Mode=OneWay}" />
                                                 </StackPanel>
@@ -1014,19 +1067,17 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Çeviri Kartı -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="20">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
-                                <TextBlock x:Name="LanguagesTranslateTitleText" Text="Web sayfalarını çevirmeyi öner" FontSize="15" FontWeight="SemiBold" />
-                                <TextBlock x:Name="LanguagesTranslateSubtitleText" Text="Okuyamadığınız bir dildeki web sayfalarını otomatik olarak tercih ettiğiniz dile çevirme seçeneği sunar." FontSize="12" Opacity="0.65" TextWrapping="Wrap" />
+                                <TextBlock x:Name="LanguagesTranslateTitleText" Text="Web sayfalarını çevirmeyi öner" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                <TextBlock x:Name="LanguagesTranslateSubtitleText" Text="Okuyamadığınız bir dildeki web sayfalarını otomatik olarak tercih ettiğiniz dile çevirme seçeneği sunar." FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
 
                             <ToggleSwitch Grid.Column="1" IsOn="True" VerticalAlignment="Center" Margin="0,0,-12,0" />
@@ -1034,109 +1085,139 @@
                     </Border>
                 </StackPanel>
 
-                <!-- 6. BEAR BROWSER HAKKINDA PANELİ -->
-                <StackPanel x:Name="AboutContentPanel" MaxWidth="780" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
-                    <!-- Yumuşak Açılış Geçişi -->
-                    <StackPanel.ChildrenTransitions>
-                        <TransitionCollection>
-                            <EntranceThemeTransition FromVerticalOffset="24" />
-                        </TransitionCollection>
-                    </StackPanel.ChildrenTransitions>
-
-                    <!-- Kahraman Kart: Logo, Başlık ve Canlı Güncelleme -->
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="28,24">
-                        <Grid RowSpacing="18">
+                <StackPanel x:Name="AboutContentPanel" MaxWidth="820" HorizontalAlignment="Left" Spacing="24" Visibility="Collapsed">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="30,26">
+                        <Grid RowSpacing="20">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
+
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+
                                     <ColumnDefinition Width="*" />
+
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                                    <Border Width="72" Height="72" CornerRadius="18" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                        <Image x:Name="AboutLogoImage" Width="72" Height="72" Stretch="UniformToFill" Source="ms-appx:///Assets/Bear-Browser-Logo.jpg" />
-                                    </Border>
+                                <Border Grid.Column="0" Width="80" Height="80" CornerRadius="20" Background="{ThemeResource ArcSurfaceDefaultBrush}" VerticalAlignment="Center">
+                                    <Image x:Name="AboutLogoImage" Width="80" Height="80" Stretch="UniformToFill" Source="ms-appx:///Assets/Bear-Browser-Logo.jpg" />
+                                </Border>
 
-                                    <StackPanel VerticalAlignment="Center" Spacing="2">
-                                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                            <TextBlock Text="Bear Browser" FontSize="26" FontWeight="SemiBold" />
-                                            <Border Background="{ThemeResource AccentFillColorSecondaryBrush}" CornerRadius="12" Padding="8,2" VerticalAlignment="Center">
-                                                <TextBlock Text="Resmi Derleme" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                                            </Border>
-                                        </StackPanel>
-                                        <TextBlock x:Name="VersionTextBlock" Text="Sürüm 1.0.0 (64 bit)" FontSize="13" Opacity="0.7" />
-                                    </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4" Margin="18,0,0,0">
+                                    <TextBlock Text="Bear Browser" FontSize="28" FontWeight="Bold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock x:Name="VersionTextBlock" Text="Sürüm 1.0.0 (64 bit)" FontSize="13.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
                                 </StackPanel>
 
-                                <Button x:Name="CheckUpdatesButton" Grid.Column="1" Height="38" CornerRadius="8" 
-                                        VerticalAlignment="Center" Click="CheckUpdatesButton_Click">
+                                <Button x:Name="CheckUpdatesButton" Grid.Column="2" Style="{StaticResource ArcPillButtonStyle}"
+                                        VerticalAlignment="Center" Margin="24,0,0,0" Click="CheckUpdatesButton_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <ProgressRing x:Name="CheckingProgress" Width="14" Height="14" IsActive="False" Visibility="Collapsed" />
-                                        <FontIcon x:Name="CheckIcon" Glyph="&#xE72C;" FontSize="13" />
+                                        <FontIcon x:Name="CheckIcon" Glyph="&#xE72C;" FontSize="13" Foreground="{ThemeResource ArcAccentBrush}" />
                                         <TextBlock x:Name="CheckUpdatesText" Text="Güncelleştirmeleri denetle" FontSize="13" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
 
-                            <Border Grid.Row="1" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="14,10">
+                            <Border Grid.Row="1" Background="{ThemeResource ArcSurfaceDefaultBrush}" BorderBrush="{ThemeResource ArcBorderSubtleBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12">
                                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                                     <Grid Width="16" Height="16" VerticalAlignment="Center">
-                                        <Ellipse x:Name="LiveDotGlow" Fill="#107C41" Opacity="0.4" Width="16" Height="16" />
-                                        <Ellipse Fill="#107C41" Width="8" Height="8" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Ellipse x:Name="LiveDotGlow" Fill="#10B981" Opacity="0.4" Width="16" Height="16" />
+                                        <Ellipse x:Name="LiveDot" Fill="#10B981" Width="8" Height="8" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Grid>
-                                    <TextBlock x:Name="StatusMessageText" Text="Bear Browser güncel • En son sürümü kullanıyorsunuz" FontSize="13" FontWeight="Medium" Foreground="#107C41" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="StatusMessageText" Text="Bear Browser güncel • En son sürümü kullanıyorsunuz" FontSize="13" FontWeight="SemiBold" Foreground="#10B981" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
 
-                    <TextBlock Text="Sistem ve Motor Özellikleri" FontSize="15" FontWeight="SemiBold" Margin="4,4,0,-12" />
+                    <TextBlock Text="Güncelleme Ayarları" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
 
-                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
-                            BorderThickness="1" CornerRadius="10" Padding="20,16">
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
+                        <StackPanel Spacing="16">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="Tarayıcı açıldığında güncellemeleri otomatik denetle" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock Text="Yeni bir sürüm yayınlandığında ekranın sağ üstünde bildirim kartı gösterir." FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </StackPanel>
+
+                                <ToggleSwitch x:Name="AutoCheckUpdatesToggle" Grid.Column="1" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="AutoCheckUpdatesToggle_Toggled" />
+                            </Grid>
+
+                            <Border Height="1" Background="{ThemeResource ArcBorderSubtleBrush}" />
+
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="Güncelleme Bildirimini Simüle Et (Test)" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
+                                    <TextBlock Text="GitHub'a henüz sürüm yüklemeden güncelleme bildirim kartını ve indirme akışını test edin." FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" />
+                                </StackPanel>
+
+                                <Button x:Name="TestUpdateNotificationBtn" Grid.Column="1" Click="TestUpdateNotificationBtn_Click" Style="{StaticResource ArcPillButtonStyle}" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon Glyph="&#xE896;" FontSize="12" Foreground="{ThemeResource ArcAccentBrush}" />
+                                        <TextBlock Text="Bildirimi Test Et" FontSize="12.5" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Sistem ve Motor Özellikleri" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" Margin="4,4,0,-12" />
+
+                    <Border Style="{StaticResource ArcCardStyle}" Padding="20,16">
                         <Grid ColumnSpacing="20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Spacing="3">
-                                <TextBlock Text="Web Motoru" FontSize="11" Opacity="0.6" FontWeight="SemiBold" />
-                                <TextBlock Text="Chromium (WebView2)" FontSize="13" FontWeight="SemiBold" />
+                                <TextBlock Text="Web Motoru" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="SemiBold" />
+                                <TextBlock Text="Chromium (WebView2)" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Spacing="3">
-                                <TextBlock Text="Arayüz Çatısı" FontSize="11" Opacity="0.6" FontWeight="SemiBold" />
-                                <TextBlock Text="WinUI 3 • .NET 8" FontSize="13" FontWeight="SemiBold" />
+                                <TextBlock Text="Arayüz Çatısı" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="SemiBold" />
+                                <TextBlock Text="WinUI 3 • .NET 9" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Spacing="3">
-                                <TextBlock Text="İşlemci Mimarisi" FontSize="11" Opacity="0.6" FontWeight="SemiBold" />
-                                <TextBlock x:Name="ArchTextBlock" Text="64-bit (x64)" FontSize="13" FontWeight="SemiBold" />
+                                <TextBlock Text="İşlemci Mimarisi" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="SemiBold" />
+                                <TextBlock x:Name="ArchTextBlock" Text="64-bit (x64)" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcTextPrimaryBrush}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="3" Spacing="3">
-                                <TextBlock Text="Bellek Yöneticisi" FontSize="11" Opacity="0.6" FontWeight="SemiBold" />
-                                <TextBlock Text="Düşük Tüketim Modu" FontSize="13" FontWeight="SemiBold" Foreground="#107C41" />
+                                <TextBlock Text="Tasarım Mimarisi" FontSize="11" Foreground="{ThemeResource ArcTextSecondaryBrush}" FontWeight="SemiBold" />
+                                <TextBlock Text="Bear Design" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource ArcAccentBrush}" />
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <StackPanel Spacing="8" Margin="4,8,0,0">
-                        <TextBlock Text="Bu tarayıcı, Chromium açık kaynak projesi ve bağımsız açık kaynak toplulukları tarafından desteklenmektedir." 
-                                   FontSize="12" Opacity="0.75" TextWrapping="Wrap" />
-                        <TextBlock Text="© 2026 Bear Browser Project. Tüm hakları saklıdır." 
-                                   FontSize="12" Opacity="0.6" />
+                    <StackPanel Spacing="6" Margin="4,8,0,0">
+                        <TextBlock Text="Bu tarayıcı, Chromium açık kaynak projesi ve bağımsız topluluklar tarafından güçlendirilmiştir." 
+                                   FontSize="12.5" Foreground="{ThemeResource ArcTextSecondaryBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="© 2026 Bear Browser Project. Modern, Akıcı ve Gizlilik Odaklı Web Deneyimi." 
+                                   FontSize="12" Foreground="{ThemeResource ArcTextSecondaryBrush}" Opacity="0.8" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

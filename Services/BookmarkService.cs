@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,12 +17,14 @@ namespace Bear_Browser.Services
         private readonly IJsonStorageService _storageService;
         private readonly string _bookmarksFile;
         private readonly string _foldersFile;
+        private readonly string _barOrderFile;
 
         public List<BookmarkItem> Bookmarks { get; private set; } = new();
         public List<string> Folders { get; private set; } = new()
         {
             "Sık kullanılanlar çubuğu"
         };
+        public List<string> BarOrder { get; private set; } = new();
 
         public event EventHandler? BookmarksUpdated;
 
@@ -38,6 +40,7 @@ namespace Bear_Browser.Services
             Directory.CreateDirectory(folder);
             _bookmarksFile = Path.Combine(folder, "bookmarks.json");
             _foldersFile = Path.Combine(folder, "folders.json");
+            _barOrderFile = Path.Combine(folder, "bar_order.json");
 
             LoadData();
         }
@@ -64,8 +67,42 @@ namespace Bear_Browser.Services
                             Folders.Insert(0, "Sık kullanılanlar çubuğu");
                     }
                 }
+
+                if (File.Exists(_barOrderFile))
+                {
+                    BarOrder = _storageService.Load<List<string>>(_barOrderFile) ?? new();
+                }
+
+                EnsureBarOrder();
             }
             catch { }
+        }
+
+        public void EnsureBarOrder()
+        {
+            var validFolderSet = new HashSet<string>(Folders.Where(f => !f.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase)), StringComparer.OrdinalIgnoreCase);
+            var validBmSet = new HashSet<string>(Bookmarks.Where(b => b.Folder.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase)).Select(b => b.Id.ToString()), StringComparer.OrdinalIgnoreCase);
+
+            BarOrder.RemoveAll(id =>
+            {
+                if (id.StartsWith("folder:")) return !validFolderSet.Contains(id.Substring("folder:".Length));
+                if (id.StartsWith("bm:")) return !validBmSet.Contains(id.Substring("bm:".Length));
+                return true;
+            });
+
+            foreach (var b in Bookmarks.Where(b => b.Folder.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase)))
+            {
+                string key = "bm:" + b.Id.ToString();
+                if (!BarOrder.Contains(key))
+                    BarOrder.Add(key);
+            }
+
+            foreach (var f in Folders.Where(f => !f.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase)))
+            {
+                string key = "folder:" + f;
+                if (!BarOrder.Contains(key, StringComparer.OrdinalIgnoreCase))
+                    BarOrder.Add(key);
+            }
         }
 
         public async Task<BookmarkItem> AddOrUpdateBookmarkAsync(string url, string title, string folder)
@@ -75,6 +112,15 @@ namespace Bear_Browser.Services
             {
                 existing.Title = title;
                 existing.Folder = string.IsNullOrWhiteSpace(folder) ? "Sık kullanılanlar çubuğu" : folder;
+                if (existing.Folder.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase))
+                {
+                    string key = "bm:" + existing.Id.ToString();
+                    if (!BarOrder.Contains(key)) BarOrder.Add(key);
+                }
+                else
+                {
+                    BarOrder.Remove("bm:" + existing.Id.ToString());
+                }
             }
             else
             {
@@ -85,10 +131,15 @@ namespace Bear_Browser.Services
                     Folder = string.IsNullOrWhiteSpace(folder) ? "Sık kullanılanlar çubuğu" : folder,
                     CreatedAt = DateTime.Now
                 };
-                Bookmarks.Insert(0, existing);
+                Bookmarks.Add(existing);
+                if (existing.Folder.Equals("Sık kullanılanlar çubuğu", StringComparison.OrdinalIgnoreCase))
+                {
+                    BarOrder.Add("bm:" + existing.Id.ToString());
+                }
             }
 
             await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+            await _storageService.SaveAsync(_barOrderFile, BarOrder);
             BookmarksUpdated?.Invoke(this, EventArgs.Empty);
             return existing;
         }
@@ -99,7 +150,9 @@ namespace Bear_Browser.Services
             if (existing != null)
             {
                 Bookmarks.Remove(existing);
+                BarOrder.Remove("bm:" + existing.Id.ToString());
                 await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+                await _storageService.SaveAsync(_barOrderFile, BarOrder);
                 BookmarksUpdated?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -110,7 +163,9 @@ namespace Bear_Browser.Services
             if (existing != null)
             {
                 Bookmarks.Remove(existing);
+                BarOrder.Remove("bm:" + id.ToString());
                 await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+                await _storageService.SaveAsync(_barOrderFile, BarOrder);
                 BookmarksUpdated?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -122,7 +177,13 @@ namespace Bear_Browser.Services
             if (!Folders.Contains(clean, StringComparer.OrdinalIgnoreCase))
             {
                 Folders.Add(clean);
+                string key = "folder:" + clean;
+                if (!BarOrder.Contains(key, StringComparer.OrdinalIgnoreCase))
+                {
+                    BarOrder.Add(key);
+                }
                 await _storageService.SaveAsync(_foldersFile, Folders);
+                await _storageService.SaveAsync(_barOrderFile, BarOrder);
                 BookmarksUpdated?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -131,12 +192,17 @@ namespace Bear_Browser.Services
         {
             if (folderName == "Sık kullanılanlar çubuğu") return;
             Folders.Remove(folderName);
+            BarOrder.RemoveAll(x => x.Equals("folder:" + folderName, StringComparison.OrdinalIgnoreCase));
             foreach (var b in Bookmarks.Where(b => b.Folder.Equals(folderName, StringComparison.OrdinalIgnoreCase)))
             {
                 b.Folder = "Sık kullanılanlar çubuğu";
+                string key = "bm:" + b.Id.ToString();
+                if (!BarOrder.Contains(key))
+                    BarOrder.Add(key);
             }
             await _storageService.SaveAsync(_foldersFile, Folders);
             await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+            await _storageService.SaveAsync(_barOrderFile, BarOrder);
             BookmarksUpdated?.Invoke(this, EventArgs.Empty);
         }
 
@@ -150,6 +216,78 @@ namespace Bear_Browser.Services
         {
             if (string.IsNullOrWhiteSpace(url)) return null;
             return Bookmarks.Find(b => b.Url.Equals(url, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task UpdateFaviconAsync(string url, string faviconUri)
+        {
+            if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(faviconUri)) return;
+
+            string clean = url.TrimEnd('/');
+            string? host = null;
+            if (Uri.TryCreate(url, UriKind.Absolute, out var navUri))
+            {
+                host = navUri.Host.ToLowerInvariant();
+            }
+
+            bool anyUpdated = false;
+            foreach (var b in Bookmarks)
+            {
+                bool matches = false;
+                if (b.Url.TrimEnd('/').Equals(clean, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches = true;
+                }
+                else if (host != null && Uri.TryCreate(b.Url, UriKind.Absolute, out var bUri))
+                {
+                    string bHost = bUri.Host.ToLowerInvariant();
+                    if (bHost == host || bHost.EndsWith("." + host) || host.EndsWith("." + bHost))
+                    {
+                        matches = true;
+                    }
+                }
+
+                if (matches && b.CustomFavicon != faviconUri)
+                {
+                    b.CustomFavicon = faviconUri;
+                    anyUpdated = true;
+                }
+            }
+
+            if (anyUpdated)
+            {
+                await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+                BookmarksUpdated?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public async Task MoveBookmarkAsync(Guid id, string targetFolder, int newIndex)
+        {
+            var item = Bookmarks.FirstOrDefault(b => b.Id == id);
+            if (item == null) return;
+
+            item.Folder = string.IsNullOrWhiteSpace(targetFolder) ? "Sık kullanılanlar çubuğu" : targetFolder;
+            Bookmarks.Remove(item);
+            int clamped = Math.Clamp(newIndex, 0, Bookmarks.Count);
+            Bookmarks.Insert(clamped, item);
+
+            await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+            BookmarksUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async Task ReorderBookmarksAsync(List<BookmarkItem> newOrder)
+        {
+            if (newOrder == null) return;
+            Bookmarks = new List<BookmarkItem>(newOrder);
+            await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+            BookmarksUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _storageService.SaveAsync(_bookmarksFile, Bookmarks);
+            await _storageService.SaveAsync(_foldersFile, Folders);
+            await _storageService.SaveAsync(_barOrderFile, BarOrder);
+            BookmarksUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task ExportBookmarksHtmlAsync(string filePath)

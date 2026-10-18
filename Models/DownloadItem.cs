@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Bear_Browser.Models
 {
-    /// <summary>
-    /// İndirilen dosya öğesini temsil eden model. UI tiplerinden arındırılmıştır.
-    /// </summary>
     public class DownloadItem : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -104,5 +101,45 @@ namespace Bear_Browser.Models
 
         [JsonIgnore]
         public string FormattedTime => DownloadedAt.ToString("dd.MM.yyyy HH:mm");
+
+        [JsonIgnore]
+        public string FileExtensionText
+        {
+            get
+            {
+                try
+                {
+                    string ext = System.IO.Path.GetExtension(FileName);
+                    if (!string.IsNullOrEmpty(ext)) return ext.TrimStart('.').ToUpperInvariant();
+                }
+                catch { }
+                return "DOSYA";
+            }
+        }
+
+        [JsonIgnore]
+        public string FileTypeGlyph
+        {
+            get
+            {
+                try
+                {
+                    string ext = System.IO.Path.GetExtension(FileName).ToLowerInvariant();
+                    return ext switch
+                    {
+                        ".exe" or ".msi" => "\uE7B5",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" => "\uE8F1",
+                        ".pdf" or ".doc" or ".docx" or ".txt" or ".xlsx" => "\uE8A5",
+                        ".png" or ".jpg" or ".jpeg" or ".webp" or ".gif" or ".svg" => "\uEB9F",
+                        ".mp4" or ".mkv" or ".avi" or ".mp3" or ".wav" => "\uE8B9",
+                        _ => "\uE8A5"
+                    };
+                }
+                catch
+                {
+                    return "\uE8A5";
+                }
+            }
+        }
     }
 }

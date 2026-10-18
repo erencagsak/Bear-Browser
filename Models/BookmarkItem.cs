@@ -1,11 +1,8 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 
 namespace Bear_Browser.Models
 {
-    /// <summary>
-    /// Sık kullanılan / yer imi öğesini temsil eden model.
-    /// </summary>
     public class BookmarkItem
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -13,17 +10,20 @@ namespace Bear_Browser.Models
         public string Url { get; set; } = string.Empty;
         public string Folder { get; set; } = "Sık kullanılanlar çubuğu";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string? CustomFavicon { get; set; }
 
         [JsonIgnore]
         public string FaviconUrl
         {
             get
             {
+                if (!string.IsNullOrWhiteSpace(CustomFavicon))
+                    return CustomFavicon;
                 try
                 {
                     var uri = new Uri(Url);
                     if (!string.IsNullOrEmpty(uri.Host))
-                        return $"https://www.google.com/s2/favicons?domain={uri.Host}&sz=32";
+                        return $"https://icons.duckduckgo.com/ip3/{uri.Host}.ico";
                 }
                 catch { }
                 return "ms-appx:///Assets/Bear-Browser-Logo.jpg";
@@ -35,12 +35,16 @@ namespace Bear_Browser.Models
         {
             get
             {
+                if (!string.IsNullOrWhiteSpace(CustomFavicon))
+                {
+                    try { return new Uri(CustomFavicon); } catch { }
+                }
                 if (string.IsNullOrWhiteSpace(Url)) return null;
                 try
                 {
                     var uri = new Uri(Url);
                     if (!string.IsNullOrEmpty(uri.Host))
-                        return new Uri($"https://www.google.com/s2/favicons?domain={uri.Host}&sz=32");
+                        return new Uri($"https://icons.duckduckgo.com/ip3/{uri.Host}.ico");
                 }
                 catch { }
                 return new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");

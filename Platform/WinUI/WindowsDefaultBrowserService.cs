@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Bear_Browser.Platform.Interfaces;
@@ -6,12 +6,8 @@ using Microsoft.Win32;
 
 namespace Bear_Browser.Platform.WinUI
 {
-    /// <summary>
-    /// Windows platformunda varsayılan tarayıcı kontrolü ve sistem ayarları yönlendirmesi.
-    /// </summary>
     public class WindowsDefaultBrowserService : IDefaultBrowserService
     {
-        /// <inheritdoc />
         public Task<bool> OpenDefaultBrowserSettingsAsync()
         {
             try
@@ -33,7 +29,6 @@ namespace Bear_Browser.Platform.WinUI
             }
         }
 
-        /// <inheritdoc />
         public bool IsDefaultBrowser()
         {
             try
@@ -47,7 +42,6 @@ namespace Bear_Browser.Platform.WinUI
             }
             catch
             {
-                // Registry okuma hatası durumunda varsayılan değil kabul edilir
             }
             return false;
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -61,7 +61,6 @@ namespace Bear_Browser.Services
 
             LoadProfileData();
 
-            // Alt servis olaylarını dışarı aktar
             _bookmarkService.BookmarksUpdated += (s, e) => BookmarksUpdated?.Invoke(this, e);
             _historyService.HistoryUpdated += (s, e) => HistoryUpdated?.Invoke(this, e);
             _downloadService.DownloadsUpdated += (s, e) => DownloadsUpdated?.Invoke(this, e);
@@ -140,12 +139,10 @@ namespace Bear_Browser.Services
             ProfileUpdated?.Invoke(this, CurrentProfile);
         }
 
-        // --- History Delegasyonu ---
         public Task AddHistoryAsync(string title, string url) => _historyService.AddHistoryAsync(title, url);
         public Task RemoveHistoryItemAsync(Guid id) => _historyService.RemoveHistoryItemAsync(id);
         public Task ClearHistoryAsync() => _historyService.ClearHistoryAsync();
 
-        // --- Bookmark Delegasyonu ---
         public Task<BookmarkItem> AddOrUpdateBookmarkAsync(string url, string title, string folder) =>
             _bookmarkService.AddOrUpdateBookmarkAsync(url, title, folder);
         public Task RemoveBookmarkByUrlAsync(string url) => _bookmarkService.RemoveBookmarkByUrlAsync(url);
@@ -157,14 +154,12 @@ namespace Bear_Browser.Services
         public Task ExportBookmarksHtmlAsync(string filePath) => _bookmarkService.ExportBookmarksHtmlAsync(filePath);
         public Task<int> ImportBookmarksHtmlAsync(string filePath) => _bookmarkService.ImportBookmarksHtmlAsync(filePath);
 
-        // --- Download Delegasyonu ---
         public void AddActiveDownload(DownloadItem item) => _downloadService.AddActiveDownload(item);
         public Task CompleteDownloadAsync(DownloadItem item) => _downloadService.CompleteDownloadAsync(item);
         public Task AddDownloadAsync(DownloadItem item) => _downloadService.AddDownloadAsync(item);
         public Task RemoveDownloadAsync(Guid id) => _downloadService.RemoveDownloadAsync(id);
         public Task ClearDownloadsAsync() => _downloadService.ClearDownloadsAsync();
 
-        // --- Password Delegasyonu ---
         public Task AddOrUpdatePasswordAsync(string url, string userName, string password) =>
             _passwordService.AddOrUpdatePasswordAsync(url, userName, password);
         public Task RemovePasswordAsync(Guid id) => _passwordService.RemovePasswordAsync(id);

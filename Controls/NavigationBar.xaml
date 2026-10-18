@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Bear_Browser.Controls.NavigationBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -12,46 +12,41 @@
     <Grid ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <!-- 0: Geri -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 1: İleri -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 2: Yenile -->
+
             <ColumnDefinition Width="*" />
-            <!-- 3: Adres -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 4: Git -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 5: Yıldız -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 6: İndirilenler (Yeni!) -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 7: Uzantılar -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 8: Profil -->
+
             <ColumnDefinition Width="Auto" />
-            <!-- 8: Üç Nokta -->
         </Grid.ColumnDefinitions>
 
-        <!-- 1. Geri Butonu -->
         <Button x:Name="BackButton" Grid.Column="0" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Geri" Click="BackButton_Click">
             <FontIcon Glyph="&#xE72B;" FontSize="14" />
         </Button>
 
-        <!-- 2. İleri Butonu -->
         <Button x:Name="ForwardButton" Grid.Column="1" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="İleri" Click="ForwardButton_Click">
             <FontIcon Glyph="&#xE72A;" FontSize="14" />
         </Button>
 
-        <!-- 3. Yenile Butonu -->
         <Button x:Name="RefreshButton" Grid.Column="2" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Yenile" Click="RefreshButton_Click">
             <FontIcon x:Name="RefreshIcon" Glyph="&#xE72C;" FontSize="14" />
         </Button>
 
-        <!-- 4. Adres Çubuğu -->
         <Grid Grid.Column="3">
             <TextBox x:Name="AddressBar" Style="{StaticResource ArcAddressBarTextBoxStyle}" 
                  VerticalContentAlignment="Center"
@@ -67,13 +62,11 @@
                          Margin="3,0,3,2" />
         </Grid>
 
-        <!-- 5. Git Butonu -->
         <Button x:Name="GoButton" Grid.Column="4" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Git" Click="GoButton_Click">
             <FontIcon Glyph="&#xE751;" FontSize="14" />
         </Button>
 
-        <!-- 6. Sık Kullanılan Eklendi / Düzenle Butonu (1. ve 2. Resimdeki Birebir Menü) -->
         <Button x:Name="BookmarkButton" Grid.Column="5" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Bu sayfayı sık kullanılanlara ekle" Click="BookmarkButton_Click">
             <FontIcon x:Name="BookmarkIcon" Glyph="&#xE734;" FontSize="14" />
@@ -82,12 +75,14 @@
                     <Grid Width="290" RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+
                             <RowDefinition Height="Auto" />
+
                             <RowDefinition Height="Auto" />
+
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- Başlık ve Kapat Butonu -->
                         <Grid Grid.Row="0">
                             <TextBlock x:Name="BookmarkTitleText" Text="Sık kullanılan eklendi" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
                             <Button Width="28" Height="28" Padding="0" HorizontalAlignment="Right"
@@ -97,13 +92,11 @@
                             </Button>
                         </Grid>
 
-                        <!-- Adı -->
                         <StackPanel Grid.Row="1" Spacing="6">
                             <TextBlock x:Name="BookmarkNameLabel" Text="Adı" FontSize="13" Opacity="0.8" />
                             <TextBox x:Name="BookmarkNameTextBox" Height="34" />
                         </StackPanel>
 
-                        <!-- Klasör -->
                         <StackPanel Grid.Row="2" Spacing="6">
                             <TextBlock x:Name="BookmarkFolderLabel" Text="Klasör" FontSize="13" Opacity="0.8" />
                             <ComboBox x:Name="BookmarkFolderComboBox" HorizontalAlignment="Stretch" Height="36">
@@ -118,7 +111,6 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <!-- Alt Butonlar: [ Bitti ]  [ Kaldır ] -->
                         <Grid Grid.Row="3" Margin="0,6,0,0">
                             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                                 <Button x:Name="DoneBookmarkBtn" Content="Bitti" Style="{ThemeResource AccentButtonStyle}"
@@ -135,13 +127,10 @@
         <Button x:Name="DownloadButton" Grid.Column="6" Style="{StaticResource ArcIconButtonStyle}"
                 ToolTipService.ToolTip="İndirilenler" Click="DownloadButton_Click">
             <Grid Width="36" Height="36">
-                <!-- Ana İndirme İkonu -->
                 <FontIcon Glyph="&#xE896;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <!-- İndirilirken Mavi Dönen Halka -->
                 <ProgressRing x:Name="DownloadProgressRing" Width="30" Height="30"
                               IsActive="False" Visibility="Collapsed"
                               Foreground="#0078D4" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <!-- İndirme Bitince Sağ Altta Yeşil Onay Rozeti -->
                 <Border x:Name="DownloadCompletedBadge" Width="13" Height="13" CornerRadius="6.5"
                         Background="#107C41" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                         Margin="0,0,3,3" Visibility="Collapsed">
@@ -149,16 +138,16 @@
                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
             </Grid>
-            <!-- İndirilenler Açılır Popup'ı (Edge Stili) -->
             <Button.Flyout>
                 <Flyout x:Name="DownloadsFlyout" Placement="BottomEdgeAlignedRight" Opening="DownloadsFlyout_Opening">
                     <Grid Width="340" RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+
                             <RowDefinition Height="*" />
+
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <!-- Başlık ve Klasörü Aç / Kapat Butonları -->
                         <Grid Grid.Row="0">
                             <TextBlock Text="İndirmeler" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
@@ -176,7 +165,6 @@
                                 </Button>
                             </StackPanel>
                         </Grid>
-                        <!-- Son İndirmeler Listesi -->
                         <Grid Grid.Row="1">
                             <TextBlock x:Name="EmptyDownloadsText" Text="Henüz indirilen dosya yok"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -188,20 +176,20 @@
                                               Background="{ThemeResource SubtleFillColorTransparentBrush}" ColumnSpacing="10">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
+
                                                 <ColumnDefinition Width="*" />
+
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <FontIcon Grid.Column="0" Glyph="&#xE8A5;" FontSize="16" Opacity="0.8" VerticalAlignment="Center" />
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                                 <TextBlock Text="{x:Bind FileName}" FontSize="13" FontWeight="Medium"
                                                            TextTrimming="CharacterEllipsis" />
-                                                <!-- İndirilirken Boyut & Canlı İlerleme Çubuğu -->
                                                 <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" FontSize="11" Opacity="0.6"
                                                            Visibility="{x:Bind IsDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                 <ProgressBar Value="{x:Bind ProgressValue, Mode=OneWay}" Maximum="100" Height="3"
                                                              Foreground="#0078D4" Margin="0,2,0,0"
                                                              Visibility="{x:Bind IsDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                <!-- Tamamlandığında Dosyayı Aç Bağlantısı -->
                                                 <Button Content="Dosyayı aç" Click="OpenFile_Click" Tag="{x:Bind FilePath}"
                                                         Visibility="{x:Bind IsDownloading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
                                                         Background="Transparent" BorderThickness="0" Padding="0"
@@ -222,7 +210,6 @@
                                 </ListView.ItemTemplate>
                             </ListView>
                         </Grid>
-                        <!-- Alt Kısım: Tümünü Gör (bear://downloads) -->
                         <Button Grid.Row="2" Content="Daha fazla göster" HorizontalAlignment="Stretch"
                                 Click="OpenAllDownloadsPage_Click" />
                     </Grid>
@@ -230,7 +217,6 @@
             </Button.Flyout>
         </Button>
 
-        <!-- 7. Uzantılar / Eklentiler Butonu (Edge Stili Puzzle İkonu) -->
         <Button x:Name="ExtensionsButton" Grid.Column="7" Style="{StaticResource ArcIconButtonStyle}"
                 ToolTipService.ToolTip="Uzantılar" Click="ExtensionsButton_Click">
             <FontIcon Glyph="&#xE74C;" FontSize="14" />
@@ -246,11 +232,12 @@
                     <Grid Width="310" RowSpacing="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+
                             <RowDefinition Height="*" />
+
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- Başlık ve Kapat Butonu -->
                         <Grid Grid.Row="0">
                             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <FontIcon Glyph="&#xE74C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
@@ -264,7 +251,6 @@
                             </Button>
                         </Grid>
 
-                        <!-- Yüklü Eklentiler Listesi -->
                         <Grid Grid.Row="1">
                             <TextBlock x:Name="EmptyExtensionsText" Text="Henüz yüklü bir uzantı yok"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -283,7 +269,9 @@
                                         <Grid Height="42" ColumnSpacing="12" Padding="0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
+
                                                 <ColumnDefinition Width="*" />
+
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <Grid Grid.Column="0" Width="26" Height="26" VerticalAlignment="Center">
@@ -306,7 +294,6 @@
                             </ListView>
                         </Grid>
 
-                        <!-- Alt Aksiyonlar: Yönetim ve Chrome Mağazası (Edge Stili) -->
                         <StackPanel Grid.Row="2" Spacing="2">
                             <MenuFlyoutSeparator Margin="0,4,0,6" />
                             <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="8,8"
@@ -331,7 +318,6 @@
             </Button.Flyout>
         </Button>
 
-        <!-- 8. Profil Butonu -->
         <Button x:Name="ProfileButton" Grid.Column="8" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Profil">
             <PersonPicture x:Name="NavProfilePic" Width="26" Height="26" />
@@ -352,14 +338,22 @@
             </Button.Flyout>
         </Button>
 
-        <!-- 8. Edge Stili Üç Nokta (...) Menüsü -->
         <Button x:Name="MoreMenuButton" Grid.Column="9" Style="{StaticResource ArcIconButtonStyle}" 
                 ToolTipService.ToolTip="Ayarlar ve daha fazlası">
             <FontIcon Glyph="&#xE712;" FontSize="14" />
             <Button.Flyout>
                 <MenuFlyout x:Name="MoreMenuFlyout" Placement="BottomEdgeAlignedRight" Closing="MoreMenuFlyout_Closing">
+                    <MenuFlyout.MenuFlyoutPresenterStyle>
+                        <Style TargetType="MenuFlyoutPresenter">
+                            <Setter Property="CornerRadius" Value="14" />
+                            <Setter Property="Padding" Value="6" />
+                            <Setter Property="MinWidth" Value="260" />
+                            <Setter Property="Background" Value="{ThemeResource ArcSurfaceCardBrush}" />
+                            <Setter Property="BorderBrush" Value="{ThemeResource ArcBorderSubtleBrush}" />
+                            <Setter Property="BorderThickness" Value="1" />
+                        </Style>
+                    </MenuFlyout.MenuFlyoutPresenterStyle>
 
-                    <!-- BÖLÜM 1: Sekmeler & Pencereler -->
                     <MenuFlyoutItem x:Name="MenuNewTabItem" Text="Yeni sekme" Tag="NewTab" KeyboardAcceleratorTextOverride="Ctrl+T" Click="MenuItem_Action_Click">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="&#xE710;" />
@@ -372,31 +366,34 @@
                     </MenuFlyoutItem>
                     <MenuFlyoutItem x:Name="MenuNewInPrivateItem" Text="Yeni InPrivate penceresi" Tag="NewInPrivate" KeyboardAcceleratorTextOverride="Ctrl+Shift+N" Click="MenuItem_Action_Click">
                         <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xE727;" />
+                            <FontIcon Glyph="&#xE727;" Foreground="#9D70FF" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
 
                     <MenuFlyoutSeparator />
 
-                    <!-- BÖLÜM 2: EDGE STİLİ BİREBİR YAKINLAŞTIRMA SATIRI -->
                     <MenuFlyoutItem x:Name="ZoomRowItem">
                         <MenuFlyoutItem.Template>
                             <ControlTemplate TargetType="MenuFlyoutItem">
-                                <Grid Height="38" Padding="12,0,8,0" HorizontalAlignment="Stretch">
+                                <Grid Height="34" Margin="2,1" Padding="8,0" HorizontalAlignment="Stretch"
+                                      Background="{ThemeResource ArcSurfaceDefaultBrush}" CornerRadius="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
+
                                         <ColumnDefinition Width="*" />
+
                                         <ColumnDefinition Width="Auto" />
+
                                         <ColumnDefinition Width="Auto" />
+
                                         <ColumnDefinition Width="Auto" />
+
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Sol: Büyüteç ve Yazı -->
                                     <FontIcon Grid.Column="0" Glyph="&#xE71E;" FontSize="14" Margin="0,0,12,0" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="Yakınlaştır" VerticalAlignment="Center" FontSize="14" />
 
-                                    <!-- Sağ: [ — ]  [%100]  [ + ]  [ ⤢ ] -->
                                     <Button x:Name="ZoomOutBtn" Grid.Column="2" Width="28" Height="28" Padding="0" 
                                             Background="Transparent" BorderThickness="0" CornerRadius="4"
                                             ToolTipService.ToolTip="Küçült" Click="ZoomOutBtn_Click">
@@ -425,7 +422,6 @@
 
                     <MenuFlyoutSeparator />
 
-                    <!-- BÖLÜM 3: Temel Tarayıcı Öğeleri -->
                     <MenuFlyoutItem x:Name="MenuFavoritesItem" Text="Sık kullanılanlar" Tag="Favorites" KeyboardAcceleratorTextOverride="Ctrl+Shift+O" Click="MenuItem_Action_Click">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="&#xE734;" />
@@ -464,7 +460,6 @@
 
                     <MenuFlyoutSeparator />
 
-                    <!-- BÖLÜM 5: Sistem & Ayarlar -->
                     <MenuFlyoutItem x:Name="MenuSettingsItem" Text="Ayarlar" Tag="Settings" Click="MenuItem_Action_Click">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="&#xE713;" />
@@ -480,7 +475,6 @@
 
                     <MenuFlyoutSeparator />
 
-                    <!-- BÖLÜM 6: Tarayıcıyı Kapat -->
                     <MenuFlyoutItem x:Name="MenuExitItem" Text="Bear Browser'ı Kapat" Tag="ExitApp" Click="MenuItem_Action_Click" />
 
                 </MenuFlyout>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using Bear_Browser.ViewModels;
@@ -17,11 +17,26 @@ namespace Bear_Browser.Controls
             InitializeComponent();
             ViewModel = App.Services.GetRequiredService<DownloadsViewModel>();
             DownloadsListView.ItemsSource = ViewModel.DisplayedDownloads;
+
+            ViewModel.DisplayedDownloads.CollectionChanged += (s, e) => UpdateEmptyState();
+            UpdateEmptyState();
+        }
+
+        private void UpdateEmptyState()
+        {
+            bool isEmpty = ViewModel.DisplayedDownloads.Count == 0;
+            EmptyStateContainer.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+            DownloadsListView.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            if (CountBadgeText != null)
+            {
+                CountBadgeText.Text = $"{ViewModel.DisplayedDownloads.Count} dosya";
+            }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             ViewModel.SearchQuery = SearchBox.Text?.Trim() ?? "";
+            UpdateEmptyState();
         }
 
         private void OpenFolderBtn_Click(object sender, RoutedEventArgs e)
@@ -45,7 +60,6 @@ namespace Bear_Browser.Controls
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                // Kullanıcı çalıştırmayı iptal etti veya onay vermedi
             }
             catch { }
         }
@@ -71,12 +85,26 @@ namespace Bear_Browser.Controls
             if (sender is Button btn && btn.Tag is Guid id)
             {
                 await ViewModel.RemoveDownloadAsync(id);
+                UpdateEmptyState();
             }
         }
 
         private async void ClearAllDownloads_Click(object sender, RoutedEventArgs e)
         {
-            await ViewModel.ClearDownloadsAsync();
+            var dialog = new ContentDialog
+            {
+                Title = "İndirme Listesini Temizle",
+                Content = "İndirme geçmişi temizlenecek (bilgisayarınızdaki gerçek dosyalar silinmez). Onaylıyor musunuz?",
+                PrimaryButtonText = "Evet, Temizle",
+                CloseButtonText = "İptal",
+                XamlRoot = this.XamlRoot
+            };
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await ViewModel.ClearDownloadsAsync();
+                UpdateEmptyState();
+            }
         }
     }
 }

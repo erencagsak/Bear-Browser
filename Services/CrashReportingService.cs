@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -35,7 +35,6 @@ namespace Bear_Browser.Services
             {
                 Directory.CreateDirectory(LogsDirectory);
 
-                // 1. UI Thread unhandled exceptions (WinUI 3 XAML)
                 var targetApp = app ?? Application.Current;
                 if (targetApp != null)
                 {
@@ -43,7 +42,6 @@ namespace Bear_Browser.Services
                     {
                         try
                         {
-                            // Uygulamanın aniden kapanmasını önleyip hatayı detaylıca logla
                             args.Handled = true;
                             string logFile = LogCrash(args.Exception, "UI Thread (Xaml.UnhandledException)", isFatal: false);
                             PromptUserAboutCrash(args.Exception, logFile);
@@ -52,7 +50,6 @@ namespace Bear_Browser.Services
                     };
                 }
 
-                // 2. Arka plan thread ve genel AppDomain hataları
                 AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
                 {
                     try
@@ -66,7 +63,6 @@ namespace Bear_Browser.Services
                     catch { }
                 };
 
-                // 3. Yakalanmamış async Task hataları (TaskScheduler)
                 TaskScheduler.UnobservedTaskException += (sender, args) =>
                 {
                     try
@@ -217,7 +213,6 @@ namespace Bear_Browser.Services
 
         public void TriggerTestCrash()
         {
-            // Nokta atışı test çökmesi simülasyonu
             throw new InvalidOperationException("Test amaçlı tetiklenen simüle edilmiş çökme hatası (Crash Test)! Nokta atışı dosya ve satır tespiti başarılı.");
         }
     }

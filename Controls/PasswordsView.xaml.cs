@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Bear_Browser.Models;
 using Bear_Browser.ViewModels;
@@ -18,11 +18,26 @@ namespace Bear_Browser.Controls
             InitializeComponent();
             ViewModel = App.Services.GetRequiredService<PasswordsViewModel>();
             PasswordsListView.ItemsSource = ViewModel.DisplayedPasswords;
+
+            ViewModel.DisplayedPasswords.CollectionChanged += (s, e) => UpdateEmptyState();
+            UpdateEmptyState();
+        }
+
+        private void UpdateEmptyState()
+        {
+            bool isEmpty = ViewModel.DisplayedPasswords.Count == 0;
+            EmptyStateContainer.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+            PasswordsListView.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+            if (CountBadgeText != null)
+            {
+                CountBadgeText.Text = $"{ViewModel.DisplayedPasswords.Count} hesap";
+            }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             ViewModel.SearchQuery = SearchBox.Text?.Trim() ?? "";
+            UpdateEmptyState();
         }
 
         private void TogglePasswordVisibility_Click(object sender, RoutedEventArgs e)
@@ -48,12 +63,26 @@ namespace Bear_Browser.Controls
             if (sender is Button btn && btn.Tag is Guid id)
             {
                 await ViewModel.RemovePasswordAsync(id);
+                UpdateEmptyState();
             }
         }
 
         private async void ClearAllPasswords_Click(object sender, RoutedEventArgs e)
         {
-            await ViewModel.ClearPasswordsAsync();
+            var dialog = new ContentDialog
+            {
+                Title = "Tüm Parolaları Sil",
+                Content = "Kayıtlı tüm web sitesi parolalarınız kalıcı olarak silinecek. Onaylıyor musunuz?",
+                PrimaryButtonText = "Evet, Tümünü Sil",
+                CloseButtonText = "İptal",
+                XamlRoot = this.XamlRoot
+            };
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await ViewModel.ClearPasswordsAsync();
+                UpdateEmptyState();
+            }
         }
 
         private async void ImportPasswordsBtn_Click(object sender, RoutedEventArgs e)
@@ -68,6 +97,7 @@ namespace Bear_Browser.Controls
                 if (file != null)
                 {
                     int count = await ViewModel.ImportPasswordsCsvAsync(file.Path);
+                    UpdateEmptyState();
                     var dialog = new ContentDialog
                     {
                         Title = "Parolalar İçe Aktarıldı",

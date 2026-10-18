@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <ContentDialog
     x:Class="Bear_Browser.Controls.ProfileEditDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -14,12 +14,10 @@
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick">
 
     <StackPanel Spacing="16" Width="340" Margin="0,6,0,0">
-        <!-- Profil Adı Girişi -->
         <TextBox x:Name="ProfileNameBox" 
                  Header="Profil Adı" 
                  PlaceholderText="Bir profil adı girin..." />
 
-        <!-- 1. Standart Önizleme (Görsel henüz seçilmediğinde görünür) -->
         <StackPanel x:Name="InitialAvatarPanel" HorizontalAlignment="Center" Spacing="10" Margin="0,6,0,0">
             <PersonPicture x:Name="AvatarPreview" Width="96" Height="96" />
             <Button HorizontalAlignment="Center" Click="SelectImageButton_Click" CornerRadius="6">
@@ -30,18 +28,15 @@
             </Button>
         </StackPanel>
 
-        <!-- 2. İnteraktif Dairesel Kırpma Alanı (Yeni görsel seçilince görünür) -->
         <StackPanel x:Name="CropEditorPanel" Spacing="10" Visibility="Collapsed" HorizontalAlignment="Center">
             <TextBlock Text="Fotoğrafı sürükleyip çembere göre hizalayın:" FontSize="12" Opacity="0.75" HorizontalAlignment="Center" />
 
-            <!-- Çember Kırpma Çerçevesi (200x200) -->
             <Grid Width="200" Height="200" HorizontalAlignment="Center"
                   PointerPressed="CropArea_PointerPressed"
                   PointerMoved="CropArea_PointerMoved"
                   PointerReleased="CropArea_PointerReleased"
                   PointerWheelChanged="CropArea_PointerWheelChanged">
 
-                <!-- Kırpılacak hedef daire (RenderTargetBitmap ile doğrudan bu çekilir) -->
                 <Border x:Name="VisibleCircleCrop" Width="180" Height="180" CornerRadius="90"
                         Background="#1A1A1A" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Image x:Name="SourceCropImage" Stretch="Uniform"
@@ -52,19 +47,20 @@
                     </Image>
                 </Border>
 
-                <!-- Şık Kılavuz Çerçeve (Kayıtta görünmez, kullanıcıya rehberlik eder) -->
                 <Border Width="180" Height="180" CornerRadius="90"
                         BorderBrush="{ThemeResource AccentFillColorDefaultBrush}" BorderThickness="2.5"
                         HorizontalAlignment="Center" VerticalAlignment="Center"
                         IsHitTestVisible="False" />
             </Grid>
 
-            <!-- Yakınlaştırma (Zoom) Slider & Konum Sıfırlama -->
             <Grid Width="260" HorizontalAlignment="Center" Margin="0,4,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
+
                     <ColumnDefinition Width="*" />
+
                     <ColumnDefinition Width="Auto" />
+
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 

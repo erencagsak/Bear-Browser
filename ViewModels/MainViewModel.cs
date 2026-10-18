@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -132,7 +132,6 @@ namespace Bear_Browser.ViewModels
             _downloadHandlerService = downloadHandlerService ?? throw new ArgumentNullException(nameof(downloadHandlerService));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
 
-            // Messenger Subscriptions
             _messenger.Register<NewTabRequestedMessage>(this, (r, m) =>
             {
                 _ = CreateNewTabAsync(m.Url ?? "bear://newtab");
@@ -217,6 +216,11 @@ namespace Bear_Browser.ViewModels
                 tabTitle = _localizationService["Tab_Settings"];
                 tabFavicon = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
             }
+            else if (initialUrl.StartsWith("bear://welcome", StringComparison.OrdinalIgnoreCase))
+            {
+                tabTitle = "Kurulum Sihirbazı";
+                tabFavicon = new Uri("ms-appx:///Assets/Bear-Browser-Logo.jpg");
+            }
             else if (IsInPrivate)
             {
                 tabTitle = _localizationService["Tab_InPrivate"];
@@ -245,7 +249,14 @@ namespace Bear_Browser.ViewModels
                 }
 
                 await EnsureTabWebViewInitializedAsync(tab);
-                tab.GetWebView().Source = new Uri(initialUrl);
+                if (tab.GetWebView().CoreWebView2 != null)
+                {
+                    tab.GetWebView().CoreWebView2.Navigate(initialUrl);
+                }
+                else
+                {
+                    tab.GetWebView().Source = new Uri(initialUrl);
+                }
             }
             else
             {
@@ -259,7 +270,6 @@ namespace Bear_Browser.ViewModels
         {
             if (tab.GetWebView().CoreWebView2 is not CoreWebView2 core) return;
 
-            // HTML5 Tam Ekran (Video vb.)
             core.ContainsFullScreenElementChanged += (sender, args) =>
             {
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
@@ -273,7 +283,6 @@ namespace Bear_Browser.ViewModels
                 });
             };
 
-            // Chromium favicon
             core.FaviconChanged += (s, e) =>
             {
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
@@ -281,16 +290,15 @@ namespace Bear_Browser.ViewModels
                     if (!string.IsNullOrEmpty(core.FaviconUri))
                     {
                         try { tab.FaviconUri = new Uri(core.FaviconUri); } catch { }
+                        _ = _bookmarkService.UpdateFaviconAsync(tab.Url, core.FaviconUri);
                     }
                 });
             };
 
-            // NewWindowRequested
             core.NewWindowRequested += async (sender, args) =>
             {
                 string targetUrl = args.Uri;
 
-                // 1. Doğrudan dosya bağlantısıysa mevcut sayfada indir:
                 if (UrlHelper.IsDownloadUrl(targetUrl))
                 {
                     args.Handled = true;
@@ -301,7 +309,6 @@ namespace Bear_Browser.ViewModels
                     return;
                 }
 
-                // 2. Yeni sekme aç
                 var deferral = args.GetDeferral();
                 try
                 {
@@ -318,10 +325,8 @@ namespace Bear_Browser.ViewModels
                 }
             };
 
-            // İndirme başladığında çalışan mantık
             core.DownloadStarting += (sender, args) =>
             {
-                // 1. CRX indirmesi tespiti
                 if (_extensionInstallerService.TryHandleCrxDownload(
                     args,
                     tab,
@@ -345,7 +350,6 @@ namespace Bear_Browser.ViewModels
                     return;
                 }
 
-                // 2. Normal dosya indirme mantığı
                 _downloadHandlerService.HandleDownload(
                     args,
                     tab,
@@ -357,7 +361,6 @@ namespace Bear_Browser.ViewModels
                     () => CloseTab(tab));
             };
 
-            // DOM yüklendiğinde yükleme süresini hesapla
             core.DOMContentLoaded += (sender, args) =>
             {
                 if (tab.LoadTimer.IsRunning)
@@ -376,7 +379,6 @@ namespace Bear_Browser.ViewModels
                 }
             };
 
-            // Sayfa başlığı parse edildiğinde sekmede güncelle
             core.DocumentTitleChanged += (s, e) =>
             {
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
@@ -393,7 +395,6 @@ namespace Bear_Browser.ViewModels
                 });
             };
 
-            // Geri/İleri geçmişi değiştiğinde navigasyon buton durumlarını güncelle
             core.HistoryChanged += (s, e) =>
             {
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
@@ -406,7 +407,6 @@ namespace Bear_Browser.ViewModels
                 });
             };
 
-            // SPA veya yönlendirmelerde adres çubuğunu ve kayıtlı parola popup'ını güncelle
             core.SourceChanged += (s, e) =>
             {
                 tab.GetWebView().DispatcherQueue?.TryEnqueue(() =>
@@ -431,7 +431,6 @@ namespace Bear_Browser.ViewModels
                 });
             };
 
-            // Web mesajları
             core.WebMessageReceived += (sender, args) =>
             {
                 try
@@ -496,15 +495,6 @@ namespace Bear_Browser.ViewModels
         {
             int index = Tabs.IndexOf(tab);
             if (index == -1) return;
-
-            try
-            {
-                if (tab.GetWebView().CoreWebView2 != null)
-                {
-                    tab.GetWebView().CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
-                }
-            }
-            catch { }
 
             tab.GetWebView().Close();
             Tabs.Remove(tab);
@@ -621,7 +611,6 @@ namespace Bear_Browser.ViewModels
                     tab.Title = docTitle;
                 }
 
-                // Sayfa tamamlandığında favicon'u belirle
                 if (!string.IsNullOrWhiteSpace(tab.Url))
                 {
                     if (tab.Url.StartsWith("bear://history", StringComparison.OrdinalIgnoreCase))

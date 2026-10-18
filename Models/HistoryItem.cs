@@ -1,11 +1,8 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 
 namespace Bear_Browser.Models
 {
-    /// <summary>
-    /// Tarayıcı geçmişi öğesini temsil eden model.
-    /// </summary>
     public class HistoryItem
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -13,8 +10,22 @@ namespace Bear_Browser.Models
         public string Url { get; set; } = string.Empty;
         public DateTime VisitedAt { get; set; } = DateTime.Now;
 
-        // XAML x:Bind için saat formatı
         public string FormattedTime => VisitedAt.ToString("HH:mm");
+
+        [JsonIgnore]
+        public string Domain
+        {
+            get
+            {
+                try
+                {
+                    if (Uri.TryCreate(Url, UriKind.Absolute, out var uri))
+                        return uri.Host;
+                }
+                catch { }
+                return Url;
+            }
+        }
 
         [JsonIgnore]
         public string FaviconUrl

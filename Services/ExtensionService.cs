@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -87,7 +87,6 @@ namespace Bear_Browser.Services
 
             if (string.IsNullOrWhiteSpace(url)) return false;
 
-            // Chrome Web Mağazası
             if (url.Contains("chromewebstore.google.com/detail", StringComparison.OrdinalIgnoreCase) ||
                 url.Contains("chrome.google.com/webstore/detail", StringComparison.OrdinalIgnoreCase))
             {
@@ -100,7 +99,6 @@ namespace Bear_Browser.Services
                 }
             }
 
-            // Microsoft Edge Eklentileri
             if (url.Contains("microsoftedge.microsoft.com/addons/detail", StringComparison.OrdinalIgnoreCase))
             {
                 var match = Regex.Match(url, @"/detail/.*?([a-z0-9]{32})", RegexOptions.IgnoreCase);
@@ -131,7 +129,6 @@ namespace Bear_Browser.Services
                 if (crxBytes.Length < 16)
                     throw new InvalidOperationException("İndirilen eklenti dosyası geçersiz veya boş.");
 
-                // CRX Başlığını Atlayıp ZIP Arşivini Bul (0x50, 0x4B, 0x03, 0x04)
                 int zipOffset = -1;
                 for (int i = 0; i < Math.Min(100000, crxBytes.Length - 4); i++)
                 {
@@ -145,7 +142,6 @@ namespace Bear_Browser.Services
                 if (zipOffset == -1)
                     throw new InvalidOperationException("CRX dosyasında geçerli bir ZIP arşivi bulunamadı.");
 
-                // Geçici bir klasöre çıkart, ardından kilitli dosyaları atlayarak hedef klasöre güvenle kopyala
                 string tempFolder = Path.Combine(Path.GetTempPath(), "BearExt_" + Guid.NewGuid().ToString("N"));
                 try
                 {
@@ -165,7 +161,6 @@ namespace Bear_Browser.Services
                     try { File.Delete(crxFilePath); } catch { }
                 }
 
-                // Manifest.json'u Ayrıştır ve Bilgileri Oku
                 if (!File.Exists(Path.Combine(targetFolder, "manifest.json")))
                 {
                     var sub = Directory.GetDirectories(targetFolder).FirstOrDefault(d => File.Exists(Path.Combine(d, "manifest.json")));
@@ -177,7 +172,6 @@ namespace Bear_Browser.Services
 
                 var info = ParseExtensionManifest(targetFolder, extensionId, storeType, fallbackName);
 
-                // WebView2 Motoruna Eklentiyi Yükle / Etkinleştir
                 if (profile != null)
                 {
                     try
@@ -200,7 +194,6 @@ namespace Bear_Browser.Services
                     }
                 }
 
-                // Listeyi Güncelle
                 var existing = InstalledExtensions.FirstOrDefault(e => e.Id.Equals(extensionId, StringComparison.OrdinalIgnoreCase));
                 if (existing != null)
                 {
@@ -226,7 +219,6 @@ namespace Bear_Browser.Services
             if (profile != null) _lastProfile = profile;
             else profile = _lastProfile;
 
-            // 1. CRX Dosyasını İndir (Birincil ve İkincil Mağaza Desteği ile)
             byte[]? crxBytes = null;
             string primaryUrl = storeType.Equals("Edge", StringComparison.OrdinalIgnoreCase)
                 ? $"https://edge.microsoft.com/extensionwebstorebase/v1/crx?response=redirect&x=id%3D{extensionId}%26installsource%3Dondemand%26uc"
@@ -466,7 +458,6 @@ namespace Bear_Browser.Services
                         info.Description = ResolveLocalizedMessage(folderPath, descProp.GetString() ?? "");
                     }
 
-                    // İkon arama (manifest icons, action/browser_action default_icon veya klasör araması)
                     info.IconPath = FindExtensionIcon(folderPath, root);
                 }
                 catch { }
@@ -487,7 +478,6 @@ namespace Bear_Browser.Services
 
             string key = raw.Substring(6, raw.Length - 8);
 
-            // Önce Türkçe ardından İngilizce dil klasörlerine bak
             string[] preferredLocales = { "tr", "tr_TR", "en", "en_US", "en_GB" };
             foreach (var loc in preferredLocales)
             {
@@ -516,7 +506,6 @@ namespace Bear_Browser.Services
         {
             try
             {
-                // 1. "icons" nesnesi
                 if (root.TryGetProperty("icons", out var iconsProp) && iconsProp.ValueKind == JsonValueKind.Object)
                 {
                     string[] preferredSizes = { "128", "64", "48", "32", "16", "256", "512" };
@@ -541,7 +530,6 @@ namespace Bear_Browser.Services
                     }
                 }
 
-                // 2. "action" -> "default_icon" veya "browser_action" -> "default_icon"
                 string[] actionKeys = { "action", "browser_action" };
                 foreach (var actKey in actionKeys)
                 {
@@ -581,7 +569,6 @@ namespace Bear_Browser.Services
                     }
                 }
 
-                // 3. Klasörde doğrudan ikon dosyası arama
                 string[] searchPatterns = { "*icon*128*.png", "*icon*48*.png", "*icon*32*.png", "*icon*.png", "*logo*.png", "*.png" };
                 foreach (var pattern in searchPatterns)
                 {

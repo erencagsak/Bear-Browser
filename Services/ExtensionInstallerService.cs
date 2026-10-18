@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using Bear_Browser.Models;
@@ -33,7 +33,6 @@ namespace Bear_Browser.Services
             string uri = op.Uri ?? "";
             string targetPath = args.ResultFilePath ?? "";
 
-            // CRX indirmesi tespiti (Chrome Web Store veya Edge Addons)
             if (!uri.Contains("clients2.google.com/service/update2/crx", StringComparison.OrdinalIgnoreCase) &&
                 !uri.Contains("edge.microsoft.com/extensionwebstorebase", StringComparison.OrdinalIgnoreCase) &&
                 !uri.EndsWith(".crx", StringComparison.OrdinalIgnoreCase) &&
@@ -42,7 +41,6 @@ namespace Bear_Browser.Services
                 return false;
             }
 
-            // İndirmeyi iptal etme; geçici dosyaya yönlendirip kurulunca temizle
             args.Handled = true;
 
             string extId = "";

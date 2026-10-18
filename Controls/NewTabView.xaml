@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Bear_Browser.Controls.NewTabView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,224 +7,341 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ArcCanvasBackgroundBrush}">
-        <!-- Arka Plan Hafif Radyal Işık Efekti -->
-        <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0"
-                Width="600" Height="300" Opacity="0.08"
-                Background="{ThemeResource ArcAccentBrush}"
-                CornerRadius="300" />
+    <Grid x:Name="RootLayoutGrid">
+        <Border x:Name="WallpaperBackdrop" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1C120C" Offset="0.0" />
+                    <GradientStop Color="#26180F" Offset="0.4" />
+                    <GradientStop Color="#1A1009" Offset="0.8" />
+                    <GradientStop Color="#110A05" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        MaxWidth="720" Margin="24,60,24,60" Spacing="28">
+        <Border x:Name="AmbientGlow" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-40,0,0"
+                Width="850" Height="420" Opacity="0.3" CornerRadius="425" IsHitTestVisible="False">
+            <Border.Background>
+                <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                    <GradientStop Color="#E07A1E" Offset="0.0" />
+                    <GradientStop Color="#78350F" Offset="0.5" />
+                    <GradientStop Color="#00000000" Offset="1.0" />
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
 
-                <!-- 1. AYI LOGOSU & KARŞILAMA -->
-                <StackPanel HorizontalAlignment="Center" Spacing="16">
-                    <Border Width="84" Height="84" CornerRadius="42"
-                            BorderBrush="{ThemeResource ArcBorderDefaultBrush}"
-                            BorderThickness="1.5"
-                            HorizontalAlignment="Center">
-                        <Border.Background>
-                            <ImageBrush ImageSource="ms-appx:///Assets/Bear-Browser-Logo.jpg" Stretch="UniformToFill" />
-                        </Border.Background>
+        <Grid x:Name="InPrivateContainer" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+              MaxWidth="640" Margin="24">
+            <Border Background="#1A121F" BorderBrush="#5B2E91" BorderThickness="1.5" CornerRadius="22" Padding="36,32">
+                <StackPanel Spacing="22" HorizontalAlignment="Center">
+                    <Border Width="64" Height="64" CornerRadius="32" Background="#2A1647"
+                            BorderBrush="#9055FF" BorderThickness="1.5" HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xE727;" FontSize="28" Foreground="#D6B8FF" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-
                     <StackPanel Spacing="6" HorizontalAlignment="Center">
-                        <TextBlock Text="Bear Browser"
-                                   FontSize="28" FontWeight="Bold"
-                                   Foreground="{ThemeResource ArcTextPrimaryBrush}"
-                                   HorizontalAlignment="Center" />
-                        <TextBlock x:Name="TaglineText" Text="Hızlı, Güvenli ve Özgür Web Deneyimi"
-                                   FontSize="13.5" Foreground="{ThemeResource ArcTextSecondaryBrush}"
-                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="InPrivate Gözatma" FontSize="26" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                        <TextBlock Text="Gizliliğiniz korunuyor. Bu pencereyi kapattığınızda gezinti geçmişiniz temizlenir."
+                                   FontSize="13.5" Foreground="#C4B5FD" HorizontalAlignment="Center" TextAlignment="Center" />
+                    </StackPanel>
+
+                    <Grid Margin="0,10,0,10" ColumnSpacing="20" HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE72E;" FontSize="13" Foreground="#A78BFA" />
+                                <TextBlock Text="Geçmiş kaydedilmez" FontSize="12.5" Foreground="#F3E8FF" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE774;" FontSize="13" Foreground="#A78BFA" />
+                                <TextBlock Text="Çerezler oturumda silinir" FontSize="12.5" Foreground="#F3E8FF" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8D7;" FontSize="13" Foreground="#A78BFA" />
+                                <TextBlock Text="Form ve şifreler tutulmaz" FontSize="12.5" Foreground="#F3E8FF" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE896;" FontSize="13" Foreground="#A78BFA" />
+                                <TextBlock Text="İndirilen dosyalar saklanır" FontSize="12.5" Foreground="#F3E8FF" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Width="500" HorizontalAlignment="Center">
+                        <Border Background="#241B2E" BorderBrush="#5B2E91" BorderThickness="1.2" CornerRadius="21" Padding="6,2">
+                            <Grid VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+
+                                    <ColumnDefinition Width="*" />
+
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Grid.Column="0" Glyph="&#xE721;" FontSize="13" Foreground="#A78BFA" Margin="12,0,8,0" VerticalAlignment="Center" />
+                                <TextBox x:Name="InPrivateSearchBox" Grid.Column="1"
+                                         PlaceholderText="InPrivate modunda gizlice arayın..."
+                                         FontSize="13.5" Height="36"
+                                         Padding="6,8.5,8,7.5"
+                                         Background="Transparent" BorderThickness="0"
+                                         Foreground="#FFFFFF" VerticalContentAlignment="Center"
+                                         KeyDown="SearchBox_KeyDown">
+                                    <TextBox.Resources>
+                                        <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                                        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                                        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                                        <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                                        <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                                        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                                        <SolidColorBrush x:Key="TextControlForeground" Color="#FFFFFF" />
+                                        <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFFFFF" />
+                                        <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
+                                        <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#DDD0F5" />
+                                        <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#FFFFFF" />
+                                        <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#C4B5FD" />
+                                    </TextBox.Resources>
+                                </TextBox>
+                                <Button Grid.Column="2" Width="32" Height="32" CornerRadius="16"
+                                         Background="#7C4DFF" BorderThickness="0" Padding="0" Margin="0,0,2,0"
+                                         Click="InPrivateSearchSubmitBtn_Click">
+                                    <FontIcon Glyph="&#xE751;" FontSize="11" Foreground="White" />
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <ScrollViewer x:Name="NormalContentScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        MaxWidth="720" Margin="24,36,24,50" Spacing="22">
+
+                <Border Width="60" Height="60" CornerRadius="20"
+                        Background="#26170E"
+                        BorderBrush="#44E07A1E" BorderThickness="1.5"
+                        HorizontalAlignment="Center" Margin="0,4,0,0">
+                    <Grid>
+                        <Image Width="60" Height="60" Stretch="UniformToFill" Source="ms-appx:///Assets/Bear-Browser-Logo.jpg" />
+                    </Grid>
+                </Border>
+
+                <StackPanel HorizontalAlignment="Center" Spacing="4" Margin="0,0,0,4">
+                    <TextBlock x:Name="LiveClockText" Text="12:00"
+                               FontSize="52" FontWeight="SemiBold"
+                               Foreground="#FFFFFF" HorizontalAlignment="Center"
+                               FontFamily="Segoe UI Variable Display, Segoe UI" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                        <TextBlock x:Name="GreetingText" Text="İyi Günler 🌿"
+                                   FontSize="15" FontWeight="Medium"
+                                   Foreground="#FDE68A" Opacity="0.9" VerticalAlignment="Center" />
+                        <TextBlock Text="•" FontSize="13" Foreground="#FDE68A" Opacity="0.5" VerticalAlignment="Center" />
+                        <TextBlock x:Name="LiveDateText" Text="16 Ekim Cuma"
+                                   FontSize="14" Foreground="#FEF3C7" Opacity="0.8" VerticalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
 
-                <!-- 2. MERKEZİ ARAMA KUTUSU -->
-                <Grid Width="600" HorizontalAlignment="Center">
-                    <Border Background="{ThemeResource ArcAddressBarBackgroundBrush}"
-                            BorderBrush="{ThemeResource ArcAddressBarBorderBrush}"
-                            BorderThickness="1.5" CornerRadius="24"
-                            Padding="6,3">
+                <Grid Width="520" HorizontalAlignment="Center">
+                    <Border Background="#2B1A11"
+                            BorderBrush="#4AE07A1E"
+                            BorderThickness="1.2" CornerRadius="21"
+                            Padding="6,2">
                         <Grid VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+
                                 <ColumnDefinition Width="*" />
+
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <FontIcon Grid.Column="0" Glyph="&#xE721;" FontSize="15"
-                                      Foreground="{ThemeResource ArcTextSecondaryBrush}" Margin="14,0,8,0" VerticalAlignment="Center" />
+                            <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14"
+                                    Background="#22E07A1E" Margin="6,0,8,0" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE721;" FontSize="12" Foreground="#F59E0B" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
 
                             <TextBox x:Name="SearchBox" Grid.Column="1"
                                      PlaceholderText="Web'de arayın veya bir URL yazın..."
-                                     FontSize="14.5" Height="42"
+                                     FontSize="13.5" Height="36"
+                                     Padding="6,8.5,8,7.5"
                                      Background="Transparent" BorderThickness="0"
-                                     Foreground="{ThemeResource ArcTextPrimaryBrush}"
+                                     Foreground="#FFFFFF"
                                      VerticalContentAlignment="Center"
-                                     KeyDown="SearchBox_KeyDown" />
+                                     KeyDown="SearchBox_KeyDown">
+                                <TextBox.Resources>
+                                    <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlForeground" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#F5EDE4" />
+                                </TextBox.Resources>
+                            </TextBox>
 
                             <Button x:Name="SearchSubmitBtn" Grid.Column="2"
-                                    Width="36" Height="36" CornerRadius="18"
-                                    Style="{StaticResource ArcAccentButtonStyle}"
+                                    Width="32" Height="32" CornerRadius="16"
+                                    Background="{ThemeResource ArcAccentBrush}"
+                                    BorderThickness="0"
                                     Padding="0" Margin="0,0,2,0"
                                     ToolTipService.ToolTip="Ara"
                                     Click="SearchSubmitBtn_Click">
-                                <FontIcon Glyph="&#xE751;" FontSize="12" Foreground="White" />
+                                <FontIcon Glyph="&#xE751;" FontSize="11" Foreground="White" />
                             </Button>
                         </Grid>
                     </Border>
                 </Grid>
 
-                <!-- 3. HIZLI ERİŞİM KISAYOLLARI (SHORTCUT TILES) -->
-                <StackPanel Spacing="14" HorizontalAlignment="Center" Margin="0,10,0,0">
-                    <TextBlock x:Name="QuickAccessTitleText" Text="Hızlı Erişim" FontSize="13" FontWeight="SemiBold"
-                               Opacity="0.6" HorizontalAlignment="Center" />
+                <StackPanel Spacing="12" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <TextBlock x:Name="QuickAccessTitleText" Text="Hızlı Erişim" FontSize="12.5" FontWeight="SemiBold"
+                               Foreground="#FFFFFF" Opacity="0.7" HorizontalAlignment="Center" />
 
-                    <!-- Kısayol Kartları Izgarası -->
-                    <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4"
-                                           HorizontalAlignment="Center">
+                    <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4" HorizontalAlignment="Center">
 
-                        <!-- YouTube -->
-                        <Button Tag="https://www.youtube.com" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#FF0000">
-                                    <FontIcon Glyph="&#xE768;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://www.youtube.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#FF0000">
+                                    <FontIcon Glyph="&#xE768;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="YouTube" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="YouTube" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- Google -->
-                        <Button Tag="https://www.google.com" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#4285F4">
-                                    <FontIcon Glyph="&#xE721;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://www.google.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#4285F4">
+                                    <FontIcon Glyph="&#xE721;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="Google" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Google" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- GitHub -->
-                        <Button Tag="https://www.github.com" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#24292e">
-                                    <FontIcon Glyph="&#xE943;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://www.github.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#24292E">
+                                    <FontIcon Glyph="&#xE943;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="GitHub" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="GitHub" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- X / Twitter -->
-                        <Button Tag="https://x.com" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#000000">
-                                    <FontIcon Glyph="&#xE715;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://www.x.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#000000">
+                                    <FontIcon Glyph="&#xE735;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="X (Twitter)" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="X (Twitter)" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- Wikipedia -->
-                        <Button Tag="https://www.wikipedia.org" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#636466">
-                                    <FontIcon Glyph="&#xE82D;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://www.reddit.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#FF4500">
+                                    <FontIcon Glyph="&#xE8B9;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="Vikipedi" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Reddit" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- Reddit -->
-                        <Button Tag="https://www.reddit.com" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#FF4500">
-                                    <FontIcon Glyph="&#xE8BD;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://discord.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#5865F2">
+                                    <FontIcon Glyph="&#xE8BD;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="Reddit" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Discord" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- Chrome Web Mağazası -->
-                        <Button Tag="https://chromewebstore.google.com" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource AccentFillColorDefaultBrush}">
-                                    <FontIcon Glyph="&#xE74C;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://www.twitch.tv" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#9146FF">
+                                    <FontIcon Glyph="&#xE714;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="Uzantılar" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Twitch" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <!-- Ayarlar -->
-                        <Button Tag="bear://settings" Click="Shortcut_Click"
-                                PointerPressed="Shortcut_PointerPressed"
-                                Width="140" Height="96" Margin="6" CornerRadius="12"
-                                Background="{ThemeResource ArcSurfaceDefaultBrush}"
-                                BorderBrush="{ThemeResource ArcBorderSubtleBrush}"
-                                BorderThickness="1" Padding="12">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Width="40" Height="40" CornerRadius="20" Background="#71717A">
-                                    <FontIcon Glyph="&#xE713;" FontSize="18" Foreground="White"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Button Tag="https://chatgpt.com" Click="Shortcut_Click" PointerPressed="Shortcut_PointerPressed"
+                                Width="136" Height="86" Margin="6" CornerRadius="14"
+                                Background="#2A241710" BorderBrush="#30FFFFFF" BorderThickness="1" Padding="8">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="34" Height="34" CornerRadius="17" Background="#10A37F">
+                                    <FontIcon Glyph="&#xE946;" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="Ayarlar" FontSize="12" FontWeight="Medium"
-                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="ChatGPT" FontSize="11.5" FontWeight="Medium" Foreground="#FFFFFF" HorizontalAlignment="Center" />
                             </StackPanel>
                         </Button>
-
                     </VariableSizedWrapGrid>
                 </StackPanel>
-
             </StackPanel>
         </ScrollViewer>
+
+        <Button x:Name="WallpaperSwitcherBtn" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,24,24" Width="40" Height="40" CornerRadius="20"
+                Background="#2B1A11" BorderBrush="#35E07A1E" BorderThickness="1"
+                ToolTipService.ToolTip="Arka Plan Temasını Değiştir">
+            <FontIcon Glyph="&#xEB9F;" FontSize="15" Foreground="#F59E0B" />
+            <Button.Flyout>
+                <Flyout Placement="TopEdgeAlignedRight">
+                    <StackPanel Width="220" Spacing="8" Padding="6">
+                        <TextBlock Text="Arka Plan Teması" FontWeight="SemiBold" FontSize="13.5" Margin="4,2,0,4" />
+                        <Button Tag="bear" Click="ChangeWallpaper_Click" HorizontalAlignment="Stretch" Padding="10,6" CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Ellipse Width="14" Height="14" Fill="#E07A1E" />
+                                <TextBlock Text="Sıcak Ayı (Varsayılan)" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                        <Button Tag="cosmic" Click="ChangeWallpaper_Click" HorizontalAlignment="Stretch" Padding="10,6" CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Ellipse Width="14" Height="14" Fill="#7C4DFF" />
+                                <TextBlock Text="Cosmic Aurora" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                        <Button Tag="sunset" Click="ChangeWallpaper_Click" HorizontalAlignment="Stretch" Padding="10,6" CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Ellipse Width="14" Height="14" Fill="#F59E0B" />
+                                <TextBlock Text="Sunset Dusk" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                        <Button Tag="cyber" Click="ChangeWallpaper_Click" HorizontalAlignment="Stretch" Padding="10,6" CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Ellipse Width="14" Height="14" Fill="#06B6D4" />
+                                <TextBlock Text="Cyber Mesh" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                        <Button Tag="slate" Click="ChangeWallpaper_Click" HorizontalAlignment="Stretch" Padding="10,6" CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Ellipse Width="14" Height="14" Fill="#64748B" />
+                                <TextBlock Text="Minimalist Slate" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
     </Grid>
 </UserControl>

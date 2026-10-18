@@ -1,4 +1,4 @@
-using Bear_Browser.Models;
+﻿using Bear_Browser.Models;
 using Bear_Browser.Services;
 using Bear_Browser.Services.Interfaces;
 using Microsoft.UI.Xaml;
@@ -21,6 +21,7 @@ namespace Bear_Browser.Controls
     {
         public event EventHandler<string>? SectionNavigated;
         public event EventHandler<string>? NavigateRequested;
+        public event EventHandler<UpdateInfo>? UpdateAvailableDetected;
 
         private CoreWebView2Profile? _profile;
         private ObservableCollection<ExtensionInfo> _displayedExtensions = new();
@@ -37,12 +38,14 @@ namespace Bear_Browser.Controls
         private readonly IAdBlockService _adBlockService;
         private readonly IMemoryOptimizerService _memoryOptimizerService;
         private readonly ICrashReportingService _crashReportingService;
+        private readonly IUpdateService _updateService;
 
         private DispatcherTimer? _pulseTimer;
         private DispatcherTimer? _ramTimer;
         private double _currentGlowOpacity = 0.3;
         private bool _glowIncreasing = true;
         private bool _isInitializing = true;
+        private bool _isNavigatingSection = false;
         public Bear_Browser.ViewModels.SettingsViewModel? ViewModel { get; }
 
         public SettingsView()
@@ -59,6 +62,7 @@ namespace Bear_Browser.Controls
             _adBlockService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IAdBlockService>(App.Services);
             _memoryOptimizerService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IMemoryOptimizerService>(App.Services);
             _crashReportingService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<ICrashReportingService>(App.Services);
+            _updateService = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IUpdateService>(App.Services);
 
             this.InitializeComponent();
             LoadVersionInfo();
@@ -78,7 +82,6 @@ namespace Bear_Browser.Controls
                 ApplyLocalization();
             });
 
-            // Sık Kullanılanlar, Parolalar ve Profil güncellemelerini canlı dinle
             _profileService.ProfileUpdated += (s, p) => DispatcherQueue?.TryEnqueue(LoadProfileData);
             _passwordService.PasswordsUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
             _bookmarkService.BookmarksUpdated += (s, e) => DispatcherQueue?.TryEnqueue(LoadProfileData);
@@ -97,18 +100,17 @@ namespace Bear_Browser.Controls
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // 1. Canlı nabız (pulse) efekti
-            _pulseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            _pulseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
             _pulseTimer.Tick += (s, args) =>
             {
                 if (_glowIncreasing)
                 {
-                    _currentGlowOpacity += 0.03;
+                    _currentGlowOpacity += 0.15;
                     if (_currentGlowOpacity >= 0.85) _glowIncreasing = false;
                 }
                 else
                 {
-                    _currentGlowOpacity -= 0.03;
+                    _currentGlowOpacity -= 0.15;
                     if (_currentGlowOpacity <= 0.25) _glowIncreasing = true;
                 }
 
@@ -119,7 +121,6 @@ namespace Bear_Browser.Controls
             };
             _pulseTimer.Start();
 
-            // 2. Canlı RAM & Performans izleme zamanlayıcısı (Her 2 saniyede bir)
             _ramTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             _ramTimer.Tick += (s, args) => UpdateRamUsage();
             _ramTimer.Start();
@@ -150,11 +151,8 @@ namespace Bear_Browser.Controls
         {
             try
             {
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                string versionText = _updateService.CurrentVersion;
                 string arch = Environment.Is64BitOperatingSystem ? "64 bit" : "32 bit";
-                string versionText = version != null
-                    ? $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
-                    : "1.0.0.0";
 
                 VersionTextBlock.Text = $"Sürüm {versionText} ({arch})";
                 ArchTextBlock.Text = arch;
@@ -162,7 +160,6 @@ namespace Bear_Browser.Controls
                 string downloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
                 DownloadsPathText.Text = downloadsDir;
 
-                // Logonun her zaman kesin ve net yüklenmesini sağla
                 string logoPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Bear-Browser-Logo.jpg");
                 if (!File.Exists(logoPath))
                 {
@@ -205,22 +202,21 @@ namespace Bear_Browser.Controls
         {
             var s = _settingsService.Settings;
 
-            // Gizlilik
             AdBlockToggle.IsOn = s.AdBlockEnabled;
             SelectComboByTag(AdBlockLevelCombo, s.AdBlockLevel);
             SelectComboByTag(SearchEngineCombo, s.SearchEngine);
             DoNotTrackToggle.IsOn = s.DoNotTrack;
             AskPasswordToggle.IsOn = s.AskPasswordSave;
 
-            // Görünüm
             SelectComboByTag(ThemeCombo, s.Theme);
             SelectComboByTag(TabPositionCombo, s.TabPosition);
             ShowFavBarToggle.IsOn = s.ShowFavoritesBar;
             SelectComboByTag(ZoomCombo, s.DefaultZoom.ToString("0.0#", System.Globalization.CultureInfo.InvariantCulture));
             HomePageBox.Text = s.HomePageUrl;
 
-            // Sistem
             EcoModeToggle.IsOn = s.EcoModeEnabled;
+
+            AutoCheckUpdatesToggle.IsOn = s.AutoCheckUpdates;
         }
 
         private static void SelectComboByTag(ComboBox combo, string tag)
@@ -238,86 +234,94 @@ namespace Bear_Browser.Controls
                 combo.SelectedIndex = 0;
         }
 
-        // --- BÖLÜM GEÇİŞLERİ ---
-
-        public void SelectSection(string sectionKey)
+public void SelectSection(string sectionKey)
         {
             ShowSection(sectionKey);
         }
 
         private void ShowSection(string key)
         {
-            ProfilesContentPanel.Visibility = Visibility.Collapsed;
-            PrivacyContentPanel.Visibility = Visibility.Collapsed;
-            AppearanceContentPanel.Visibility = Visibility.Collapsed;
-            DefaultBrowserContentPanel.Visibility = Visibility.Collapsed;
-            LanguagesContentPanel.Visibility = Visibility.Collapsed;
-            ExtensionsContentPanel.Visibility = Visibility.Collapsed;
-            DownloadsContentPanel.Visibility = Visibility.Collapsed;
-            SystemContentPanel.Visibility = Visibility.Collapsed;
-            AboutContentPanel.Visibility = Visibility.Collapsed;
-
-            string normalized = key.ToLowerInvariant().Trim();
-
-            switch (normalized)
+            if (_isNavigatingSection) return;
+            try
             {
-                case "profiles":
-                    ProfilesContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = ProfilesNavItem;
-                    AboutNavList.SelectedItem = null;
-                    LoadProfileData();
-                    break;
-                case "privacy":
-                    PrivacyContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = PrivacyNavItem;
-                    AboutNavList.SelectedItem = null;
-                    break;
-                case "appearance":
-                    AppearanceContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = AppearanceNavItem;
-                    AboutNavList.SelectedItem = null;
-                    break;
-                case "defaultbrowser":
-                    DefaultBrowserContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = DefaultBrowserNavItem;
-                    AboutNavList.SelectedItem = null;
-                    break;
-                case "languages":
-                    LanguagesContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = LanguagesNavItem;
-                    AboutNavList.SelectedItem = null;
-                    break;
-                case "extensions":
-                    ExtensionsContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = ExtensionsNavItem;
-                    AboutNavList.SelectedItem = null;
-                    RefreshExtensionsList();
-                    break;
-                case "downloads":
-                    DownloadsContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = DownloadsNavItem;
-                    AboutNavList.SelectedItem = null;
-                    break;
-                case "system":
-                    SystemContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = SystemNavItem;
-                    AboutNavList.SelectedItem = null;
-                    UpdateRamUsage();
-                    break;
-                default:
-                    AboutContentPanel.Visibility = Visibility.Visible;
-                    SettingsNavList.SelectedItem = null;
-                    AboutNavList.SelectedItem = AboutNavItem;
-                    normalized = "about";
-                    break;
-            }
+                _isNavigatingSection = true;
 
-            SectionNavigated?.Invoke(this, normalized);
+                ProfilesContentPanel.Visibility = Visibility.Collapsed;
+                PrivacyContentPanel.Visibility = Visibility.Collapsed;
+                AppearanceContentPanel.Visibility = Visibility.Collapsed;
+                DefaultBrowserContentPanel.Visibility = Visibility.Collapsed;
+                LanguagesContentPanel.Visibility = Visibility.Collapsed;
+                ExtensionsContentPanel.Visibility = Visibility.Collapsed;
+                DownloadsContentPanel.Visibility = Visibility.Collapsed;
+                SystemContentPanel.Visibility = Visibility.Collapsed;
+                AboutContentPanel.Visibility = Visibility.Collapsed;
+
+                string normalized = key.ToLowerInvariant().Trim();
+
+                switch (normalized)
+                {
+                    case "profiles":
+                        ProfilesContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != ProfilesNavItem) SettingsNavList.SelectedItem = ProfilesNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        LoadProfileData();
+                        break;
+                    case "privacy":
+                        PrivacyContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != PrivacyNavItem) SettingsNavList.SelectedItem = PrivacyNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        break;
+                    case "appearance":
+                        AppearanceContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != AppearanceNavItem) SettingsNavList.SelectedItem = AppearanceNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        break;
+                    case "defaultbrowser":
+                        DefaultBrowserContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != DefaultBrowserNavItem) SettingsNavList.SelectedItem = DefaultBrowserNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        break;
+                    case "languages":
+                        LanguagesContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != LanguagesNavItem) SettingsNavList.SelectedItem = LanguagesNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        break;
+                    case "extensions":
+                        ExtensionsContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != ExtensionsNavItem) SettingsNavList.SelectedItem = ExtensionsNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        RefreshExtensionsList();
+                        break;
+                    case "downloads":
+                        DownloadsContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != DownloadsNavItem) SettingsNavList.SelectedItem = DownloadsNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        break;
+                    case "system":
+                        SystemContentPanel.Visibility = Visibility.Visible;
+                        if ((ListViewItem?)SettingsNavList.SelectedItem != SystemNavItem) SettingsNavList.SelectedItem = SystemNavItem;
+                        if (AboutNavList.SelectedItem != null) AboutNavList.SelectedItem = null;
+                        UpdateRamUsage();
+                        break;
+                    default:
+                        AboutContentPanel.Visibility = Visibility.Visible;
+                        if (SettingsNavList.SelectedItem != null) SettingsNavList.SelectedItem = null;
+                        if ((ListViewItem?)AboutNavList.SelectedItem != AboutNavItem) AboutNavList.SelectedItem = AboutNavItem;
+                        normalized = "about";
+                        break;
+                }
+
+                SectionNavigated?.Invoke(this, normalized);
+            }
+            finally
+            {
+                _isNavigatingSection = false;
+            }
         }
 
         private void SettingsNavList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _isNavigatingSection) return;
             if (SettingsNavList.SelectedItem is ListViewItem item && item.Tag is string tag)
             {
                 ShowSection(tag);
@@ -326,7 +330,7 @@ namespace Bear_Browser.Controls
 
         private void AboutNavList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _isNavigatingSection) return;
             if (AboutNavList.SelectedItem != null)
             {
                 ShowSection("about");
@@ -374,9 +378,7 @@ namespace Bear_Browser.Controls
             }
         }
 
-        // --- PROFİLLER PANELİ AKSİYONLARI ---
-
-        private async void EditProfileBtn_Click(object sender, RoutedEventArgs e)
+private async void EditProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new ProfileEditDialog(_profileService.CurrentProfile)
             {
@@ -412,9 +414,7 @@ namespace Bear_Browser.Controls
             catch { }
         }
 
-        // --- GİZLİLİK PANELİ AKSİYONLARI ---
-
-        private void AdBlockToggle_Toggled(object sender, RoutedEventArgs e)
+private void AdBlockToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
             _settingsService.Settings.AdBlockEnabled = AdBlockToggle.IsOn;
@@ -475,9 +475,7 @@ namespace Bear_Browser.Controls
             _ = _settingsService.SaveAsync();
         }
 
-        // --- GÖRÜNÜM PANELİ AKSİYONLARI ---
-
-        private void ThemeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+private void ThemeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing) return;
             if (ThemeCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag is string theme)
@@ -535,9 +533,7 @@ namespace Bear_Browser.Controls
             }
         }
 
-        // --- İNDİRMELER PANELİ AKSİYONLARI ---
-
-        private void OpenDownloadsFolder_Click(object sender, RoutedEventArgs e)
+private void OpenDownloadsFolder_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -552,9 +548,7 @@ namespace Bear_Browser.Controls
             NavigateRequested?.Invoke(this, "bear://downloads");
         }
 
-        // --- SİSTEM VE PERFORMANS PANELİ AKSİYONLARI ---
-
-        private async void OptimizeMemoryBtn_Click(object sender, RoutedEventArgs e)
+private async void OptimizeMemoryBtn_Click(object sender, RoutedEventArgs e)
         {
             OptimizeMemoryBtn.IsEnabled = false;
             MemoryOptimizeStatusText.Text = "Bellek optimize ediliyor...";
@@ -578,6 +572,11 @@ namespace Bear_Browser.Controls
             _ = _settingsService.SaveAsync();
         }
 
+        private void RestartOnboardingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateRequested?.Invoke(this, "bear://welcome");
+        }
+
         private void OpenCrashLogsBtn_Click(object sender, RoutedEventArgs e)
         {
             _crashReportingService.OpenLogsFolder();
@@ -588,8 +587,6 @@ namespace Bear_Browser.Controls
             _crashReportingService.TriggerTestCrash();
         }
 
-        // --- HAKKINDA PANELİ AKSİYONLARI ---
-
         private async void CheckUpdatesButton_Click(object sender, RoutedEventArgs e)
         {
             CheckUpdatesButton.IsEnabled = false;
@@ -597,25 +594,58 @@ namespace Bear_Browser.Controls
             CheckingProgress.Visibility = Visibility.Visible;
             CheckIcon.Visibility = Visibility.Collapsed;
             CheckUpdatesText.Text = "Denetleniyor...";
+            StatusMessageText.Text = "Güncellemeler denetleniyor...";
+            StatusMessageText.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ArcTextSecondaryBrush"];
 
-            await Task.Delay(1300);
+            var updateInfo = await _updateService.CheckForUpdatesAsync(silent: false);
 
             CheckingProgress.IsActive = false;
             CheckingProgress.Visibility = Visibility.Collapsed;
-            CheckIcon.Glyph = "\uE73E";
             CheckIcon.Visibility = Visibility.Visible;
-            CheckUpdatesText.Text = "Güncel!";
-            StatusMessageText.Text = "Bear Browser güncel • En son sürümü kullanıyorsunuz";
 
-            await Task.Delay(2000);
+            if (updateInfo.IsUpdateAvailable)
+            {
+                CheckIcon.Glyph = "\uE896";
+                CheckUpdatesText.Text = "Yeni Sürüm!";
+                StatusMessageText.Text = $"Yeni sürüm mevcut: v{updateInfo.LatestVersion} • Bildirim kartından güncelleyebilirsiniz";
+                StatusMessageText.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ArcAccentBrush"];
+                UpdateAvailableDetected?.Invoke(this, updateInfo);
+            }
+            else if (!string.IsNullOrEmpty(updateInfo.ErrorMessage))
+            {
+                CheckIcon.Glyph = "\uE783";
+                CheckUpdatesText.Text = "Denetlendi";
+                StatusMessageText.Text = updateInfo.ErrorMessage;
+                StatusMessageText.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 239, 68, 68));
+            }
+            else
+            {
+                CheckIcon.Glyph = "\uE73E";
+                CheckUpdatesText.Text = "Güncel!";
+                StatusMessageText.Text = $"Bear Browser güncel (v{_updateService.CurrentVersion}) • En son sürümü kullanıyorsunuz";
+                StatusMessageText.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 16, 185, 129));
+            }
+
+            await Task.Delay(3500);
             CheckIcon.Glyph = "\uE72C";
             CheckUpdatesText.Text = "Güncelleştirmeleri denetle";
             CheckUpdatesButton.IsEnabled = true;
         }
 
-        // --- UZANTILAR PANELİ AKSİYONLARI ---
+        private void AutoCheckUpdatesToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializing) return;
+            _settingsService.Settings.AutoCheckUpdates = AutoCheckUpdatesToggle.IsOn;
+            _ = _settingsService.SaveAsync();
+        }
 
-        private void RefreshExtensionsList()
+        private void TestUpdateNotificationBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var sim = _updateService.GenerateSimulatedUpdate();
+            UpdateAvailableDetected?.Invoke(this, sim);
+        }
+
+private void RefreshExtensionsList()
         {
             string query = SettingsExtensionSearchBox?.Text?.Trim().ToLowerInvariant() ?? "";
             _displayedExtensions.Clear();
@@ -708,9 +738,7 @@ namespace Bear_Browser.Controls
             }
         }
 
-        // --- DİLLER VE YERELLEŞTİRME ---
-
-        private void RefreshLanguagesList()
+private void RefreshLanguagesList()
         {
             _languagesList.Clear();
             var items = _localizationService.GetAvailableLanguages();
@@ -734,7 +762,6 @@ namespace Bear_Browser.Controls
         {
             var loc = _localizationService;
 
-            // Navigasyon Menüsü
             if (NavTitleText != null) NavTitleText.Text = loc["Menu_Settings"];
             if (SearchSettingsBox != null) SearchSettingsBox.PlaceholderText = loc["Settings_Nav_SearchPlaceholder"];
             if (ProfilesNavText != null) ProfilesNavText.Text = loc["Settings_Nav_Profiles"];
@@ -747,7 +774,6 @@ namespace Bear_Browser.Controls
             if (SystemNavText != null) SystemNavText.Text = loc["Settings_Nav_System"];
             if (AboutNavText != null) AboutNavText.Text = loc["Settings_Nav_About"];
 
-            // Diller Paneli
             if (LanguagesTitleText != null) LanguagesTitleText.Text = loc["Languages_Title"];
             if (LanguagesSubtitleText != null) LanguagesSubtitleText.Text = loc["Languages_Subtitle"];
             if (LanguagesPreferredCardTitle != null) LanguagesPreferredCardTitle.Text = loc["Languages_PreferredCard_Title"];

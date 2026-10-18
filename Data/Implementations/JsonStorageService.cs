@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -6,10 +6,6 @@ using Bear_Browser.Data.Interfaces;
 
 namespace Bear_Browser.Data.Implementations
 {
-    /// <summary>
-    /// ProfileService ve SettingsService ile birebir uyumlu, girintili (WriteIndented)
-    /// JSON depolama ve serileştirme servisi.
-    /// </summary>
     public class JsonStorageService : IJsonStorageService
     {
         private static readonly JsonSerializerOptions DefaultOptions = new()
@@ -17,7 +13,6 @@ namespace Bear_Browser.Data.Implementations
             WriteIndented = true
         };
 
-        /// <inheritdoc />
         public async Task<T?> LoadAsync<T>(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
@@ -37,7 +32,6 @@ namespace Bear_Browser.Data.Implementations
             }
         }
 
-        /// <inheritdoc />
         public async Task SaveAsync<T>(string filePath, T data)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -56,11 +50,9 @@ namespace Bear_Browser.Data.Implementations
             }
             catch
             {
-                // Sessizce yutulur veya üst katmanlarda ele alınır
             }
         }
 
-        /// <inheritdoc />
         public T? Load<T>(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
@@ -80,7 +72,6 @@ namespace Bear_Browser.Data.Implementations
             }
         }
 
-        /// <inheritdoc />
         public void Save<T>(string filePath, T data)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -99,7 +90,6 @@ namespace Bear_Browser.Data.Implementations
             }
             catch
             {
-                // Sessizce yutulur
             }
         }
     }
